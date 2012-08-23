@@ -1,0 +1,19 @@
+{
+	"role" : {
+		"exeName" : "@WEBOS_INSTALL_SBINDIR@/activitymanager",
+		"type" : "privileged",
+		"allowedNames" : [ "com.palm.activitymanager", "com.palm.activitymanager.client" ]
+	},
+	"permissions" : [
+		{
+			"service" : "com.palm.activitymanager",
+			"inbound" : [ "*" ],
+			"outbound" : [ "*" ]
+		},
+		{
+			"service" : "com.palm.activitymanager.client",
+			"inbound" : [ "*" ],
+			"outbound" : [ "*" ]
+		}
+	]
+}

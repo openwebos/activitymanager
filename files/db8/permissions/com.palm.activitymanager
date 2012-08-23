@@ -1,0 +1,14 @@
+[
+	{
+		"type"		: "db.kind",
+		"object"	: "com.palm.activity:1",
+		"caller"	: "com.palm.activitymanager.client",
+		"operations":
+		{
+			"create"	: "allow",
+			"read"		: "allow",
+			"update"	: "allow",
+			"delete"	: "allow"
+		}
+	}
+]
