@@ -37,33 +37,12 @@ pkg_check_modules(LS2 REQUIRED luna-service2)
 include_directories(${LS2_INCLUDE_DIRS})
 webos_add_compiler_flags(ALL ${LS2_CFLAGS_OTHER})
 
-set(Boost_USE_STATIC_LIBS       OFF)
-set(Boost_USE_MULTITHREADED     OFF)
-set(Boost_USE_STATIC_RUNTIME    OFF)
 find_package(Boost REQUIRED COMPONENTS regex)
-include_directories(Boost_INCLUDE_DIRS)
+include_directories(${Boost_INCLUDE_DIRS})
 
-find_library(MJCORE NAMES mojocore libmojocore)
-if(${MJCORE} STREQUAL MJCORE-NOTFOUND)
-	message(FATAL_ERROR "Failed to find libmojocore. Please install openwebos/db8")
-endif()
-
-find_library(MJLUNA NAMES mojoluna libmojoluna)
-if(${MJLUNA} STREQUAL MJLUNA-NOTFOUND)
-	message(FATAL_ERROR "Failed to find libmojoluna. Please install openwebos/db8")
-endif()
-
-find_library(MJDB NAMES mojodb libmojodb)
-if(${MJDB} STREQUAL MJDB-NOTFOUND)
-	message(FATAL_ERROR "Failed to find libmojodb. Please install openwebos/db8")
-endif()
-
-find_path(MJ_INC NAMES core/MojErr.h HINTS /include/mojodb )
-if(MJ_INC STREQUAL "MJ_INC-NOTFOUND")
-	message(FATAL_ERROR "Failed to find db8 include files")
-endif()
-include_directories(${MJ_INC})
-webos_add_compiler_flags(ALL -I${MJ_INC})
+pkg_check_modules(DB8 REQUIRED db8)
+include_directories(${DB8_INCLUDE_DIRS})
+webos_add_compiler_flags(ALL ${DB8_CFLAGS_OTHER})
 
 # There is a call to system("initctl ...") in ServiceApp.cpp which is compiled in for
 # all implementations except WEBOS_TARGET_MACHINE_IMPL_SIMULATOR
@@ -81,9 +60,7 @@ file(GLOB SOURCE_FILES src/*.cpp)
 
 add_executable(activitymanager ${SOURCE_FILES})
 target_link_libraries(activitymanager
-                      ${MJCORE}
-                      ${MJLUNA}                    
-                      ${MJDB}                     
+                      ${DB8_LDFLAGS}
                       ${Boost_LIBRARIES}
                       ${GLIB2_LDFLAGS}
                       ${OPENSSL_LDFLAGS}
