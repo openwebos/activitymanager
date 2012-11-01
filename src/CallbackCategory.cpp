@@ -21,6 +21,13 @@
 #include "PowerdScheduler.h"
 #include "Category.h"
 
+// TODO: I could not get this method to do anything, so leaving out of the generated documentation
+/* !
+ * \page com_palm_activitymanager_callback Service API com.palm.activitymanager/callback/
+ * Private methods:
+ * - \ref com_palm_activitymanager_callback_scheduledwakeup
+ */
+
 const CallbackCategoryHandler::Method CallbackCategoryHandler::s_methods[] = {
 	{ _T("scheduledwakeup"), (Callback) &CallbackCategoryHandler::ScheduledWakeup },
 #ifdef UNITTEST
@@ -54,6 +61,46 @@ MojErr CallbackCategoryHandler::Init()
 
 	return MojErrNone;
 }
+
+/* !
+\page com_palm_activitymanager_callback
+\n
+\section com_palm_activitymanager_callback_scheduledwakeup scheduledwakeup
+
+\e Private.
+
+com.palm.activitymanager/callback/scheduledwakeup
+
+
+
+\subsection com_palm_activitymanager_callback_scheduledwakeup_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_callback_scheduledwakeup_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_callback_scheduledwakeup_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/callback/scheduledwakeup '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
 
 MojErr
 CallbackCategoryHandler::ScheduledWakeup(MojServiceMessage *msg, MojObject &payload)

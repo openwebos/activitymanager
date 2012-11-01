@@ -25,6 +25,15 @@
 #include "ResourceManager.h"
 #include "ContainerManager.h"
 
+/*!
+ * \page com_palm_activitymanager_devel Service API com.palm.activitymanager/devel/
+ * Private methods:
+ * - \ref com_palm_activitymanager_devel_evict
+ * - \ref com_palm_activitymanager_devel_run
+ * - \ref com_palm_activitymanager_devel_concurrency
+ * - \ref com_palm_activitymanager_devel_priority_control
+ */
+
 const DevelCategoryHandler::Method DevelCategoryHandler::s_methods[] = {
 	{ _T("evict"), (Callback) &DevelCategoryHandler::Evict },
 	{ _T("run"), (Callback) &DevelCategoryHandler::Run },
@@ -60,6 +69,65 @@ MojErr DevelCategoryHandler::Init()
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager_devel
+\n
+\section com_palm_activitymanager_devel_evict evict
+
+\e Private.
+
+com.palm.activitymanager/devel/evict
+
+Evict one or all Activities from the background queue.
+
+\subsection com_palm_activitymanager_devel_evict_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "evictAll": boolean
+}
+\endcode
+
+\param activityId The ID of the background activity to evict. Either this or \e
+                  evictAll is required.
+\param evictAll Set to true to evict all Activities from the background queue.
+                Either this or \e activityId is required.
+
+\subsection com_palm_activitymanager_devel_evict_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_devel_evict_examples Examples:
+\code
+luna-send -n 1 -f luna://com.palm.activitymanager/devel/evict '{ "evictAll": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": -1000,
+    "errorText": "Activity not on background queue",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 DevelCategoryHandler::Evict(MojServiceMessage *msg, MojObject &payload)
@@ -99,6 +167,65 @@ DevelCategoryHandler::Evict(MojServiceMessage *msg, MojObject &payload)
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager_devel
+\n
+\section com_palm_activitymanager_devel_run run
+
+\e Private.
+
+com.palm.activitymanager/devel/run
+
+Run one or all Activities that are in ready queue.
+
+\subsection com_palm_activitymanager_devel_run_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "runAll": boolean
+}
+\endcode
+
+\param activityId The ID of the ready activity to run. Either this or \e runAll
+                  is required.
+\param runAll Set to true to run all ready Activities. Either this or \e
+              activityId is required.
+
+\subsection com_palm_activitymanager_devel_run_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_devel_run_examples Examples:
+\code
+luna-send -n 1 -f luna://com.palm.activitymanager/devel/run '{ "runAll": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": -1000,
+    "errorText": "Activity not on ready queue",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 DevelCategoryHandler::Run(MojServiceMessage *msg, MojObject &payload)
 {
@@ -137,6 +264,66 @@ DevelCategoryHandler::Run(MojServiceMessage *msg, MojObject &payload)
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager_devel
+\n
+\section com_palm_activitymanager_devel_concurrency concurrency
+
+\e Private.
+
+com.palm.activitymanager/devel/concurrency
+
+Set background Activity concurrency level for the Activity Manager.
+
+\subsection com_palm_activitymanager_devel_concurrency_syntax Syntax:
+\code
+{
+    "level": int,
+    "unlimited": boolean
+}
+\endcode
+
+\param level Number of concurrent background Activities. Either this is
+             required, or \e unlimited must be set to true.
+\param unlimited Set to true to allow unlimited amount of concurrent background
+                 Activities. This must be true or \e level needs to be
+                 specified.
+
+\subsection com_palm_activitymanager_devel_concurrency_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_devel_concurrency_examples Examples:
+\code
+luna-send -n 1 -f luna://com.palm.activitymanager/devel/concurrency '{ "unlimited": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 22,
+    "errorText": "Either \"unlimited\":true, or \"level\":<number concurrent Activities> must be specified",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 DevelCategoryHandler::SetConcurrency(MojServiceMessage *msg, MojObject &payload)
 {
@@ -174,6 +361,61 @@ DevelCategoryHandler::SetConcurrency(MojServiceMessage *msg, MojObject &payload)
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager_devel
+\n
+\section com_palm_activitymanager_devel_priority_control priorityControl
+
+\e Private.
+
+com.palm.activitymanager/devel/priorityControl
+
+Enable or disable priority control.
+
+\subsection com_palm_activitymanager_devel_priority_control_syntax Syntax:
+\code
+{
+    "enabled": boolean
+}
+\endcode
+
+\param enabled Flag to enable or disable priority control.
+
+\subsection com_palm_activitymanager_devel_priority_control_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_devel_priority_control_examples Examples:
+\code
+luna-send -n 1 -f luna://com.palm.activitymanager/devel/priorityControl '{ "enabled": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 22,
+    "errorText": "Must specify \"enabled\":true or \"enabled\":false",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 DevelCategoryHandler::PriorityControl(MojServiceMessage *msg, MojObject& payload)

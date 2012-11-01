@@ -25,6 +25,14 @@
 
 #include <stdexcept>
 
+// TODO: I could not call these methods, so leaving them out of the generated documentation
+/* !
+ * \page com_palm_activitymanager_test Service API com.palm.activitymanager/test/
+ * Private methods:
+ * - \ref com_palm_activitymanager_test_leak
+ * - \ref com_palm_activitymanager_test_where
+ */
+
 const TestCategoryHandler::Method TestCategoryHandler::s_methods[] = {
 	{ _T("leak"), (Callback) &TestCategoryHandler::Leak },
 	{ _T("where"), (Callback) &TestCategoryHandler::WhereMatchTest },
@@ -52,6 +60,46 @@ MojErr TestCategoryHandler::Init()
 
 	return MojErrNone;
 }
+
+/* !
+\page com_palm_activitymanager_test
+\n
+\section com_palm_activitymanager_test_leak leak
+
+\e Private.
+
+com.palm.activitymanager/test/leak
+
+Grab an extra reference to an Activity (to force it to leak).
+
+\subsection com_palm_activitymanager_test_leak_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_test_leak_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_test_leak_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/test/leak '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
 
 MojErr
 TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
@@ -96,6 +144,46 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 
 	return MojErrNone;
 }
+
+/* !
+\page com_palm_activitymanager_test
+\n
+\section com_palm_activitymanager_test_where where
+
+\e Private.
+
+com.palm.activitymanager/test/where
+
+Wake Callback.
+
+\subsection com_palm_activitymanager_test_where_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_test_where_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_test_where_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/test/where '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
 
 MojErr
 TestCategoryHandler::WhereMatchTest(MojServiceMessage *msg, MojObject &payload)

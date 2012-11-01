@@ -39,6 +39,45 @@
 
 #include <stdexcept>
 
+/*!
+ * \page com_palm_activitymanager Service API com.palm.activitymanager/
+ * Public methods:
+ * - \ref com_palm_activitymanager_create
+ * - \ref com_palm_activitymanager_monitor
+ * - \ref com_palm_activitymanager_join
+ * - \ref com_palm_activitymanager_release
+ * - \ref com_palm_activitymanager_adopt
+ * - \ref com_palm_activitymanager_complete
+ * - \ref com_palm_activitymanager_schedule
+ * - \ref com_palm_activitymanager_start
+ * - \ref com_palm_activitymanager_stop
+ * - \ref com_palm_activitymanager_cancel
+ * - \ref com_palm_activitymanager_pause
+ * - \ref com_palm_activitymanager_focus
+ * - \ref com_palm_activitymanager_unfocus
+ * - \ref com_palm_activitymanager_addfocus
+ * - \ref com_palm_activitymanager_list
+ * - \ref com_palm_activitymanager_get_details
+ * - \ref com_palm_activitymanager_info
+ *
+ * Private methods:
+ * - \ref com_palm_activitymanager_map_process
+ * - \ref com_palm_activitymanager_enable
+ * - \ref com_palm_activitymanager_disable
+ */
+
+/* TODO: These public methods are left out of the generated documentation since they don't do anything.
+ * - \ref com_palm_activitymanager_associate_app
+ * - \ref com_palm_activitymanager_associate_service
+ * - \ref com_palm_activitymanager_associate_process
+ * - \ref com_palm_activitymanager_associate_network_flow
+ * - \ref com_palm_activitymanager_dissociate_app
+ * - \ref com_palm_activitymanager_dissociate_service
+ * - \ref com_palm_activitymanager_dissociate_process
+ * - \ref com_palm_activitymanager_dissociate_network_flow
+ * - \ref com_palm_activitymanager_unmap_process
+ */
+
 const ActivityCategoryHandler::Method ActivityCategoryHandler::s_methods[] = {
 	{ _T("create"), (Callback) &ActivityCategoryHandler::CreateActivity },
 	{ _T("monitor"), (Callback) &ActivityCategoryHandler::MonitorActivity },
@@ -117,6 +156,110 @@ MojErr ActivityCategoryHandler::Init()
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_create create
+
+\e Public.
+
+com.palm.activitymanager/create
+
+<b>Creates a new Activity and returns its ID.</b>
+
+You can create either a foreground or background Activity. A foreground Activity
+is run as soon as its specified prerequisites are met. After a background
+Activity's prerequisites are met, it is moved into a ready queue, and a limited
+number are allowed to run depending on system resources. Foreground is the
+default.
+
+Activities can be scheduled to run at a specific time or when certain conditions
+are met or events occur.
+
+Each of your created and owned Activities must have a unique name. To replace
+one of your existing Activities, set the "replace" flag to true. This cancels
+the original Activity and replaces it with the new Activity.
+
+To keep an Activity alive and receive status updates, the parent (and adopters,
+if any) must set the "subscribe" flag to true.Activities with a callback and
+"subscribe=false", the Activity must be adopted immediately after the callback
+is invoked for the Activity to continue.
+
+To indicate the Activity is fully-initialized and ready to launch, set the
+`"start"` flag to `true`. Activities with a callback should be started when
+created - the callback is invoked when the prerequisites have been met and, in
+the case of a background, non-immediate Activity, it has been cleared to run.
+
+<b>When requirements are not initially met</b>
+
+If the creator of the Activity also specifies "subscribe":true, and detailed
+events are enabled for that subscription, then the Activity Manager will
+generate either an immediate "start" event if the requirements are met, or an
+"update" event if the Activity is not yet ready to start due to missing
+requirements, schedule, or trigger. This allows the creating Service to
+determine if it should continue executing while waiting for the callback,
+or exit to free memory if it may be awhile before the Activity is ready to run.
+
+\subsection com_palm_activitymanager_create_syntax Syntax:
+\code
+{
+    "activity": Activity object,
+    "subscribe": boolean,
+    "detailedEvents": boolean,
+    "start": boolean,
+    "replace": boolean
+}
+\endcode
+
+\param activity Activity object. \e Required.
+\param subscribe Subscribe to Activity flag.
+\param detailedEvents Flag to have the Activity Manager generate "update" events
+       when the state of one of this Activity's requirements changes.
+\param start Start Activity immediately flag.
+\param replace Cancel Activity and replace with Activity of same name flag.
+
+\subsection com_palm_activitymanager_create_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean,
+    "activityId": int
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+\param activityId Activity ID.
+
+\subsection com_palm_activitymanager_create_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/create '{ "activity": { "name": "basicactivity", "description": "Test create", "type": { "foreground": true } }, "start": true, "subscribe": true }'
+\endcode
+
+Example response for a succesful call, followed by an update event:
+\code
+{
+    "activityId": 10813,
+    "returnValue": true
+}
+{
+    "activityId": 10813,
+    "event": "start",
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 22,
+    "errorText": "Activity specification not present",
+    "returnValue": false
+}
+\endcode
+*/
 MojErr
 ActivityCategoryHandler::CreateActivity(MojServiceMessage *msg, MojObject& payload)
 {
@@ -332,6 +475,68 @@ ActivityCategoryHandler::FinishReplaceActivity(
 	act->ClearPersistToken();
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_join join
+
+\e Public.
+
+com.palm.activitymanager/join
+
+Subscribe to receive events from a particular Activity.
+
+\subsection com_palm_activitymanager_join_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "subscribe": true
+}
+\endcode
+
+\param activityId The Activity to join to.
+\param subscribe Must be true for this call to succeed.
+
+\subsection com_palm_activitymanager_join_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_join_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/join '{ "activityId": 81, "subscribe": true }'
+\endcode
+
+Example response for a succesful call followed by a status update event:
+\code
+{
+    "returnValue": true
+}
+{
+    "activityId": 81,
+    "event": "stop",
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 22,
+    "errorText": "Join method calls must subscribe to the Activity",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::JoinActivity(MojServiceMessage *msg, MojObject& payload)
 {
@@ -376,6 +581,74 @@ ActivityCategoryHandler::JoinActivity(MojServiceMessage *msg, MojObject& payload
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_monitor monitor
+
+\e Public.
+
+com.palm.activitymanager/monitor
+
+Given an activity ID, returns the current activity state. If the caller chooses
+to subscribe, additional Activity status updates are returned as they occur.
+
+\subsection com_palm_activitymanager_monitor_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string,
+    "subscribe": boolean,
+    "detailedEvents": boolean
+}
+\endcode
+
+\param activityId Activity ID. Either this, or "activityName" is required.
+\param activityName Activity name. Either this, or "activityId" is required.
+\param subscribe Activity subscription flag. \e Required.
+\param detailedEvents Flag to have the Activity Manager generate "update" events
+       when the state of one of this Activity's requirements changes.
+       \e Required.
+
+\subsection com_palm_activitymanager_monitor_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean,
+    "state": string
+}
+
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+\param state Activity state.
+
+\subsection com_palm_activitymanager_monitor_examples Examples:
+\code
+luna-send -i -f  luna://com.palm.activitymanager/monitor '{ "activityId": 71, "subscribe": false, "detailedEvents": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true,
+    "state": "running"
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "Error retrieving activityId of Activity to operate on",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::MonitorActivity(MojServiceMessage *msg, MojObject& payload)
@@ -425,6 +698,70 @@ ActivityCategoryHandler::MonitorActivity(MojServiceMessage *msg, MojObject& payl
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_release release
+
+\e Public.
+
+com.palm.activitymanager/release
+
+Allows a parent to free an Activity and notify other subscribers. The Activity
+is cancelled unless one of its non-parent subscribers adopts it and becomes the
+new parent. This has to happen in the timeout specified. If no timeout is
+specified, the Activity is cancelled immediately. For a completely safe
+transfer, a subscribing app or service, prior to the release, should already
+have called adopt, indicating its willingness to take over as the parent.
+
+\subsection com_palm_activitymanager_release_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string,
+    "timeout": int
+}
+\endcode
+
+\param activityId Activity ID. Either this or "activityName" is required.
+\param activityName Activity name. Either this or "activityId" is required.
+\param timeout Time to wait, in seconds, for Activity to be adopted after release.
+
+\subsection com_palm_activitymanager_release_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_release_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/release '{ "activityId": 2, "timeout": 30 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "activityId not found",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::ReleaseActivity(MojServiceMessage *msg, MojObject& payload)
 {
@@ -461,6 +798,102 @@ ActivityCategoryHandler::ReleaseActivity(MojServiceMessage *msg, MojObject& payl
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_adopt adopt
+
+\e Public.
+
+com.palm.activitymanager/adopt
+
+Registers an app's or service's willingness to take over as the Activity's
+parent.
+
+If your app can wait for an unavailable Activity (not released) to become
+available, then set the "wait" flag to true. If it is, and the Activity is valid
+(exists and is not exiting), the call should succeed. If it cannot wait, and the
+Activity is valid but cannot be adopted, then the call fails. The adopted return
+flag indicates a successful or failed adoption.
+
+If not immediately adopted and waiting is requested, the "orphan" event informs
+the adopter that they are the new Activity parent.
+
+An example where adoption makes sense is an app that allocates a separate
+Activity for a sync, and passes that Activity to a service to use. The service
+should adopt the Activity and be ready to take over in the event the app exits
+before the service is done syncing. Otherwise, it receives a "cancel" event and
+should exit immediately. The service should wait until the adopt (or monitor)
+call returns successfully before beginning Activity work. If adopt or monitor
+fails, it indicates the caller has quit or closed the Activity and the request
+should not be processed. The Service should continue to process incoming events
+on their subscription to the Activity.
+
+If the service did not call adopt to indicate to the Activity Manager its
+willingness to take over as the parent, it should be prepared to stop work for
+the Activity and unsubscribe if it receives a "cancel" event. Otherwise, if it
+receives the "orphan" event indicating the parent has unsubscribed and the
+service is now the parent, then it should use complete when finished to inform
+the Activity Manager before unsubscribing.
+
+\subsection com_palm_activitymanager_adopt_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string,
+    "wait": boolean,
+    "subscribe": boolean,
+    "detailedEvents": boolean
+}
+\endcode
+
+\param activityId Activity ID. Either this, or "activityName" is required.
+\param activityName Activity name. Either this, or "activityId" is required.
+\param wait Wait for Activity to be released flag. \e Required.
+\param subscribe Flag to subscribe to Activity and receive Activity events.
+       \e Required.
+\param detailedEvents Flag to have the Activity Manager generate "update" events
+       when the state of an Activity's requirement changes. \e Required.
+
+\subsection com_palm_activitymanager_adopt_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean,
+    "adopted": boolean
+}
+\endcode
+
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+\param True if the Activity was adopted.
+
+\subsection com_palm_activitymanager_adopt_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/adopt '{ "activityId": 876, "wait": true, "subscribe": true, "detailedEvents" : false }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true,
+    "adopted": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "activityId not found",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::AdoptActivity(MojServiceMessage *msg, MojObject& payload)
@@ -525,6 +958,85 @@ ActivityCategoryHandler::AdoptActivity(MojServiceMessage *msg, MojObject& payloa
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_complete complete
+
+\e Public.
+
+com.palm.activitymanager/complete
+
+An Activity's parent can use this method to end the Activity and optionally
+restart it with new attributes. If there are other subscribers, they are sent a
+"complete" event.
+
+If restart is requested, the Activity is optionally updated with any new
+Callback, Schedule, Requirements, or Trigger data and returned to the queued
+state. Specifying false for any of those properties removes the property
+completely. For any properties not specified, current properties are used.
+
+If the Activity is persistent (specified with the persist flag in the Type
+object), the db8 database is updated before the call returns.
+
+\subsection com_palm_activitymanager_complete_syntax Syntax:
+\code
+{
+    "activityId": int
+    "activityName": string,
+    "restart": boolean,
+    "callback": false or Callback,
+    "schedule": false or Schedule,
+    "requirements": false or Requirements,
+    "trigger": false or Triggers,
+    "metadata: false or any object
+}
+\endcode
+
+\param activityId Activity ID. Either this, or "activityName" is required.
+\param activityName Activity name. Either this, or "activityId" is required.
+\param restart Restart Activity flag. Default is false.
+\param callback Callback to use if Activity is restarted.
+\param schedule Schedule to use if Activity is restarted.
+\param requirements Prerequisites to use if Activity is restarted.
+\param trigger Trigger to use if Activity is restarted.
+\param metadata Meta data.
+
+\subsection com_palm_activitymanager_complete_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_complete_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/complete '{ "activityId": 876 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "activityId not found",
+    "returnValue": false
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::CompleteActivity(MojServiceMessage *msg, MojObject& payload)
@@ -623,6 +1135,65 @@ ActivityCategoryHandler::FinishCompleteActivity(
 	ACTIVITY_SERVICEMETHODFINISH_END(msg);
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_schedule schedule
+
+\e Public.
+
+com.palm.activitymanager/schedule
+
+Set a schedule for an Activity.
+
+\subsection com_palm_activitymanager_schedule_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string,
+    "schedule": { object }
+}
+\endcode
+
+\param activityId Activity ID. Either this, or "activityName" is required.
+\param activityName Activity name. Either this, or "activityId" is required.
+\param schedule A Schedule object.
+
+\subsection com_palm_activitymanager_schedule_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_schedule_examples Examples:
+\code
+luna-send -n 1 -f luna://com.palm.activitymanager/schedule '{ "activityId": 28, "schedule": { "interval": "2d", "local": true } }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "Error retrieving activityId of Activity to operate on",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::ScheduleActivity(MojServiceMessage *msg, MojObject& payload)
 {
@@ -659,6 +1230,70 @@ ActivityCategoryHandler::ScheduleActivity(MojServiceMessage *msg, MojObject& pay
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_start start
+
+\e Public.
+
+com.palm.activitymanager/start
+
+Attempts to start the specified Activity, either moving it from the "init" state
+to be eligible to run, or resuming it if it is currently paused. This sends
+"start" events to any subscribed listeners once the Activity is cleared to
+begin. If the "force" parameter is present (and true), other Activities could be
+cancelled to free resources the Activity needs to run.
+
+\subsection com_palm_activitymanager_start_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string,
+    "force": boolean
+}
+\endcode
+
+\param activityId Activity ID. Either this or "activityName" is required.
+\param activityName Activity name. Either this or "activityId" is required.
+\param force Force the Activity to run flag. If "true", other Activities could
+             be cancelled to free resources the Activity needs to run.
+
+\subsection com_palm_activitymanager_start_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_start_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/start '{ "activityId": 2, "force": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "activityId not found",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::StartActivity(MojServiceMessage *msg, MojObject& payload)
 {
@@ -693,6 +1328,71 @@ ActivityCategoryHandler::StartActivity(MojServiceMessage *msg, MojObject& payloa
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_stop stop
+
+\e Public.
+
+com.palm.activitymanager/stop
+
+Stops an Activity and sends a "stop" event to all Activity subscribers. This
+succeeds unless the Activity is already cancelled.
+
+This is different from the cancel method in that more time is allowed for the
+Activity to clean up. For example, this might matter for an email sync service
+that needs more time to finish downloading a large email attachment. On a
+"cancel", it should immediately abort the download, clean up, and exit. On a
+"stop," it should finish downloading the attachment in some reasonable amount of
+time--say, 10-15 seconds.
+
+\subsection com_palm_activitymanager_stop_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string
+}
+\endcode
+
+\param activityId Activity ID. Either this or "activityName" is required.
+\param activityName Activity name. Either this or "activityId" is required.
+
+\subsection com_palm_activitymanager_stop_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_stop_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/stop '{ "activityId": 876 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "activityId not found",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::StopActivity(MojServiceMessage *msg, MojObject& payload)
@@ -761,6 +1461,72 @@ ActivityCategoryHandler::FinishStopActivity(
 
 	ACTIVITY_SERVICEMETHODFINISH_END(msg);
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_cancel cancel
+
+\e Public.
+
+com.palm.activitymanager/cancel
+
+Terminates the specified Activity and sends a "cancel" event to all subscribers.
+This call should succeed if the Activity exists and is not already exiting.
+
+This is different from the stop method in that the Activity should take little
+or no time to clean up. For example, this might matter for an email sync service
+that needs more time to finish downloading a large email attachment. On a
+"cancel", it should immediately abort the download, clean up, and exit. On a
+"stop", it should finish downloading the attachment in some reasonable amount of
+time, say, 10-15 seconds. Note, however, that specific time limits are not
+currently enforced, though this could change.
+
+\subsection com_palm_activitymanager_cancel_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string
+}
+\endcode
+
+\param activityId Activity ID. Either this or "activityName" is required.
+\param activityName Activity name. Either this or "activityId" is required.
+
+\subsection com_palm_activitymanager_cancel_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_cancel_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/cancel '{ "activityId": 123 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "Activity ID or name not present in request",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::CancelActivity(MojServiceMessage *msg, MojObject& payload)
@@ -831,6 +1597,66 @@ ActivityCategoryHandler::FinishCancelActivity(
 	ACTIVITY_SERVICEMETHODFINISH_END(msg);
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_pause pause
+
+\e Public.
+
+com.palm.activitymanager/pause
+
+Requests that the specified Activity be placed into the "paused" state. This
+should succeed if the Activity is currently running or paused, but fail if the
+Activity has ended (and is waiting for its subscribers to unsubscribe before
+cleaning up) or has been cancelled.
+
+\subsection com_palm_activitymanager_pause_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string
+}
+\endcode
+
+\param activityId Activity ID. Either this, or "activityName" is required.
+\param activityName Activity name. Either this, or "activityId" is required.
+
+\subsection com_palm_activitymanager_pause_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_pause_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/pause '{ "activityId": 81 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "Error retrieving activityId of Activity to operate on",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::PauseActivity(MojServiceMessage *msg, MojObject& payload)
 {
@@ -865,6 +1691,66 @@ ActivityCategoryHandler::PauseActivity(MojServiceMessage *msg, MojObject& payloa
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_focus focus
+
+\e Public.
+
+com.palm.activitymanager/focus
+
+Requests that focus be removed from all currently focused Activities, and
+granted to the specified Activity. The requester must be privileged or this call
+will fail.
+
+Appropriate "focused" and "unfocused" events will be generated to subscribers of
+Activities which gain or lose focus.
+
+\subsection com_palm_activitymanager_focus_syntax Syntax:
+\code
+{
+    "activityId": int
+}
+\endcode
+
+\param activityId ID of the activity to grant focus to.
+
+\subsection com_palm_activitymanager_focus_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_focus_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/focus '{ "activityId": 81 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "Error retrieving activityId of Activity to operate on",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::FocusActivity(MojServiceMessage *msg, MojObject& payload)
@@ -902,6 +1788,61 @@ ActivityCategoryHandler::FocusActivity(MojServiceMessage *msg, MojObject& payloa
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_unfocus unfocus
+
+\e Public.
+
+com.palm.activitymanager/unfocus
+
+Removes focus from the specified Activity.
+
+\subsection com_palm_activitymanager_unfocus_syntax Syntax:
+\code
+{
+    "activityId": int
+}
+\endcode
+
+\param activityId ID of the activity to remove focus from.
+
+\subsection com_palm_activitymanager_unfocus_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_unfocus_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/unfocus '{ "activityId": 81 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "Error retrieving activityId of Activity to operate on",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::UnfocusActivity(MojServiceMessage *msg, MojObject& payload)
 {
@@ -938,6 +1879,65 @@ ActivityCategoryHandler::UnfocusActivity(MojServiceMessage *msg, MojObject& payl
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_addfocus addfocus
+
+\e Public.
+
+com.palm.activitymanager/addfocus
+
+Adds focus to the target Activity, if the source Activity has focus. If
+successful, "focus" events will be generated to any subscribers of the target
+Activity.
+
+\subsection com_palm_activitymanager_addfocus_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "targetActivityId": int
+}
+\endcode
+
+\param activityId Activity that has focus.
+\param targetActivityId Target activity to which to add focus.
+
+\subsection com_palm_activitymanager_addfocus_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_addfocus_examples Examples:
+\code
+luna-send -i -f  luna://com.palm.activitymanager/addFocus '{ "activityId": 81, "targetActivityId": 70 }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 22,
+    "errorText": "Failed to add focus",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::AddFocus(MojServiceMessage *msg, MojObject& payload)
@@ -995,6 +1995,155 @@ ActivityCategoryHandler::AddFocus(MojServiceMessage *msg, MojObject& payload)
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_list list
+
+\e Public.
+
+com.palm.activitymanager/list
+
+List activities that are in running or waiting state.
+
+\subsection com_palm_activitymanager_list_syntax Syntax:
+\code
+{
+    "details": boolean,
+    "subscribers": boolean,
+    "current": boolean,
+    "internal": boolean
+}
+\endcode
+
+\param details Set to true to return full details for each Activity.
+\param subscribers Set to true to return current parent, queued adopters, and
+                   subscribers for each Activity
+\param current Set to true to return the *current* state of the prerequisites
+               for the Activity, as opposed to the desired states
+\param internal Set to true to Include internal state information for debugging.
+
+
+\subsection com_palm_activitymanager_list_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "activities": [ object array ],
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param activities Array with Activity objects.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_list_examples Examples:
+\code
+luna-send -n 1 -f luna://com.palm.activitymanager/list '{ "details": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "activities": [
+        {
+            "activityId": 2,
+            "callback": {
+                "method": "palm:\/\/com.palm.service.backup\/registerPubSub",
+                "params": {
+                }
+            },
+            "creator": {
+                "serviceId": "com.palm.service.backup"
+            },
+            "description": "Registers the Backup Service with the PubSub Service, once the PubSub Service has a session.",
+            "focused": false,
+            "name": "RegisterPubSub",
+            "state": "waiting",
+            "trigger": {
+                "method": "palm:\/\/com.palm.pubsubservice\/subscribeConnStatus",
+                "params": {
+                    "subscribe": true
+                },
+                "where": [
+                    {
+                        "op": "=",
+                        "prop": "session",
+                        "val": true
+                    }
+                ]
+            },
+            "type": {
+                "background": true,
+                "bus": "private"
+            }
+        },
+        ...
+        {
+            "activityId": 223,
+            "callback": {
+                "method": "palm:\/\/com.palm.smtp\/syncOutbox",
+                "params": {
+                    "accountId": "++IAHN1DN8Snvorv",
+                    "folderId": "++IAHN1nZl4k1OtL"
+                }
+            },
+            "creator": {
+                "serviceId": "com.palm.smtp"
+            },
+            "description": "Watches SMTP outbox for new emails",
+            "focused": false,
+            "metadata": {
+                "accountId": "++IAHN1DN8Snvorv",
+                "folderId": "++IAHN1nZl4k1OtL"
+            },
+            "name": "SMTP Watch\/accountId=\"\"++IAHN1DN8Snvorv\"\"",
+            "requirements": {
+                "internet": true
+            },
+            "state": "waiting",
+            "trigger": {
+                "key": "fired",
+                "method": "palm:\/\/com.palm.db\/watch",
+                "params": {
+                    "query": {
+                        "from": "com.palm.email:1",
+                        "where": [
+                            {
+                                "_id": "454",
+                                "op": "=",
+                                "prop": "folderId",
+                                "val": "++IAHN1nZl4k1OtL"
+                            }
+                        ]
+                    }
+                }
+            },
+            "type": {
+                "bus": "private",
+                "explicit": true,
+                "immediate": true,
+                "persist": true,
+                "priority": "low"
+            }
+        }
+    ],
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": -1989,
+    "errorText": "json: unexpected char at 1:14",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::ListActivities(MojServiceMessage *msg, MojObject& payload)
@@ -1055,6 +2204,96 @@ ActivityCategoryHandler::ListActivities(MojServiceMessage *msg, MojObject& paylo
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_get_details getDetails
+
+\e Public.
+
+com.palm.activitymanager/getDetails
+
+Get details of an activity.
+
+\subsection com_palm_activitymanager_get_details_syntax Syntax:
+\code
+{
+    "activityId": int,
+    "activityName": string,
+    "current": boolean,
+    "internal": boolean
+}
+\endcode
+
+\param activityId Activity ID. Either this, or "activityName" is required.
+\param activityName Activity name. Either this, or "activityId" is required.
+\param current Set to true to return the *current* state of the prerequisites
+               for the Activity, as opposed to the desired states
+\param internal Set to true to Include internal state information for debugging.
+
+\subsection com_palm_activitymanager_get_details_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "activity": { object },
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param activity The activity object.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_get_details_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/getDetails '{ "activityId": 221, "current": true }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "activity": {
+        "activityId": 221,
+        "adopters": [
+        ],
+        "callback": <NULL>,
+        "creator": {
+            "serviceId": "com.palm.smtp"
+        },
+        "description": "Watches SMTP config on account \"++IAHN1DN8Snvorv\"",
+        "focused": false,
+        "metadata": {
+            "accountId": "++IAHN1DN8Snvorv"
+        },
+        "name": "SMTP Account Watch\/accountId=\"\"++IAHN1DN8Snvorv\"\"",
+        "state": "waiting",
+        "subscribers": [
+        ],
+        "trigger": false,
+        "type": {
+            "bus": "private",
+            "explicit": true,
+            "immediate": true,
+            "persist": true,
+            "priority": "low"
+        }
+    },
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 2,
+    "errorText": "Activity name\/creator pair not found",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::GetActivityDetails(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1106,6 +2345,49 @@ ActivityCategoryHandler::GetActivityDetails(MojServiceMessage *msg, MojObject& p
 	return MojErrNone;
 }
 
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_associate_app associateApp
+
+\e Public.
+
+com.palm.activitymanager/associateApp
+
+
+
+\subsection com_palm_activitymanager_associate_app_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\subsection com_palm_activitymanager_associate_app_returns Returns:
+\code
+{
+    "returnValue": boolean
+}
+\endcode
+
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_associate_app_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/associateApp '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::AssociateApp(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1122,6 +2404,49 @@ ActivityCategoryHandler::AssociateApp(MojServiceMessage *msg, MojObject& payload
 
 	return MojErrNone;
 }
+
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_dissociate_app dissociateApp
+
+\e Public.
+
+com.palm.activitymanager/dissociateApp
+
+
+
+\subsection com_palm_activitymanager_dissociate_app_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\subsection com_palm_activitymanager_dissociate_app_returns Returns:
+\code
+{
+    "returnValue": boolean
+}
+\endcode
+
+\param returnValue Indicates if the call wdis succesful.
+
+\subsection com_palm_activitymanager_dissociate_app_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/dissociateApp '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::DissociateApp(MojServiceMessage *msg, MojObject& payload)
@@ -1140,6 +2465,49 @@ ActivityCategoryHandler::DissociateApp(MojServiceMessage *msg, MojObject& payloa
 	return MojErrNone;
 }
 
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_associate_service associateService
+
+\e Public.
+
+com.palm.activitymanager/associateService
+
+
+
+\subsection com_palm_activitymanager_associate_service_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_associate_service_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_associate_service_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/associateService '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::AssociateService(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1156,6 +2524,49 @@ ActivityCategoryHandler::AssociateService(MojServiceMessage *msg, MojObject& pay
 
 	return MojErrNone;
 }
+
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_dissociate_service dissociateService
+
+\e Public.
+
+com.palm.activitymanager/dissociateService
+
+
+
+\subsection com_palm_activitymanager_dissociate_service_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_dissociate_service_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_dissociate_service_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/dissociateService '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::DissociateService(MojServiceMessage *msg, MojObject& payload)
@@ -1174,6 +2585,49 @@ ActivityCategoryHandler::DissociateService(MojServiceMessage *msg, MojObject& pa
 	return MojErrNone;
 }
 
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_associate_process associateProcess
+
+\e Public.
+
+com.palm.activitymanager/associateProcess
+
+
+
+\subsection com_palm_activitymanager_associate_process_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_associate_process_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_associate_process_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/associateProcess '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::AssociateProcess(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1190,6 +2644,49 @@ ActivityCategoryHandler::AssociateProcess(MojServiceMessage *msg, MojObject& pay
 
 	return MojErrNone;
 }
+
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_dissociate_process dissociateProcess
+
+\e Public.
+
+com.palm.activitymanager/dissociateProcess
+
+
+
+\subsection com_palm_activitymanager_dissociate_process_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_dissociate_process_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_dissociate_process_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/dissociateProcess '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::DissociateProcess(MojServiceMessage *msg, MojObject& payload)
@@ -1208,6 +2705,49 @@ ActivityCategoryHandler::DissociateProcess(MojServiceMessage *msg, MojObject& pa
 	return MojErrNone;
 }
 
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_associate_network_flow associateNetworkFlow
+
+\e Public.
+
+com.palm.activitymanager/associateNetworkFlow
+
+
+
+\subsection com_palm_activitymanager_associate_network_flow_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_associate_network_flow_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_associate_network_flow_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/associateNetworkFlow '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::AssociateNetworkFlow(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1225,6 +2765,49 @@ ActivityCategoryHandler::AssociateNetworkFlow(MojServiceMessage *msg, MojObject&
 	return MojErrNone;
 }
 
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_dissociate_network_flow dissociateNetworkFlow
+
+\e Public.
+
+com.palm.activitymanager/dissociateNetworkFlow
+
+
+
+\subsection com_palm_activitymanager_dissociate_network_flow_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_dissociate_network_flow_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_dissociate_network_flow_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/dissociateNetworkFlow '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::DissociateNetworkFlow(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1241,6 +2824,66 @@ ActivityCategoryHandler::DissociateNetworkFlow(MojServiceMessage *msg, MojObject
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_map_process mapProcess
+
+\e Private.
+
+com.palm.activitymanager/mapProcess
+
+Map a process and bus entities into a container.
+
+\subsection com_palm_activitymanager_map_process_syntax Syntax:
+\code
+{
+    "pid": int,
+    "name": string,
+    "ids": [ object array ]
+}
+\endcode
+
+\param pid Id of the mapped process.
+\param name The name of a mapping container to map the process into.
+\param ids Array of entities on the bus that should be mapped into a container
+           with the process.
+
+\subsection com_palm_activitymanager_map_process_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_map_process_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/mapProcess '{ "pid": 221, "name": "container", "ids": [ {"appId": 1}, {"serviceId": 2}, {"anonId": 3} ] }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 22,
+    "errorText": "Must specify \"ids\" array of entities on the bus that should be mapped into a container with the process",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::MapProcess(MojServiceMessage *msg, MojObject& payload)
@@ -1319,6 +2962,49 @@ ActivityCategoryHandler::MapProcess(MojServiceMessage *msg, MojObject& payload)
 	return MojErrNone;
 }
 
+/* !
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_unmap_process unmapProcess
+
+\e Public.
+
+com.palm.activitymanager/unmapProcess
+
+
+
+\subsection com_palm_activitymanager_unmap_process_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_unmap_process_returns Returns:
+\code
+
+\endcode
+
+\param
+
+\subsection com_palm_activitymanager_unmap_process_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/unmapProcess '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::UnmapProcess(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1335,6 +3021,134 @@ ActivityCategoryHandler::UnmapProcess(MojServiceMessage *msg, MojObject& payload
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_info info
+
+\e Public.
+
+com.palm.activitymanager/info
+
+Get activity manager related information:
+\li Activity Manager state:  Run queues and leaked Activities.
+\li List of Activities for which power is currently locked.
+\li State of the Resource Manager(s).
+
+\subsection com_palm_activitymanager_info_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\subsection com_palm_activitymanager_info_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/info '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "queues": [
+        {
+            "activities": [
+                {
+                    "activityId": 28,
+                    "creator": {
+                        "serviceId": "com.palm.service.contacts.linker"
+                    },
+                    "name": "linkerWatch"
+                },
+                ...
+                {
+                    "activityId": 10,
+                    "creator": {
+                        "serviceId": "com.palm.db"
+                    },
+                    "name": "mojodbspace"
+                }
+            ],
+            "name": "scheduled"
+        }
+    ],
+    "resourceManager": {
+        "entities": [
+            {
+                "activities": [
+                ],
+                "appId": "1",
+                "focused": false,
+                "priority": "none"
+            },
+            ...
+            {
+                "activities": [
+                ],
+                "anonId": "3",
+                "focused": false,
+                "priority": "none"
+            }
+        ],
+        "resources": {
+            "cpu": {
+                "containers": [
+                    {
+                        "entities": [
+                            {
+                                "focused": false,
+                                "priority": "none",
+                                "serviceId": "com.palm.accountservices"
+                            }
+                        ],
+                        "focused": false,
+                        "name": "com.palm.accountservices",
+                        "path": "\/dev\/cgroups\/com.palm.accountservices",
+                        "priority": "low"
+                    },
+                    ...
+                    {
+                        "entities": [
+                            {
+                                "focused": false,
+                                "priority": "none",
+                                "serviceId": "2"
+                            },
+                            {
+                                "anonId": "3",
+                                "focused": false,
+                                "priority": "none"
+                            },
+                            {
+                                "appId": "1",
+                                "focused": false,
+                                "priority": "none"
+                            }
+                        ],
+                        "focused": false,
+                        "name": "container",
+                        "path": "\/dev\/cgroups\/container",
+                        "priority": "low"
+                    }
+                ],
+                "entityMap": [
+                    {
+                        "serviceId:com.palm.netroute": "com.palm.netroute"
+                    },
+                    {
+                        "serviceId:com.palm.connectionmanager": "com.palm.netroute"
+                    },
+                    ...
+                    {
+                        "serviceId:com.palm.preferences": "com.palm.preferences"
+                    }
+                ]
+            }
+        }
+    }
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::Info(MojServiceMessage *msg, MojObject& payload)
@@ -1367,6 +3181,58 @@ ActivityCategoryHandler::Info(MojServiceMessage *msg, MojObject& payload)
 	return MojErrNone;
 }
 
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_enable enable
+
+\e Private.
+
+com.palm.activitymanager/enable
+
+Enable scheduling new Activities.
+
+\subsection com_palm_activitymanager_enable_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\subsection com_palm_activitymanager_enable_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_enable_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/enable '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 13,
+    "errorText": "Only callers on the private bus are allowed to enable or disable Activity dispatch",
+    "returnValue": false
+}
+\endcode
+*/
+
 MojErr
 ActivityCategoryHandler::Enable(MojServiceMessage *msg, MojObject& payload)
 {
@@ -1390,6 +3256,58 @@ ActivityCategoryHandler::Enable(MojServiceMessage *msg, MojObject& payload)
 
 	return MojErrNone;
 }
+
+/*!
+\page com_palm_activitymanager
+\n
+\section com_palm_activitymanager_disable disable
+
+\e Private.
+
+com.palm.activitymanager/disable
+
+Disable scheduling new Activities.
+
+\subsection com_palm_activitymanager_disable_syntax Syntax:
+\code
+{
+}
+\endcode
+
+\subsection com_palm_activitymanager_disable_returns Returns:
+\code
+{
+    "errorCode": int,
+    "errorText": string,
+    "returnValue": boolean
+}
+\endcode
+
+\param errorCode Code for the error in case the call was not succesful.
+\param errorText Describes the error if the call was not succesful.
+\param returnValue Indicates if the call was succesful.
+
+\subsection com_palm_activitymanager_disable_examples Examples:
+\code
+luna-send -i -f luna://com.palm.activitymanager/disable '{ }'
+\endcode
+
+Example response for a succesful call:
+\code
+{
+    "returnValue": true
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "errorCode": 13,
+    "errorText": "Only callers on the private bus are allowed to enable or disable Activity dispatch",
+    "returnValue": false
+}
+\endcode
+*/
 
 MojErr
 ActivityCategoryHandler::Disable(MojServiceMessage *msg, MojObject& payload)
