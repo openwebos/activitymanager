@@ -88,6 +88,7 @@ target_link_libraries(activitymanager
                       ${GLIB2_LDFLAGS}
                       ${OPENSSL_LDFLAGS}
                       ${LS2_LDFLAGS}
+                      -pthread
                      )
 
 webos_build_daemon()
