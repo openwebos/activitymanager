@@ -1,6 +1,7 @@
 /* @@@LICENSE
 *
 *      Copyright (c) 2009-2012 Hewlett-Packard Development Company, L.P.
+*      Copyright (c) 2013 LG Electronics, Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -169,6 +170,11 @@ protected:
 	typedef std::pair<std::string, BusId>	ActivityKey;
 	struct ActivityNameComp {
 		bool operator()(const Activity& act1, const Activity& act2) const;
+		bool operator()(const ActivityKey& key, const Activity& act) const;
+		bool operator()(const Activity& act, const ActivityKey& key) const;
+	};
+
+	struct ActivityNameOnlyComp {
 		bool operator()(const ActivityKey& key, const Activity& act) const;
 		bool operator()(const Activity& act, const ActivityKey& key) const;
 	};

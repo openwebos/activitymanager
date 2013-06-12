@@ -1,6 +1,7 @@
 // @@@LICENSE
 //
 //	Copyright (c) 2009-2012 Hewlett-Packard Development Company, L.P.
+//	Copyright (c) 2013 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -100,8 +101,13 @@ void ActivityManager::UnregisterActivityName(boost::shared_ptr<Activity> act)
 boost::shared_ptr<Activity> ActivityManager::GetActivity(
 	const std::string& name, const BusId& creator)
 {
-	ActivityNameTable::iterator iter =
-		m_nameTable.find(ActivityKey(name, creator), ActivityNameComp());
+	ActivityNameTable::iterator iter;
+
+	if (creator.GetType() == BusAnon) {
+		iter = m_nameTable.find(ActivityKey(name, creator), ActivityNameOnlyComp());
+	} else {
+		iter = m_nameTable.find(ActivityKey(name, creator), ActivityNameComp());
+	}
 
 	if (iter == m_nameTable.end()) { 
 		throw std::runtime_error("Activity name/creator pair not found");
@@ -851,6 +857,18 @@ bool ActivityManager::ActivityNameComp::operator()(
 	const Activity& act, const ActivityKey& key) const
 {
 	return ActivityKey(act.GetName(), act.GetCreator()) < key;
+}
+
+bool ActivityManager::ActivityNameOnlyComp::operator()(
+	const ActivityKey& key, const Activity& act) const
+{
+	return key.first < act.GetName();
+}
+
+bool ActivityManager::ActivityNameOnlyComp::operator()(
+	const Activity& act, const ActivityKey& key) const
+{
+	return act.GetName() < key.first;
 }
 
 bool ActivityManager::ActivityIdComp::operator()(
