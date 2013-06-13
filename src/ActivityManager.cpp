@@ -1,7 +1,6 @@
 // @@@LICENSE
 //
-//	Copyright (c) 2009-2012 Hewlett-Packard Development Company, L.P.
-//	Copyright (c) 2013 LG Electronics, Inc.
+//	Copyright (c) 2009-2013 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -109,7 +108,7 @@ boost::shared_ptr<Activity> ActivityManager::GetActivity(
 		iter = m_nameTable.find(ActivityKey(name, creator), ActivityNameComp());
 	}
 
-	if (iter == m_nameTable.end()) { 
+	if (iter == m_nameTable.end()) {
 		throw std::runtime_error("Activity name/creator pair not found");
 	}
 
@@ -376,7 +375,7 @@ void ActivityManager::Enable(unsigned mask)
 void ActivityManager::Disable(unsigned mask)
 {
 	MojLogTrace(s_log);
-	
+
 	if (mask & EXTERNAL_ENABLE) {
 		MojLogNotice(s_log, _T("Disabling Activity Manager: External"));
 	}
