@@ -71,3 +71,7 @@ target_link_libraries(activitymanager
 webos_build_daemon()
 webos_build_system_bus_files()
 webos_build_db8_files()
+
+if (WEBOS_CONFIG_BUILD_TESTS)
+  webos_add_compiler_flags(ALL -DUNITTEST)
+endif()
