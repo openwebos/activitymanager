@@ -49,7 +49,8 @@ webos_add_compiler_flags(ALL ${DB8_CFLAGS_OTHER})
 webos_machine_impl_dep()
 
 include_directories(include/internal)
-webos_add_compiler_flags(ALL -Wall -Wno-error=strict-aliasing -Wconversion -DMOJ_LINUX -DBOOST_SP_DISABLE_THREADS )
+webos_add_compiler_flags(ALL -Wall -Wno-error=strict-aliasing -Wconversion -DMOJ_LINUX -DBOOST_SP_DISABLE_THREADS)
+webos_add_compiler_flags(DEBUG -DMOJ_DEBUG)
 
 # MojoDb generates warnings in core/MojObject.h, so no -Werror
 #webos_add_compiler_flags(ALL -Werror )
