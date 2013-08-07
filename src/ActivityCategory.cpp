@@ -2154,26 +2154,46 @@ ActivityCategoryHandler::ListActivities(MojServiceMessage *msg, MojObject& paylo
 	MojLogInfo(s_log, _T("List: Message from %s: %s"),
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
-
 	bool details = false;
-	payload.get(_T("details"), details);
-
-	bool subscribers = false;
-	payload.get(_T("subscribers"), subscribers);
-
-	bool current = false;
-	payload.get(_T("current"), current);
-
-	bool internal = false;
-	payload.get(_T("internal"), internal);
-
+        MojErr err = MojErrNone;
+        bool found= false;
+        found = payload.get(_T("details"), details);
+        if (!found) {
+                err = msg->replyError(MojErrInvalidArg, "'details flag' must be "
+                            "specified");
+                MojErrCheck(err);
+                return MojErrNone;
+        }
+        bool subscribers = false;
+        found=payload.get(_T("subscribers"), subscribers);
+        if (!found) {
+                err = msg->replyError(MojErrInvalidArg, "'subscribers flag' must be "
+                            "specified");
+                MojErrCheck(err);
+                return MojErrNone;
+        }
+        bool current = false;
+        found=payload.get(_T("current"), current);
+        if (!found) {
+                err = msg->replyError(MojErrInvalidArg, "'current flag' must be "
+                            "specified");
+                MojErrCheck(err);
+                return MojErrNone;
+        }
+        bool internal = false;
+        found=payload.get(_T("internal"), internal);
+        if (!found) {
+                err = msg->replyError(MojErrInvalidArg, "'internal flag' must be "
+                            "specified");
+                MojErrCheck(err);
+                return MojErrNone;
+        }
 	unsigned outputFlags = 0;
 	if (details) outputFlags |= ACTIVITY_JSON_DETAIL;
 	if (subscribers) outputFlags |= ACTIVITY_JSON_SUBSCRIBERS;
 	if (current) outputFlags |= ACTIVITY_JSON_CURRENT;
 	if (internal) outputFlags |= ACTIVITY_JSON_INTERNAL;
 
-	MojErr err = MojErrNone;
 	const ActivityManager::ActivityVec activities = m_am->GetActivities();
 
 	MojObject activityArray(MojObject::TypeArray);
@@ -2314,13 +2334,25 @@ ActivityCategoryHandler::GetActivityDetails(MojServiceMessage *msg, MojObject& p
 	unsigned flags = ACTIVITY_JSON_DETAIL | ACTIVITY_JSON_SUBSCRIBERS;
 
 	bool current = false;
-	payload.get(_T("current"), current);
+        bool found= false;
+        found = payload.get(_T("current"), current);
+        if (!found) {
+                err = msg->replyError(MojErrInvalidArg, "'current flag' must be "
+                           "specified");
+                MojErrCheck(err);
+                return MojErrNone;
+        }
 	if (current) {
 		flags |= ACTIVITY_JSON_CURRENT;
 	}
-
 	bool internal = false;
-	payload.get(_T("internal"), internal);
+        found = payload.get(_T("internal"), internal);
+        if (!found) {
+                err = msg->replyError(MojErrInvalidArg, "'internal flag' must be "
+                           "specified");
+                MojErrCheck(err);
+                return MojErrNone;
+        }
 	if (internal) {
 		flags |= ACTIVITY_JSON_INTERNAL;
 	}
