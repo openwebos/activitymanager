@@ -112,9 +112,9 @@ void MojoURL::Init(const MojString& url)
 	if (url.length() <= 7)
 		throw std::runtime_error("URL string too short to be valid.");
 
-	/* Has to start with "palm://" */
-	if (url.compare("palm://", 7))
-		throw std::runtime_error("URL does not start with \"palm://\".");
+	/* Has to start with "palm://" or "luna://"*/
+	if ( (url.compare("palm://", 7)) && (url.compare("luna://", 7)) )
+		throw std::runtime_error("URL does not start with \"palm://\" or \"luna://\".");
 
 	MojSize serviceEnd = url.find('/', 7);
 
