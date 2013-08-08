@@ -44,12 +44,16 @@ pkg_check_modules(DB8 REQUIRED db8)
 include_directories(${DB8_INCLUDE_DIRS})
 webos_add_compiler_flags(ALL ${DB8_CFLAGS_OTHER})
 
+pkg_check_modules(PMLOG REQUIRED PmLogLib)
+include_directories(${PMLOG_INCLUDE_DIRS})
+webos_add_compiler_flags(ALL ${PMLOG_CFLAGS_OTHER})
+
 # There is a call to system("initctl ...") in ServiceApp.cpp which is compiled in for
 # all implementations except WEBOS_TARGET_MACHINE_IMPL_SIMULATOR
 webos_machine_impl_dep()
 
 include_directories(include/internal)
-webos_add_compiler_flags(ALL -Wall -Wno-error=strict-aliasing -Wconversion -DMOJ_LINUX -DBOOST_SP_DISABLE_THREADS)
+webos_add_compiler_flags(ALL -Wall -Wno-error=strict-aliasing -Wconversion -DMOJ_LINUX -DBOOST_SP_DISABLE_THREADS -DUSE_PMLOG)
 webos_add_compiler_flags(DEBUG -DMOJ_DEBUG)
 
 # MojoDb generates warnings in core/MojObject.h, so no -Werror
@@ -66,6 +70,7 @@ target_link_libraries(activitymanager
                       ${GLIB2_LDFLAGS}
                       ${OPENSSL_LDFLAGS}
                       ${LS2_LDFLAGS}
+                      ${PMLOG_LDFLAGS}
                      )
 
 webos_build_daemon()
