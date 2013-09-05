@@ -27,6 +27,4 @@ respawn
 # Comment this line out to suppress logs on the console
 #console output
 
-script
-	@WEBOS_INSTALL_SBINDIR@/activitymanager -c {\"log\":{\"appender\":{\"type\":\"syslog\"},\"levels\":{\"default\":\"warning\"}}}
-end script
+exec @WEBOS_INSTALL_SBINDIR@/activitymanager -c {\"log\":{\"appender\":{\"type\":\"syslog\"},\"levels\":{\"default\":\"warning\"}}}
