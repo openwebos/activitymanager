@@ -35,6 +35,8 @@
 #include "ResourceManager.h"
 #include "ControlGroupManager.h"
 #include "LunaBusProxy.h"
+#include <nyx/nyx_client.h>
+#include <glib.h>
 
 #ifdef ACTIVITYMANAGER_DEVELOPER_METHODS
 #include "DevelCategory.h"
@@ -117,7 +119,38 @@ ActivityManagerApp::ActivityManagerApp()
 ActivityManagerApp::~ActivityManagerApp()
 {
 }
+static bool read_modem_present()
+{
+    // read the modem present using Nyx
+    nyx_error_t error = NYX_ERROR_GENERIC;
+    nyx_device_handle_t device = NULL;
+    const char *modem_present;
+    bool ismodem_present=true;
 
+    error = nyx_init();
+    if (NYX_ERROR_NONE == error)
+    {
+        error = nyx_device_open(NYX_DEVICE_DEVICE_INFO, "Main", &device);
+
+        if (NYX_ERROR_NONE == error & NULL != device)
+        {
+            error = nyx_device_info_query(device, NYX_DEVICE_INFO_MODEM_PRESENT, &modem_present);
+
+            if (NYX_ERROR_NONE == error)
+            {
+                if(g_strcmp0(modem_present,"N")==0)
+                {
+                    ismodem_present=false;
+                }
+
+            }
+
+            nyx_device_close(device);
+        }
+        nyx_deinit();
+    }
+    return ismodem_present;
+}
 MojErr ActivityManagerApp::open()
 {
 	MojLogTrace(s_log);
@@ -180,9 +213,12 @@ MojErr ActivityManagerApp::open()
 			boost::make_shared<SystemManagerProxy>(&m_client, m_am);
 		m_requirementManager->AddManager(smp);
 
-		boost::shared_ptr<TelephonyProxy> tp =
-			boost::make_shared<TelephonyProxy>(&m_client);
-		m_requirementManager->AddManager(tp);
+               if(read_modem_present())
+               {
+                   boost::shared_ptr<TelephonyProxy> tp =
+                   boost::make_shared<TelephonyProxy>(&m_client);
+                   m_requirementManager->AddManager(tp);
+               }
 #endif
 	} catch (...) {
 		return MojErrNoMem;

@@ -48,6 +48,10 @@ pkg_check_modules(PMLOG REQUIRED PmLogLib)
 include_directories(${PMLOG_INCLUDE_DIRS})
 webos_add_compiler_flags(ALL ${PMLOG_CFLAGS_OTHER})
 
+#-- check for NYX
+pkg_check_modules(NYXLIB REQUIRED nyx)
+include_directories(${NYXLIB_INCLUDE_DIRS})
+webos_add_compiler_flags(ALL ${NYXLIB_CFLAGS_OTHER})
 # There is a call to system("initctl ...") in ServiceApp.cpp which is compiled in for
 # all implementations except WEBOS_TARGET_MACHINE_IMPL_SIMULATOR
 webos_machine_impl_dep()
@@ -71,6 +75,7 @@ target_link_libraries(activitymanager
                       ${OPENSSL_LDFLAGS}
                       ${LS2_LDFLAGS}
                       ${PMLOG_LDFLAGS}
+                      ${NYXLIB_LDFLAGS}
                      )
 
 webos_build_daemon()
