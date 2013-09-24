@@ -176,7 +176,7 @@ void ConnectionManagerProxy::Enable()
 		boost::dynamic_pointer_cast<ConnectionManagerProxy, RequirementManager>
 			(shared_from_this()),
 		&ConnectionManagerProxy::ConnectionManagerUpdate, m_service,
-		"palm://com.palm.connectionmanager/getStatus", params,
+		"luna://com.palm.connectionmanager/getstatus", params,
 		MojoCall::Unlimited);
 	m_call->Call();
 }
@@ -190,7 +190,7 @@ void ConnectionManagerProxy::Disable()
 }
 
 /*
- * palm://com.palm.connectionmanager/getStatus
+ *luna://com.palm.connectionmanager/getstatus
  *
  * {
  *    "isInternetConnectionAvailable" : <bool>
