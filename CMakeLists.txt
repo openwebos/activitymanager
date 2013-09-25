@@ -22,7 +22,7 @@ project(activitymanager CXX)
 
 include(webOS/webOS)
 webos_modules_init(1 0 0 QUALIFIER RC2)
-webos_component(2 0 0)
+webos_component(3 0 0)
 
 include(FindPkgConfig)
 pkg_check_modules(GLIB2 REQUIRED glib-2.0)
@@ -40,11 +40,11 @@ webos_add_compiler_flags(ALL ${LS2_CFLAGS_OTHER})
 find_package(Boost REQUIRED COMPONENTS regex)
 include_directories(${Boost_INCLUDE_DIRS})
 
-pkg_check_modules(DB8 REQUIRED db8)
+pkg_check_modules(DB8 REQUIRED db8>=3)
 include_directories(${DB8_INCLUDE_DIRS})
 webos_add_compiler_flags(ALL ${DB8_CFLAGS_OTHER})
 
-pkg_check_modules(PMLOG REQUIRED PmLogLib)
+pkg_check_modules(PMLOG REQUIRED PmLogLib>=3)
 include_directories(${PMLOG_INCLUDE_DIRS})
 webos_add_compiler_flags(ALL ${PMLOG_CFLAGS_OTHER})
 
