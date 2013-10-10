@@ -161,7 +161,7 @@ NoopCommand::~NoopCommand()
 void NoopCommand::Persist()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [PersistCommand %s]: No-op command"),
+	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: No-op command"),
 		m_activity->GetId(), GetString().c_str());
 	Complete(true);
 }

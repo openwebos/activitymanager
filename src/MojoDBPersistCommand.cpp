@@ -53,7 +53,7 @@ std::string MojoDBStoreCommand::GetMethod() const
 void MojoDBStoreCommand::UpdateParams(MojObject& params)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [PersistCommand %s]: Updating "
+	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Updating "
 		"parameters"), m_activity->GetId(), GetString().c_str());
 
 	Validate(false);
@@ -86,7 +86,7 @@ void MojoDBStoreCommand::PersistResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [PersistCommand %s]: Processing "
+	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Processing "
 		"response %s"), m_activity->GetId(), GetString().c_str(),
 		MojoObjectJson(response).c_str());
 
@@ -199,7 +199,7 @@ std::string MojoDBDeleteCommand::GetMethod() const
 void MojoDBDeleteCommand::UpdateParams(MojObject& params)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [PersistCommand %s]: Updating "
+	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Updating "
 		"parameters"), m_activity->GetId(), GetString().c_str());
 
 	Validate(true);
@@ -218,7 +218,7 @@ void MojoDBDeleteCommand::PersistResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [PersistCommand %s]: Processing "
+	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Processing "
 		"response %s"), m_activity->GetId(), GetString().c_str(),
 		MojoObjectJson(response).c_str());
 

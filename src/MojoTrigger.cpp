@@ -84,14 +84,14 @@ void MojoExclusiveTrigger::Arm(boost::shared_ptr<Activity> activity)
 	}
 
 	if (!m_subscription) {
-		MojLogInfo(s_log, _T("[Activity %llu] Can't arm trigger that has no "
+		MojLogDebug(s_log, _T("[Activity %llu] Can't arm trigger that has no "
 			"subscription"), m_activity.lock()->GetId());
 		throw std::runtime_error("Can't arm trigger that has no subscription");
 	}
 
 	m_triggered = false;
 
-	MojLogInfo(s_log, _T("[Activity %llu] Arming Trigger on \"%s\""),
+	MojLogDebug(s_log, _T("[Activity %llu] Arming Trigger on \"%s\""),
 		m_activity.lock()->GetId(), m_subscription->GetURL().GetURL().data());
 
 	if (!m_subscription->IsSubscribed()) {
@@ -112,11 +112,11 @@ void MojoExclusiveTrigger::Disarm(boost::shared_ptr<Activity> activity)
 	}
 
 	if (m_subscription) {
-		MojLogInfo(s_log, _T("[Activity %llu] Disarming Trigger on \"%s\""),
+		MojLogDebug(s_log, _T("[Activity %llu] Disarming Trigger on \"%s\""),
 			m_activity.lock()->GetId(),
 			m_subscription->GetURL().GetURL().data());
 	} else {
-		MojLogInfo(s_log, _T("[Activity %llu] Disarming Trigger"),
+		MojLogDebug(s_log, _T("[Activity %llu] Disarming Trigger"),
 			m_activity.lock()->GetId());
 	}
 
@@ -130,7 +130,7 @@ void MojoExclusiveTrigger::Disarm(boost::shared_ptr<Activity> activity)
 void MojoExclusiveTrigger::Fire()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Trigger firing"),
+	MojLogDebug(s_log, _T("[Activity %llu] Trigger firing"),
 		m_activity.lock()->GetId());
 
 	m_triggered = true;
@@ -182,13 +182,13 @@ void MojoExclusiveTrigger::ProcessResponse(const MojObject& response,
 	 *
 	 * XXX have an option to disable auto-resubscribe */
 	if (err) {
-		MojLogInfo(s_log, _T("[Activity %llu] Trigger call \"%s\" failed"),
+		MojLogDebug(s_log, _T("[Activity %llu] Trigger call \"%s\" failed"),
 			m_activity.lock()->GetId(),
 			m_subscription->GetURL().GetURL().data());
 		m_response = response;
 		Fire();
 	} else if (m_matcher->Match(response)) {
-		MojLogInfo(s_log, _T("[Activity %llu] Trigger call \"%s\" fired!"),
+		MojLogDebug(s_log, _T("[Activity %llu] Trigger call \"%s\" fired!"),
 			m_activity.lock()->GetId(),
 			m_subscription->GetURL().GetURL().data());
 		m_response = response;

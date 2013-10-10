@@ -51,7 +51,7 @@ time_t Schedule::GetNextStartTime() const
 void Schedule::CalcNextStartTime()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Not an interval schedule, so next "
+	MojLogDebug(s_log, _T("[Activity %llu] Not an interval schedule, so next "
 		"start time not updated"), m_activity.lock()->GetId());
 }
 
@@ -86,7 +86,7 @@ bool Schedule::operator<(const Schedule& rhs) const
 void Schedule::Queue()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Queueing with Scheduler"),
+	MojLogDebug(s_log, _T("[Activity %llu] Queueing with Scheduler"),
 		m_activity.lock()->GetId());
 
 	if (IsQueued())
@@ -101,7 +101,7 @@ void Schedule::Queue()
 void Schedule::UnQueue()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Unqueueing from Scheduler"),
+	MojLogDebug(s_log, _T("[Activity %llu] Unqueueing from Scheduler"),
 		m_activity.lock()->GetId());
 
 	m_scheduler->RemoveItem(shared_from_this());
@@ -116,7 +116,7 @@ bool Schedule::IsQueued() const
 void Schedule::Scheduled()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Scheduled"),
+	MojLogDebug(s_log, _T("[Activity %llu] Scheduled"),
 		m_activity.lock()->GetId());
 
 	m_scheduled = true;
@@ -131,7 +131,7 @@ bool Schedule::IsScheduled() const
 void Schedule::InformActivityFinished()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Finished"),
+	MojLogDebug(s_log, _T("[Activity %llu] Finished"),
 		m_activity.lock()->GetId());
 }
 

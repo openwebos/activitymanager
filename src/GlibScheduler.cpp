@@ -29,14 +29,14 @@ GlibScheduler::~GlibScheduler()
 void GlibScheduler::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Enabling scheduler"));
+	MojLogDebug(s_log, _T("Enabling scheduler"));
 }
 
 void GlibScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 {
 	MojLogTrace(s_log);
 
-	MojLogInfo(s_log, _T("Updating wakeup timer: next wakeup %llu, "
+	MojLogDebug(s_log, _T("Updating wakeup timer: next wakeup %llu, "
 		"current time %llu"), (unsigned long long)nextWakeup,
 		(unsigned long long)curTime);
 
@@ -50,7 +50,7 @@ void GlibScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 void GlibScheduler::CancelTimeout()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Scheduler timeout cancelled"));
+	MojLogDebug(s_log, _T("Scheduler timeout cancelled"));
 
 	if (m_timeout) {
 		m_timeout.reset();
@@ -60,7 +60,7 @@ void GlibScheduler::CancelTimeout()
 void GlibScheduler::TimeoutCallback()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Scheduler timeout callback"));
+	MojLogDebug(s_log, _T("Scheduler timeout callback"));
 
 	m_timeout.reset();
 

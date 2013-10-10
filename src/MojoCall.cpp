@@ -47,7 +47,7 @@ MojoCall::MojoCall()
 
 MojoCall::~MojoCall()
 {
-	MojLogInfo(s_log, _T("[Call %u] Cleaning up"), m_serial);
+	MojLogDebug(s_log, _T("[Call %u] Cleaning up"), m_serial);
 
 	if (m_handler.get()) {
 		m_handler->Cancel();
@@ -72,12 +72,12 @@ MojErr MojoCall::Call(bool usePublicBus, const char *proxyRequester)
 	MojLogTrace(s_log);
 
 	if (proxyRequester) {
-		MojLogInfo(s_log, _T("[Call %u] %s(Proxy for %s) Calling %s %s"),
+		MojLogDebug(s_log, _T("[Call %u] %s(Proxy for %s) Calling %s %s"),
 			m_serial, usePublicBus ? "(Public) " : "",
 			proxyRequester, m_url.GetString().c_str(),
 			MojoObjectJson(m_params).c_str());
 	} else {
-		MojLogInfo(s_log, _T("[Call %u] %sCalling %s %s"), m_serial,
+		MojLogDebug(s_log, _T("[Call %u] %sCalling %s %s"), m_serial,
 			usePublicBus ? "(Public) " : "",
 			m_url.GetString().c_str(), MojoObjectJson(m_params).c_str());
 	}
@@ -126,7 +126,7 @@ MojErr MojoCall::Call(bool usePublicBus, const char *proxyRequester)
 void MojoCall::Cancel()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Call %u] Cancelling call %s"), m_serial,
+	MojLogDebug(s_log, _T("[Call %u] Cancelling call %s"), m_serial,
 		m_url.GetString().c_str());
 
 	if (m_handler.get()) {
@@ -144,7 +144,7 @@ unsigned MojoCall::GetSerial() const
 void MojoCall::HandleResponseWrapper(MojServiceMessage *msg, MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Call %u] %s: Received response %s"), m_serial,
+	MojLogDebug(s_log, _T("[Call %u] %s: Received response %s"), m_serial,
 		m_url.GetString().c_str(), MojoObjectJson(response).c_str());
 
 	/* XXX If response count reached, cancel call. */
@@ -249,10 +249,10 @@ MojoCall::MojoCallMessageHandler::GetResponseSlot()
 void MojoCall::MojoCallMessageHandler::Cancel()
 {
 	if (!m_call.expired()) {
-		MojLogInfo(MojoCall::s_log, _T("[Call %u] [Handler %u] Cancelling"),
+		MojLogDebug(MojoCall::s_log, _T("[Call %u] [Handler %u] Cancelling"),
 			m_call.lock()->GetSerial(), m_serial);
 	} else {
-		MojLogInfo(MojoCall::s_log, _T("[Handler %u] Call expired, Cancelling"),
+		MojLogDebug(MojoCall::s_log, _T("[Handler %u] Call expired, Cancelling"),
 			m_serial);
 	}
 
@@ -263,7 +263,7 @@ MojErr MojoCall::MojoCallMessageHandler::HandleResponse(
 	MojServiceMessage *msg, MojObject& response, MojErr err)
 {
 	if (m_call.expired()) {
-		MojLogInfo(MojoCall::s_log, _T("[Handler %u] Response %s received "
+		MojLogDebug(MojoCall::s_log, _T("[Handler %u] Response %s received "
 			"for expired call"), m_serial, MojoObjectJson(response).c_str());
 		m_responseSlot.cancel();
 		return MojErrInvalidArg;

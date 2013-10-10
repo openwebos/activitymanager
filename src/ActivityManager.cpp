@@ -60,7 +60,7 @@ ActivityManager::~ActivityManager()
 void ActivityManager::RegisterActivityId(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Registering ID"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Registering ID"), act->GetId());
 
 	ActivityMap::const_iterator found = m_activities.find(act->GetId());
 	if (found != m_activities.end()) {
@@ -73,7 +73,7 @@ void ActivityManager::RegisterActivityId(boost::shared_ptr<Activity> act)
 void ActivityManager::RegisterActivityName(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("[Activity %llu] Registering as %s/\"%s\""),
+	MojLogDebug(s_log, _T("[Activity %llu] Registering as %s/\"%s\""),
 		act->GetId(), act->GetCreator().GetString().c_str(),
 		act->GetName().c_str());
 
@@ -86,7 +86,7 @@ void ActivityManager::RegisterActivityName(boost::shared_ptr<Activity> act)
 void ActivityManager::UnregisterActivityName(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("[Activity %llu] Unregistering from %s/\"%s\""),
+	MojLogDebug(s_log, _T("[Activity %llu] Unregistering from %s/\"%s\""),
 		act->GetId(), act->GetCreator().GetString().c_str(),
 		act->GetName().c_str());
 
@@ -167,14 +167,14 @@ boost::shared_ptr<Activity> ActivityManager::GetNewActivity()
 	}
 #endif	/* ACTIVITYMANAGER_RANDOM_IDS */
 
-	MojLogNotice(s_log, _T("[Activity %llu] Allocated"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Allocated"), act->GetId());
 
 	return act;
 }
 
 boost::shared_ptr<Activity> ActivityManager::GetNewActivity(activityId_t id)
 {
-	MojLogNotice(s_log, _T("[Activity %llu] Forcing allocation"), id);
+	MojLogDebug(s_log, _T("[Activity %llu] Forcing allocation"), id);
 
 	ActivityMap::iterator iter = m_activities.find(id);
 	if (iter != m_activities.end()) {
@@ -192,7 +192,7 @@ boost::shared_ptr<Activity> ActivityManager::GetNewActivity(activityId_t id)
 void ActivityManager::ReleaseActivity(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("[Activity %llu] Releasing"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Releasing"), act->GetId());
 
 	EvictQueue(act);
 
@@ -226,7 +226,7 @@ ActivityManager::ActivityVec ActivityManager::GetActivities() const
 MojErr ActivityManager::StartActivity(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Start"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Start"), act->GetId());
 
 	act->SendCommand(ActivityStartCommand);
 
@@ -236,7 +236,7 @@ MojErr ActivityManager::StartActivity(boost::shared_ptr<Activity> act)
 MojErr ActivityManager::StopActivity(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Stop"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Stop"), act->GetId());
 
 	act->SendCommand(ActivityStopCommand);
 
@@ -246,7 +246,7 @@ MojErr ActivityManager::StopActivity(boost::shared_ptr<Activity> act)
 MojErr ActivityManager::CancelActivity(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Cancel"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Cancel"), act->GetId());
 
 	act->SendCommand(ActivityCancelCommand);
 
@@ -256,7 +256,7 @@ MojErr ActivityManager::CancelActivity(boost::shared_ptr<Activity> act)
 MojErr ActivityManager::PauseActivity(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Pause"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Pause"), act->GetId());
 
 	act->SendCommand(ActivityPauseCommand);
 
@@ -266,7 +266,7 @@ MojErr ActivityManager::PauseActivity(boost::shared_ptr<Activity> act)
 MojErr ActivityManager::FocusActivity(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Focus [Activity %llu]"), act->GetId());
+	MojLogDebug(s_log, _T("Focus [Activity %llu]"), act->GetId());
 
 	if (act->IsFocused()) {
 		MojLogWarning(s_log, _T("[Activity %llu] is already focused"),
@@ -285,7 +285,7 @@ MojErr ActivityManager::FocusActivity(boost::shared_ptr<Activity> act)
 	/* Remove focus from all Activities that had focus before. */
 	while (!oldFocused.empty()) {
 		Activity& focusedActivity = oldFocused.front();
-		MojLogInfo(s_log, _T("Removing focus from previously focused "
+		MojLogDebug(s_log, _T("Removing focus from previously focused "
 			"[Activity %llu]"), focusedActivity.GetId());
 		focusedActivity.SetFocus(false);
 		m_resourceManager->UpdateAssociations(
@@ -299,7 +299,7 @@ MojErr ActivityManager::FocusActivity(boost::shared_ptr<Activity> act)
 MojErr ActivityManager::UnfocusActivity(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Unfocus [Activity %llu]"), act->GetId());
+	MojLogDebug(s_log, _T("Unfocus [Activity %llu]"), act->GetId());
 
 	if (!act->IsFocused()) {
 		MojLogWarning(s_log, _T("Can't remove focus from [Activity %llu], "
@@ -324,7 +324,7 @@ MojErr ActivityManager::AddFocus(boost::shared_ptr<Activity> source,
 	boost::shared_ptr<Activity> target)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Add focus from [Activity %llu] to [Activity %llu]"),
+	MojLogDebug(s_log, _T("Add focus from [Activity %llu] to [Activity %llu]"),
 		source->GetId(), target->GetId());
 
 	if (!source->IsFocused()) {
@@ -353,11 +353,11 @@ void ActivityManager::Enable(unsigned mask)
 	MojLogTrace(s_log);
 
 	if (mask & EXTERNAL_ENABLE) {
-		MojLogNotice(s_log, _T("Enabling Activity Manager: External"));
+		MojLogDebug(s_log, _T("Enabling Activity Manager: External"));
 	}
 
 	if (mask & UI_ENABLE) {
-		MojLogNotice(s_log, _T("Enabling Activity Manager: Device UI enabled"));
+		MojLogDebug(s_log, _T("Enabling Activity Manager: Device UI enabled"));
 	}
 
 	if ((mask & ENABLE_MASK) != mask) {
@@ -377,11 +377,11 @@ void ActivityManager::Disable(unsigned mask)
 	MojLogTrace(s_log);
 
 	if (mask & EXTERNAL_ENABLE) {
-		MojLogNotice(s_log, _T("Disabling Activity Manager: External"));
+		MojLogDebug(s_log, _T("Disabling Activity Manager: External"));
 	}
 
 	if (mask & UI_ENABLE) {
-		MojLogNotice(s_log, _T("Disabling Activity Manager: Device UI "
+		MojLogDebug(s_log, _T("Disabling Activity Manager: Device UI "
 			"disabled"));
 	}
 
@@ -405,10 +405,10 @@ unsigned int ActivityManager::SetBackgroundConcurrencyLevel(unsigned int level)
 {
 	MojLogTrace(s_log);
 	if (level != UnlimitedBackgroundConcurrency) {
-		MojLogNotice(s_log, _T("Background concurrency level set to %u"),
+		MojLogDebug(s_log, _T("Background concurrency level set to %u"),
 			level);
 	} else {
-		MojLogNotice(s_log, _T("Background concurrency level set to "
+		MojLogDebug(s_log, _T("Background concurrency level set to "
 			"Unlimited"));
 	}
 
@@ -425,7 +425,7 @@ void ActivityManager::EvictBackgroundActivity(
 	boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Attempting to evict [Activity %llu] from "
+	MojLogDebug(s_log, _T("Attempting to evict [Activity %llu] from "
 		"background queue"), act->GetId());
 
 	ActivityRunQueue::iterator iter;
@@ -452,7 +452,7 @@ void ActivityManager::EvictBackgroundActivity(
 void ActivityManager::EvictAllBackgroundActivities()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Evicting all background Activities to the long "
+	MojLogDebug(s_log, _T("Evicting all background Activities to the long "
 		"running background Activity list"));
 
 	while (!m_runQueue[RunQueueBackground].empty()) {
@@ -468,7 +468,7 @@ void ActivityManager::RunReadyBackgroundActivity(
 	boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Attepting to run ready [Activity %llu]"),
+	MojLogDebug(s_log, _T("Attepting to run ready [Activity %llu]"),
 		act->GetId());
 
 	ActivityRunQueue::iterator iter;
@@ -504,7 +504,7 @@ void ActivityManager::RunReadyBackgroundActivity(
 void ActivityManager::RunAllReadyActivities()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Running all Activities currently in the Ready "
+	MojLogDebug(s_log, _T("Running all Activities currently in the Ready "
 		"state"));
 
 	while (!m_runQueue[RunQueueReadyInteractive].empty()) {
@@ -523,7 +523,7 @@ void ActivityManager::InformActivityInitialized(
 	boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Initialized and ready to be "
+	MojLogDebug(s_log, _T("[Activity %llu] Initialized and ready to be "
 		"scheduled"), act->GetId());
 
 	/* If an Activity is restarting, it will be parked (temporarily) in
@@ -545,7 +545,7 @@ void ActivityManager::InformActivityInitialized(
 void ActivityManager::InformActivityReady(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Now ready to run"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Now ready to run"), act->GetId());
 
 	if (act->m_runQueueItem.is_linked()) {
 		act->m_runQueueItem.unlink();
@@ -571,7 +571,7 @@ void ActivityManager::InformActivityReady(boost::shared_ptr<Activity> act)
 void ActivityManager::InformActivityNotReady(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] No longer ready to run"),
+	MojLogDebug(s_log, _T("[Activity %llu] No longer ready to run"),
 		act->GetId());
 
 	if (act->m_runQueueItem.is_linked()) {
@@ -587,13 +587,13 @@ void ActivityManager::InformActivityNotReady(boost::shared_ptr<Activity> act)
 void ActivityManager::InformActivityRunning(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Running"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Running"), act->GetId());
 }
 
 void ActivityManager::InformActivityEnding(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Ending"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Ending"), act->GetId());
 
 	/* Nothing to do here yet, it still has subscribers who may have processing
 	 * to do. */
@@ -602,7 +602,7 @@ void ActivityManager::InformActivityEnding(boost::shared_ptr<Activity> act)
 void ActivityManager::InformActivityEnd(boost::shared_ptr<Activity> act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Has ended"), act->GetId());
+	MojLogDebug(s_log, _T("[Activity %llu] Has ended"), act->GetId());
 
 	/* If Activity was never fully initialized, it's ok for it not to be on
 	 * a queue here */
@@ -622,7 +622,7 @@ void ActivityManager::InformActivityGainedSubscriberId(
 	boost::shared_ptr<Activity> act, const BusId& id)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Gained subscriber [BusId %s]"),
+	MojLogDebug(s_log, _T("[Activity %llu] Gained subscriber [BusId %s]"),
 		act->GetId(), id.GetString().c_str());
 
 	m_resourceManager->Associate(act, id);
@@ -632,7 +632,7 @@ void ActivityManager::InformActivityLostSubscriberId(
 	boost::shared_ptr<Activity> act, const BusId& id)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Lost subscriber [BusId %s]"),
+	MojLogDebug(s_log, _T("[Activity %llu] Lost subscriber [BusId %s]"),
 		act->GetId(), id.GetString().c_str());
 
 	m_resourceManager->Dissociate(act, id);
@@ -641,13 +641,13 @@ void ActivityManager::InformActivityLostSubscriberId(
 void ActivityManager::ScheduleAllActivities()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Scheduling all Activities"));
+	MojLogDebug(s_log, _T("Scheduling all Activities"));
 
 	while (!m_runQueue[RunQueueInitialized].empty()) {
 		Activity& act = m_runQueue[RunQueueInitialized].front();
 		act.m_runQueueItem.unlink();
 
-		MojLogInfo(s_log, _T("Granting [Activity %llu] permission to schedule"),
+		MojLogDebug(s_log, _T("Granting [Activity %llu] permission to schedule"),
 			act.GetId());
 
 		m_runQueue[RunQueueScheduled].push_back(act);
@@ -660,7 +660,7 @@ void ActivityManager::EvictQueue(boost::shared_ptr<Activity> act)
 	MojLogTrace(s_log);
 
 	if (act->m_runQueueItem.is_linked()) {
-		MojLogInfo(s_log, _T("[Activity %llu] evicted from run queue on "
+		MojLogDebug(s_log, _T("[Activity %llu] evicted from run queue on "
 			"release"), act->GetId());
 		act->m_runQueueItem.unlink();
 	}
@@ -669,7 +669,7 @@ void ActivityManager::EvictQueue(boost::shared_ptr<Activity> act)
 void ActivityManager::RunActivity(Activity& act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Running [Activity %llu]"), act.GetId());
+	MojLogDebug(s_log, _T("Running [Activity %llu]"), act.GetId());
 
 	m_resourceManager->Associate(act.shared_from_this());
 	act.RunActivity();
@@ -678,7 +678,7 @@ void ActivityManager::RunActivity(Activity& act)
 void ActivityManager::RunReadyBackgroundActivity(Activity& act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Running background [Activity %llu]"), act.GetId());
+	MojLogDebug(s_log, _T("Running background [Activity %llu]"), act.GetId());
 
 	if (act.m_runQueueItem.is_linked()) {
 		act.m_runQueueItem.unlink();
@@ -695,7 +695,7 @@ void ActivityManager::RunReadyBackgroundActivity(Activity& act)
 void ActivityManager::RunReadyBackgroundInteractiveActivity(Activity& act)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Running background interactive [Activity %llu]"),
+	MojLogDebug(s_log, _T("Running background interactive [Activity %llu]"),
 		act.GetId());
 
 	if (act.m_runQueueItem.is_linked()) {
@@ -719,7 +719,7 @@ unsigned ActivityManager::GetRunningBackgroundActivitiesCount() const
 void ActivityManager::CheckReadyQueue()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Checking to see if more background Activities can "
+	MojLogDebug(s_log, _T("Checking to see if more background Activities can "
 		"run"));
 
 	bool ranInteractive = false;
@@ -759,10 +759,10 @@ void ActivityManager::UpdateYieldTimeout()
 	MojLogTrace(s_log);
 
 	if (!m_interactiveYieldTimeout) {
-		MojLogInfo(s_log, _T("Arming background interactive yield timeout "
+		MojLogDebug(s_log, _T("Arming background interactive yield timeout "
 			"for %u seconds"), m_yieldTimeoutSeconds);
 	} else {
-		MojLogInfo(s_log, _T("Updating background interactive yield timeout "
+		MojLogDebug(s_log, _T("Updating background interactive yield timeout "
 			"for %u seconds"), m_yieldTimeoutSeconds);
 	}
 
@@ -775,7 +775,7 @@ void ActivityManager::UpdateYieldTimeout()
 void ActivityManager::CancelYieldTimeout()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Cancelling background interactive yield timeout"));
+	MojLogDebug(s_log, _T("Cancelling background interactive yield timeout"));
 
 	m_interactiveYieldTimeout.reset();
 }
@@ -783,10 +783,10 @@ void ActivityManager::CancelYieldTimeout()
 void ActivityManager::InteractiveYieldTimeout()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Background interactive yield timeout triggered"));
+	MojLogDebug(s_log, _T("Background interactive yield timeout triggered"));
 
 	if (m_runQueue[RunQueueReadyInteractive].empty()) {
-		MojLogInfo(s_log, _T("Ready interactive queue is empty, cancelling "
+		MojLogDebug(s_log, _T("Ready interactive queue is empty, cancelling "
 			"yield timeout"));
 		CancelYieldTimeout();
 		return;
@@ -817,15 +817,15 @@ void ActivityManager::InteractiveYieldTimeout()
 	/* If there aren't already too many yielding... */
 	if (iter == m_runQueue[RunQueueBackgroundInteractive].end()) {
 		if (victim) {
-			MojLogInfo(s_log, _T("Requesting that [Activity %llu] yield"),
+			MojLogDebug(s_log, _T("Requesting that [Activity %llu] yield"),
 				victim->GetId());
 			victim->YieldActivity();
 		} else {
-			MojLogInfo(s_log, _T("All running background interactive "
+			MojLogDebug(s_log, _T("All running background interactive "
 				"Activities are already yielding"));
 		}
 	} else {
-		MojLogInfo(s_log, _T("Number of yielding Activities is already equal "
+		MojLogDebug(s_log, _T("Number of yielding Activities is already equal "
 			"to the number of ready interactive Activities waiting in the "
 			"queue"));
 	}

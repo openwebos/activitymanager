@@ -44,7 +44,7 @@ MasterResourceManager::~MasterResourceManager()
 void MasterResourceManager::Associate(boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Associating all subscribers of [Activity %llu]"),
+	MojLogDebug(s_log, _T("Associating all subscribers of [Activity %llu]"),
 		activity->GetId());
 
 	/* Place all processes associated with the unique subscribers of the
@@ -61,7 +61,7 @@ void MasterResourceManager::Associate(boost::shared_ptr<Activity> activity,
 	const BusId& id)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Associating [Activity %llu] with [BusId %s] "
+	MojLogDebug(s_log, _T("Associating [Activity %llu] with [BusId %s] "
 		"on all Managers"), activity->GetId(), id.GetString().c_str());
 
 	/* Look up Bus Entity, and Associate the Activity. */
@@ -73,7 +73,7 @@ void MasterResourceManager::Associate(boost::shared_ptr<Activity> activity,
 void MasterResourceManager::Dissociate(boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Dissociating all subscribers of [Activity %llu]"),
+	MojLogDebug(s_log, _T("Dissociating all subscribers of [Activity %llu]"),
 		activity->GetId());
 
 	/* Remove associations between the Activity and any remaining unique
@@ -89,7 +89,7 @@ void MasterResourceManager::Dissociate(boost::shared_ptr<Activity> activity)
 void MasterResourceManager::Dissociate(boost::shared_ptr<Activity> activity, const BusId& id)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Dissociating [Activity %llu] from [BusId %s] on all "
+	MojLogDebug(s_log, _T("Dissociating [Activity %llu] from [BusId %s] on all "
 		"Managers"), activity->GetId(), id.GetString().c_str());
 
 	/* Look up the Bus Entity, and Dissociate the Activity. */
@@ -102,7 +102,7 @@ void MasterResourceManager::UpdateAssociations(
 	boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Updating all unique entities associated with "
+	MojLogDebug(s_log, _T("Updating all unique entities associated with "
 		"[Activity %llu]"), activity->GetId());
 
 	Activity::SubscriberIdVec subscribers = activity->GetUniqueSubscribers();
@@ -117,7 +117,7 @@ void MasterResourceManager::SetManager(const std::string& resource,
 	boost::shared_ptr<ResourceManager> manager)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Assigning Resource Manager for resource \"%s\""),
+	MojLogDebug(s_log, _T("Assigning Resource Manager for resource \"%s\""),
 		resource.c_str());
 
 	ResourceManagerMap::iterator found = m_managers.find(resource);
@@ -133,13 +133,13 @@ void MasterResourceManager::SetManager(const std::string& resource,
  	 * Master */
 	if (m_enabled) {
 		if (!manager->IsEnabled()) {
-			MojLogNotice(s_log, _T("Enabling Resource Manager for "
+			MojLogDebug(s_log, _T("Enabling Resource Manager for "
 				"resource %s"), resource.c_str());
 			manager->Enable();
 		}
 	} else {
 		if (manager->IsEnabled()) {
-			MojLogNotice(s_log, _T("Disabling Resource Manager for "
+			MojLogDebug(s_log, _T("Disabling Resource Manager for "
 				"resource %s"), resource.c_str());
 			manager->Disable();
 		}
@@ -149,7 +149,7 @@ void MasterResourceManager::SetManager(const std::string& resource,
 boost::shared_ptr<BusEntity> MasterResourceManager::GetEntity(const BusId& id)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Looking up entity for [BusId %s]"),
+	MojLogDebug(s_log, _T("Looking up entity for [BusId %s]"),
 		id.GetString().c_str());
 
 	EntityMap::iterator found = m_entities.find(id);
@@ -157,7 +157,7 @@ boost::shared_ptr<BusEntity> MasterResourceManager::GetEntity(const BusId& id)
 		return found->second;
 	}
 
-	MojLogInfo(s_log, _T("Allocating new entity for [BusId %s]"),
+	MojLogDebug(s_log, _T("Allocating new entity for [BusId %s]"),
 		id.GetString().c_str());
 
 	boost::shared_ptr<BusEntity> entity = boost::make_shared<BusEntity>(id);
@@ -170,7 +170,7 @@ void MasterResourceManager::InformEntityUpdated(
 	boost::shared_ptr<BusEntity> entity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Informing all managers that [BusId %s] has been "
+	MojLogDebug(s_log, _T("Informing all managers that [BusId %s] has been "
 		"updated"), entity->GetName().c_str());
 
 	for (ResourceManagerMap::iterator iter = m_managers.begin();
@@ -181,11 +181,11 @@ void MasterResourceManager::InformEntityUpdated(
 void MasterResourceManager::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Enabling all Resource Managers"));
+	MojLogDebug(s_log, _T("Enabling all Resource Managers"));
 
 	for (ResourceManagerMap::iterator iter = m_managers.begin();
 		iter != m_managers.end(); ++iter) {
-		MojLogNotice(s_log, _T("Enabling Resource Manager for resource %s"),
+		MojLogDebug(s_log, _T("Enabling Resource Manager for resource %s"),
 			iter->first.c_str());
 		iter->second->Enable();
 	}
@@ -196,11 +196,11 @@ void MasterResourceManager::Enable()
 void MasterResourceManager::Disable()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Disabling all Resource Managers"));
+	MojLogDebug(s_log, _T("Disabling all Resource Managers"));
 
 	for (ResourceManagerMap::iterator iter = m_managers.begin();
 		iter != m_managers.end(); ++iter) {
-		MojLogNotice(s_log, _T("Disabling Resource Manager for resource %s"),
+		MojLogDebug(s_log, _T("Disabling Resource Manager for resource %s"),
 			iter->first.c_str());
 		iter->second->Disable();
 	}

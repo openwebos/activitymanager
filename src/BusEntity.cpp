@@ -35,7 +35,7 @@ BusEntity::~BusEntity()
 void BusEntity::AssociateActivity(boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] associating with [Entity %s]"),
+	MojLogDebug(s_log, _T("[Activity %llu] associating with [Entity %s]"),
 		activity->GetId(), m_id.GetString().c_str());
 
 	ActivityAssociations::insert_commit_data id;
@@ -58,7 +58,7 @@ void BusEntity::AssociateActivity(boost::shared_ptr<Activity> activity)
 void BusEntity::DissociateActivity(boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] dissociating from [Entity %s]"),
+	MojLogDebug(s_log, _T("[Activity %llu] dissociating from [Entity %s]"),
 		activity->GetId(), m_id.GetString().c_str());
 
 	ActivityAssociations::iterator found = m_associations.find(activity,
@@ -152,7 +152,7 @@ void BusEntity::ReassociateActivity(
 	boost::shared_ptr<ActivitySetAutoAssociation> association)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Updating association between [Activity %llu] "
+	MojLogDebug(s_log, _T("Updating association between [Activity %llu] "
 		"and [Entity %s]"), association->GetActivity()->GetId(),
 		m_id.GetString().c_str());
 

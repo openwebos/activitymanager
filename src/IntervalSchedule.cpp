@@ -88,7 +88,7 @@ void IntervalSchedule::CalcNextStartTime()
 		}
 	}
 
-	MojLogInfo(s_log, _T("[Activity %lu] Next start time is %s"),
+	MojLogDebug(s_log, _T("[Activity %lu] Next start time is %s"),
 		(unsigned long)m_activity.lock()->GetId(),
 		Scheduler::TimeToString(m_nextStart, !m_local).c_str());
 }
@@ -123,7 +123,7 @@ void IntervalSchedule::InformActivityFinished()
 
 	time_t lastFinished = GetTime();
 
-	MojLogInfo(s_log, _T("[Activity %lu] Finished at %llu"),
+	MojLogDebug(s_log, _T("[Activity %lu] Finished at %llu"),
 		(unsigned long)m_activity.lock()->GetId(),
 		(unsigned long long)lastFinished);
 

@@ -35,7 +35,7 @@ PowerdScheduler::~PowerdScheduler()
 void PowerdScheduler::ScheduledWakeup()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Powerd wakeup callback received"));
+	MojLogDebug(s_log, _T("Powerd wakeup callback received"));
 
 	Wake();
 }
@@ -43,7 +43,7 @@ void PowerdScheduler::ScheduledWakeup()
 void PowerdScheduler::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Powerd scheduler enabled"));
+	MojLogDebug(s_log, _T("Powerd scheduler enabled"));
 
 	MonitorSystemTime();
 }
@@ -51,7 +51,7 @@ void PowerdScheduler::Enable()
 void PowerdScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Updating powerd scheduling callback - "
+	MojLogDebug(s_log, _T("Updating powerd scheduling callback - "
 		"nextWakeup %llu, current time %llu"),
 		(unsigned long long)nextWakeup, (unsigned long long)curTime);
 
@@ -96,7 +96,7 @@ void PowerdScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 void PowerdScheduler::CancelTimeout()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Cancelling powerd timeout"));
+	MojLogDebug(s_log, _T("Cancelling powerd timeout"));
 
 	MojObject params;
 
@@ -119,7 +119,7 @@ void PowerdScheduler::CancelTimeout()
 void PowerdScheduler::MonitorSystemTime()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Subscribing to System Time change notifications"));
+	MojLogDebug(s_log, _T("Subscribing to System Time change notifications"));
 
 	MojObject params;
 	MojErr err = params.putBool(_T("subscribe"), true);
@@ -153,7 +153,7 @@ void PowerdScheduler::HandleTimeoutSetResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Timeout Set response %s"),
+	MojLogDebug(s_log, _T("Timeout Set response %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
@@ -167,7 +167,7 @@ void PowerdScheduler::HandleTimeoutSetResponse(MojServiceMessage *msg,
 			return;
 		}
 	} else {
-		MojLogInfo(s_log, _T("Successfully registered scheduled wakeup"));
+		MojLogDebug(s_log, _T("Successfully registered scheduled wakeup"));
 	}
 
 	m_call.reset();
@@ -177,7 +177,7 @@ void PowerdScheduler::HandleTimeoutClearResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Timeout Clear response %s"),
+	MojLogDebug(s_log, _T("Timeout Clear response %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
@@ -191,7 +191,7 @@ void PowerdScheduler::HandleTimeoutClearResponse(MojServiceMessage *msg,
 			return;
 		}
 	} else {
-		MojLogInfo(s_log, _T("Successfully cancelled scheduled wakeup"));
+		MojLogDebug(s_log, _T("Successfully cancelled scheduled wakeup"));
 	}
 
 	m_call.reset();
@@ -201,7 +201,7 @@ void PowerdScheduler::HandleSystemTimeResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("System Time response %s"),
+	MojLogDebug(s_log, _T("System Time response %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
@@ -225,7 +225,7 @@ void PowerdScheduler::HandleSystemTimeResponse(MojServiceMessage *msg,
 		MojLogWarning(s_log, _T("System Time message is missing timezone "
 			"offset"));
 	} else {
-		MojLogInfo(s_log, _T("System Time timezone offset: %lld"),
+		MojLogDebug(s_log, _T("System Time timezone offset: %lld"),
 			(long long)localOffset);
 
 		localOffset *= 60;

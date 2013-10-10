@@ -62,7 +62,7 @@ boost::shared_ptr<ResourceContainer> ControlGroupManager::CreateContainer(
 	const std::string& name)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Creating [Container %s]"), name.c_str());
+	MojLogDebug(s_log, _T("Creating [Container %s]"), name.c_str());
 
 	boost::shared_ptr<ControlGroup> controlGroup;
 

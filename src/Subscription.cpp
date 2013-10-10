@@ -39,7 +39,7 @@ Subscription::~Subscription()
 void Subscription::HandleCancelWrapper()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("%s cancelling subscription"),
+	MojLogDebug(s_log, _T("%s cancelling subscription"),
 		GetSubscriber().GetString().c_str());
 
 	try {

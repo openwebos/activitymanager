@@ -65,7 +65,7 @@ Activity::Activity(activityId_t id, boost::weak_ptr<ActivityManager> am)
 
 Activity::~Activity()
 {
-	MojLogInfo(s_log, _T("[Activity %llu] Cleaning up"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Cleaning up"), m_id);
 }
 
 activityId_t Activity::GetId() const
@@ -133,7 +133,7 @@ std::string Activity::GetStateString() const
 void Activity::SendCommand(ActivityCommand_t command, bool internal)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] \"%s\" command received%s"),
+	MojLogDebug(s_log, _T("[Activity %llu] \"%s\" command received%s"),
 		m_id, ActivityCommandNames[command],
 		internal ? " (internally generated)" : "");
 
@@ -193,7 +193,7 @@ void Activity::SendCommand(ActivityCommand_t command, bool internal)
 MojErr Activity::AddSubscription(boost::shared_ptr<Subscription> sub)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("[Activity %llu] %s subscribed"),
+	MojLogDebug(s_log, _T("[Activity %llu] %s subscribed"),
 		m_id, sub->GetSubscriber().GetString().c_str());
 
 	m_subscriptions.insert(*sub);
@@ -220,7 +220,7 @@ MojErr Activity::AddSubscription(boost::shared_ptr<Subscription> sub)
 MojErr Activity::RemoveSubscription(boost::shared_ptr<Subscription> sub)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("[Activity %llu] %s unsubscribed"),
+	MojLogDebug(s_log, _T("[Activity %llu] %s unsubscribed"),
 		m_id, sub->GetSubscriber().GetString().c_str());
 
 	SubscriptionSet::iterator subscription = m_subscriptions.begin();
@@ -323,7 +323,7 @@ Activity::SubscriberIdVec Activity::GetUniqueSubscribers() const
 MojErr Activity::BroadcastEvent(ActivityEvent_t event)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Broadcasting \"%s\" event"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] Broadcasting \"%s\" event"), m_id,
 		ActivityEventNames[event]);
 
 	MojErr err = MojErrNone;
@@ -343,7 +343,7 @@ MojErr Activity::BroadcastEvent(ActivityEvent_t event)
 void Activity::PlugAllSubscriptions()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Plugging all subscriptions"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Plugging all subscriptions"), m_id);
 
 	for (SubscriptionSet::iterator iter = m_subscriptions.begin();
 		iter != m_subscriptions.end(); ++iter) {
@@ -354,7 +354,7 @@ void Activity::PlugAllSubscriptions()
 void Activity::UnplugAllSubscriptions()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Unplugging all subscriptions"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Unplugging all subscriptions"), m_id);
 
 	for (SubscriptionSet::iterator iter = m_subscriptions.begin();
 		iter != m_subscriptions.end(); ++iter) {
@@ -385,7 +385,7 @@ bool Activity::HasTrigger() const
 void Activity::Triggered(boost::shared_ptr<Trigger> trigger)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Triggered"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Triggered"), m_id);
 
 	if (m_trigger == trigger) {
 		if (!m_running && !m_ready && IsRunnable()) {
@@ -424,11 +424,11 @@ void Activity::CallbackFailed(boost::shared_ptr<Callback> callback,
 	MojLogTrace(s_log);
 
 	if (failure == Callback::TransientFailure) {
-		MojLogInfo(s_log, _T("[Activity %llu] Callback experienced transient "
+		MojLogDebug(s_log, _T("[Activity %llu] Callback experienced transient "
 			"protocol failure... requeuing Activity"), m_id);
 		RequestRequeueActivity();
 	} else {
-		MojLogInfo(s_log, _T("[Activity %llu] Callback experienced permanent "
+		MojLogDebug(s_log, _T("[Activity %llu] Callback experienced permanent "
 			"failure... cancelling Activity"), m_id);
 		SetTerminateFlag(true);
 		SendCommand(ActivityCancelCommand, true);
@@ -439,7 +439,7 @@ void Activity::CallbackFailed(boost::shared_ptr<Callback> callback,
 void Activity::CallbackSucceeded(boost::shared_ptr<Callback> callback)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Callback succeeded"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Callback succeeded"), m_id);
 
 	/* Nothing special to do here unless the Activity itself implements a
 	 * callback timeout. */
@@ -458,7 +458,7 @@ void Activity::ClearSchedule()
 void Activity::Scheduled()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Scheduled"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Scheduled"), m_id);
 
 	if (!m_running && !m_ready && IsRunnable()) {
 		RequestRunActivity();
@@ -477,7 +477,7 @@ bool Activity::IsScheduled() const
 void Activity::AddRequirement(boost::shared_ptr<Requirement> requirement)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] setting [Requirement %s]"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] setting [Requirement %s]"), m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
@@ -512,7 +512,7 @@ void Activity::AddRequirement(boost::shared_ptr<Requirement> requirement)
 void Activity::RemoveRequirement(boost::shared_ptr<Requirement> requirement)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] removing [Requirement %s]"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] removing [Requirement %s]"), m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
@@ -539,7 +539,7 @@ void Activity::RemoveRequirement(boost::shared_ptr<Requirement> requirement)
 void Activity::RemoveRequirement(const std::string& name)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] removing [Requirement %s] by name"),
+	MojLogDebug(s_log, _T("[Activity %llu] removing [Requirement %s] by name"),
 		m_id, name.c_str());
 
 	RequirementMap::iterator found = m_requirements.find(name);
@@ -578,7 +578,7 @@ bool Activity::HasRequirements() const
 void Activity::RequirementMet(boost::shared_ptr<Requirement> requirement)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [Requirement %s] met"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] [Requirement %s] met"), m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
@@ -605,7 +605,7 @@ void Activity::RequirementMet(boost::shared_ptr<Requirement> requirement)
 	BroadcastEvent(ActivityUpdateEvent);
 
 	if (m_unmetRequirements.empty()) {
-		MojLogInfo(s_log, _T("[Activity %llu] All requirements met"), m_id);
+		MojLogDebug(s_log, _T("[Activity %llu] All requirements met"), m_id);
 
 		if (!m_running && !m_ready && IsRunnable()) {
 			RequestRunActivity();
@@ -616,7 +616,7 @@ void Activity::RequirementMet(boost::shared_ptr<Requirement> requirement)
 void Activity::RequirementUnmet(boost::shared_ptr<Requirement> requirement)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [Requirement %s] unmet"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] [Requirement %s] unmet"), m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
@@ -648,7 +648,7 @@ void Activity::RequirementUnmet(boost::shared_ptr<Requirement> requirement)
 void Activity::RequirementUpdated(boost::shared_ptr<Requirement> requirement)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [Requirement %s] updated"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] [Requirement %s] updated"), m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
@@ -663,7 +663,7 @@ void Activity::RequirementUpdated(boost::shared_ptr<Requirement> requirement)
 void Activity::SetParent(boost::shared_ptr<Subscription> sub)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Attempting to set %s as parent"),
+	MojLogDebug(s_log, _T("[Activity %llu] Attempting to set %s as parent"),
 		m_id, sub->GetSubscriber().GetString().c_str());
 
 	if (!m_parent.expired())
@@ -672,14 +672,14 @@ void Activity::SetParent(boost::shared_ptr<Subscription> sub)
 	m_parent = sub;
 	m_released = false;
 
-	MojLogNotice(s_log, _T("[Activity %llu] %s assigned as parent"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] %s assigned as parent"), m_id,
 		sub->GetSubscriber().GetString().c_str());
 }
 
 MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *adopted)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] %s attempting to adopt%s"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] %s attempting to adopt%s"), m_id,
 		sub->GetSubscriber().GetString().c_str(),
 		wait ? "and willing to wait" : "");
 
@@ -690,7 +690,7 @@ MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *ado
 			*adopted = false;
 
 		if (!wait) { 
-			MojLogInfo(s_log, _T("[Activity %llu] already has a parent "
+			MojLogDebug(s_log, _T("[Activity %llu] already has a parent "
 				"(%s), and %s does not want to wait"), m_id,
 				m_parent.lock()->GetSubscriber().GetString().c_str(),
 				sub->GetSubscriber().GetString().c_str());
@@ -698,7 +698,7 @@ MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *ado
 			return MojErrWouldBlock;
 		}
 
-		MojLogNotice(s_log, _T("[Activity %llu] %s added to adopter list"),
+		MojLogDebug(s_log, _T("[Activity %llu] %s added to adopter list"),
 			m_id, sub->GetSubscriber().GetString().c_str());
 	} else {
 		if (adopted)
@@ -713,18 +713,18 @@ MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *ado
 MojErr Activity::Release(const BusId& caller)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] %s attempting to release"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] %s attempting to release"), m_id,
 		caller.GetString().c_str());
 
 	/* Can't release if it's already been released. */
 	if (m_released) {
-		MojLogInfo(s_log, _T("[Activity %llu] Has already been released"),
+		MojLogDebug(s_log, _T("[Activity %llu] Has already been released"),
 			m_id);
 		return MojErrInvalidArg;
 	}
 
 	if (m_parent.lock()->GetSubscriber() != caller) {
-		MojLogInfo(s_log, _T("[Activity %llu] %s failed to release, as %s "
+		MojLogDebug(s_log, _T("[Activity %llu] %s failed to release, as %s "
 			"is currently the parent"), m_id, caller.GetString().c_str(),
 			m_parent.lock()->GetSubscriber().GetString().c_str());
 		return MojErrAccessDenied;
@@ -734,7 +734,7 @@ MojErr Activity::Release(const BusId& caller)
 	m_parent.reset();
 	m_released = true;
 
-	MojLogNotice(s_log, _T("[Activity %llu] Released by %s"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] Released by %s"), m_id,
 		caller.GetString().c_str());
 
 	if (!m_adopters.empty()) {
@@ -752,7 +752,7 @@ bool Activity::IsReleased() const
 MojErr Activity::Complete(const BusId& caller, bool force)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] %s attempting to complete"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] %s attempting to complete"), m_id,
 		caller.GetString().c_str());
 
 	if (!force && (m_released || m_parent.expired() ||
@@ -764,7 +764,7 @@ MojErr Activity::Complete(const BusId& caller, bool force)
 	 * as a signal to other participating processes may be useful */
 	SendCommand(ActivityCompleteCommand);
 
-	MojLogNotice(s_log, _T("[Activity %llu] Completed by %s"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] Completed by %s"), m_id,
 		caller.GetString().c_str());
 
 	return MojErrNone;
@@ -806,7 +806,7 @@ bool Activity::IsPersistTokenSet() const
 void Activity::HookPersistCommand(boost::shared_ptr<PersistCommand> cmd)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Hooking [PersistCommand %s]"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] Hooking [PersistCommand %s]"), m_id,
 		cmd->GetString().c_str());
 
 	if (cmd->GetActivity()->GetId() != m_id) {
@@ -823,7 +823,7 @@ void Activity::HookPersistCommand(boost::shared_ptr<PersistCommand> cmd)
 void Activity::UnhookPersistCommand(boost::shared_ptr<PersistCommand> cmd)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Unhooking [PersistCommand %s]"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] Unhooking [PersistCommand %s]"), m_id,
 		cmd->GetString().c_str());
 
 	if (cmd->GetActivity()->GetId() != m_id) {
@@ -985,7 +985,7 @@ bool Activity::IsPowerActivity() const
 void Activity::PowerLockedNotification()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Received notification that power "
+	MojLogDebug(s_log, _T("[Activity %llu] Received notification that power "
 		"has been successfully locked on"), m_id);
 
 	m_powerActivity->GetManager()->ConfirmPowerActivityBegin(
@@ -999,7 +999,7 @@ void Activity::PowerLockedNotification()
 void Activity::PowerUnlockedNotification()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Received notification that power "
+	MojLogDebug(s_log, _T("[Activity %llu] Received notification that power "
 		"has been successfully unlocked"), m_id);
 
 	m_powerActivity->GetManager()->ConfirmPowerActivityEnd(
@@ -1035,7 +1035,7 @@ void Activity::AddEntityAssociation(
 	boost::shared_ptr<ActivitySetAutoAssociation> association)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] adding association with [Entity %s]"),
+	MojLogDebug(s_log, _T("[Activity %llu] adding association with [Entity %s]"),
 		m_id, association->GetTargetName().c_str());
 
 	m_associations.insert(association);
@@ -1045,7 +1045,7 @@ void Activity::RemoveEntityAssociation(
 	boost::shared_ptr<ActivitySetAutoAssociation> association)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] removing association with "
+	MojLogDebug(s_log, _T("[Activity %llu] removing association with "
 		"[Entity %s]"), m_id, association->GetTargetName().c_str());
 
 	EntityAssociationSet::iterator found = m_associations.find(association);
@@ -1095,7 +1095,7 @@ ActivityCommand_t Activity::ComputeNextExternalCommand() const
 void Activity::BroadcastCommand(ActivityCommand_t command)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Broadcasting \"%s\" command"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] Broadcasting \"%s\" command"), m_id,
 		ActivityCommandNames[command]);
 
 	if (command == ActivityStartCommand)
@@ -1117,7 +1117,7 @@ void Activity::BroadcastCommand(ActivityCommand_t command)
 void Activity::RestartActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Restarting"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Restarting"), m_id);
 
 	m_initialized = false;
 	m_scheduled = false;
@@ -1163,7 +1163,7 @@ void Activity::RestartActivity()
 void Activity::RequestScheduleActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Requesting permission to schedule "
+	MojLogDebug(s_log, _T("[Activity %llu] Requesting permission to schedule "
 		"from Activity Manager"), m_id);
 
 	m_initialized = true;
@@ -1173,7 +1173,7 @@ void Activity::RequestScheduleActivity()
 void Activity::ScheduleActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Received permission to schedule"),
+	MojLogDebug(s_log, _T("[Activity %llu] Received permission to schedule"),
 		m_id);
 
 	if (m_trigger) {
@@ -1194,7 +1194,7 @@ void Activity::ScheduleActivity()
 void Activity::RequestRunActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Requesting permission to run from "
+	MojLogDebug(s_log, _T("[Activity %llu] Requesting permission to run from "
 		"Activity Manager"), m_id);
 
 	m_ready = true;
@@ -1204,13 +1204,13 @@ void Activity::RequestRunActivity()
 void Activity::RunActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Received permission to run"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Received permission to run"), m_id);
 
 	m_running = true;
 
 	if (m_powerActivity && (m_powerActivity->GetPowerState() !=
 		PowerActivity::PowerLocked)) {
-		MojLogInfo(s_log, _T("[Activity %llu] Requesting power be locked on"),
+		MojLogDebug(s_log, _T("[Activity %llu] Requesting power be locked on"),
 			m_id);
 
 		/* Request power be locked on, wait to actually start Activity until
@@ -1225,7 +1225,7 @@ void Activity::RunActivity()
 void Activity::RequestRequeueActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Preparing to requeue"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Preparing to requeue"), m_id);
 
 	m_requeue = true;
 
@@ -1237,7 +1237,7 @@ void Activity::RequestRequeueActivity()
 void Activity::RequeueActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Requeuing"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Requeuing"), m_id);
 
 	m_running = false;
 	m_ending = false;
@@ -1259,7 +1259,7 @@ void Activity::YieldActivity()
 	MojLogTrace(s_log);
 
 	if (!m_yielding) {
-		MojLogInfo(s_log, _T("[Activity %llu] Yielding"), m_id);
+		MojLogDebug(s_log, _T("[Activity %llu] Yielding"), m_id);
 
 		m_yielding = true;
 		m_requeue = true;
@@ -1277,7 +1277,7 @@ void Activity::YieldActivity()
 void Activity::EndActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Ending"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Ending"), m_id);
 
 	if (!m_ending) {
 		m_ending = true;
@@ -1407,7 +1407,7 @@ bool Activity::ShouldRequeue() const
 void Activity::Orphaned()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Orphaned"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Orphaned"), m_id);
 
 	if (m_ending) {
 		/* No particular action... waiting for all subscriptions to cancel */
@@ -1432,7 +1432,7 @@ void Activity::Orphaned()
 void Activity::Abandoned()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Abandoned (no subscribers "
+	MojLogDebug(s_log, _T("[Activity %llu] Abandoned (no subscribers "
 		"remaining)"),m_id);
 
 	EndActivity();
@@ -1441,7 +1441,7 @@ void Activity::Abandoned()
 void Activity::DoAdopt()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Attempting to find new parent"),
+	MojLogDebug(s_log, _T("[Activity %llu] Attempting to find new parent"),
 		m_id);
 
 	if (m_adopters.empty())
@@ -1466,14 +1466,14 @@ void Activity::DoAdopt()
 	}
 	m_ending = false;
 
-	MojLogNotice(s_log, _T("[Activity %llu] Adopted by %s"), m_id,
+	MojLogDebug(s_log, _T("[Activity %llu] Adopted by %s"), m_id,
 		m_parent.lock()->GetSubscriber().GetString().c_str());
 }
 
 void Activity::DoRunActivity()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Running"), m_id);
+	MojLogDebug(s_log, _T("[Activity %llu] Running"), m_id);
 
 	/* Power is now on, if Applicable.  Tell the Activity Manager we're
 	 * ready to go! */
@@ -1489,7 +1489,7 @@ void Activity::DoRunActivity()
 void Activity::DoCallback()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Attempting to generate callback"),
+	MojLogDebug(s_log, _T("[Activity %llu] Attempting to generate callback"),
 		m_id);
 
 	if (!m_callback)

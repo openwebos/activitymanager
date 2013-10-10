@@ -51,7 +51,7 @@ boost::shared_ptr<Requirement> SystemManagerProxy::InstantiateRequirement(
 	const MojObject& value)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
+	MojLogDebug(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
 		name.c_str(), activity->GetId());
 
 	if (name == "bootup") {
@@ -77,7 +77,7 @@ void SystemManagerProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Registering requirements"));
+	MojLogDebug(s_log, _T("Registering requirements"));
 
 	master->RegisterRequirement("bootup", shared_from_this());
 }
@@ -86,7 +86,7 @@ void SystemManagerProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Unregistering requirements"));
+	MojLogDebug(s_log, _T("Unregistering requirements"));
 
 	master->UnregisterRequirement("bootup", shared_from_this());
 }
@@ -94,7 +94,7 @@ void SystemManagerProxy::UnregisterRequirements(
 void SystemManagerProxy::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Enabling System Manager Proxy"));
+	MojLogDebug(s_log, _T("Enabling System Manager Proxy"));
 
 	MojObject params;
 	params.putBool(_T("subscribe"), true);
@@ -111,7 +111,7 @@ void SystemManagerProxy::Enable()
 void SystemManagerProxy::Disable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Disabling System Manager Proxy"));
+	MojLogDebug(s_log, _T("Disabling System Manager Proxy"));
 
 	m_bootstatus.reset();
 }
@@ -128,7 +128,7 @@ void SystemManagerProxy::BootStatusUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Boot status update message: %s"),
+	MojLogDebug(s_log, _T("Boot status update message: %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {

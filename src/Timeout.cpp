@@ -63,7 +63,7 @@ void TimeoutBase::Cancel()
 gboolean TimeoutBase::StaticWakeupTimeout(gpointer data)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Wakeup"));
+	MojLogDebug(s_log, _T("Wakeup"));
 
 	TimeoutBase *base = static_cast<TimeoutBase *>(data);
 

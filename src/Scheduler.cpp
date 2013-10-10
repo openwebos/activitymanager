@@ -52,7 +52,7 @@ void Scheduler::AddItem(boost::shared_ptr<Schedule> item)
 {
 	MojLogTrace(s_log);
 
-	MojLogInfo(s_log,
+	MojLogDebug(s_log,
 		_T("Adding [Activity %llu] to start at %llu (%s)"),
 		item->GetActivity()->GetId(),
 		(unsigned long long)item->GetNextStartTime(),
@@ -83,7 +83,7 @@ void Scheduler::RemoveItem(boost::shared_ptr<Schedule> item)
 {
 	MojLogTrace(s_log);
 
-	MojLogInfo(s_log, _T("Removing [Activity %llu]"),
+	MojLogDebug(s_log, _T("Removing [Activity %llu]"),
 		item->GetActivity()->GetId());
 
 	try {
@@ -158,7 +158,7 @@ time_t Scheduler::StringToTime(const char *convert, bool& isUTC)
 void Scheduler::SetLocalOffset(off_t offset)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Setting local offset to %lld"), (long long)offset);
+	MojLogDebug(s_log, _T("Setting local offset to %lld"), (long long)offset);
 
 	bool updateWake = false;
 
@@ -194,7 +194,7 @@ time_t Scheduler::GetSmartBaseTime() const
 void Scheduler::Wake()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Wake callback"));
+	MojLogDebug(s_log, _T("Wake callback"));
 
 	m_wakeScheduled = false;
 
@@ -209,7 +209,7 @@ void Scheduler::DequeueAndUpdateTimeout()
 	/* Nothing to do?  Then return.  A new timeout will be scheduled
 	 * the next time something is queued */
 	if (m_queue.empty() && (!m_localOffsetSet || m_localQueue.empty())) {
-		MojLogInfo(s_log, _T("Not dequeuing any items as queue is now empty"));
+		MojLogDebug(s_log, _T("Not dequeuing any items as queue is now empty"));
 		if (m_wakeScheduled) {
 			CancelTimeout();
 			m_wakeScheduled = false;
@@ -219,7 +219,7 @@ void Scheduler::DequeueAndUpdateTimeout()
 
 	time_t	curTime = time(NULL);
 
-	MojLogInfo(s_log, _T("Beginning to dequeue items at time %llu"),
+	MojLogDebug(s_log, _T("Beginning to dequeue items at time %llu"),
 		(unsigned long long)curTime);
 
 	/* If anything on the queue already happened in the past, dequeue it
@@ -233,12 +233,12 @@ void Scheduler::DequeueAndUpdateTimeout()
 		ProcessQueue(m_localQueue, curTime + m_localOffset);
 	}
 
-	MojLogInfo(s_log, _T("Done dequeuing items"));
+	MojLogDebug(s_log, _T("Done dequeuing items"));
 
 	/* Both queues scheduled and dequeued (or unknown if time zone is not
 	 * yet known)? */
 	if (m_queue.empty() && (!m_localOffsetSet || m_localQueue.empty())) {
-		MojLogInfo(s_log, _T("No unscheduled items remain"));
+		MojLogDebug(s_log, _T("No unscheduled items remain"));
 
 		if (m_wakeScheduled) {
 			CancelTimeout();
@@ -274,7 +274,7 @@ void Scheduler::ProcessQueue(ScheduleQueue& queue, time_t curTime)
 void Scheduler::ReQueue(ScheduleQueue& queue)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Requeuing"));
+	MojLogDebug(s_log, _T("Requeuing"));
 
 	ScheduleQueue updated;
 
@@ -292,7 +292,7 @@ void Scheduler::ReQueue(ScheduleQueue& queue)
 void Scheduler::TimeChanged()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("System time or timezone changed, recomputing "
+	MojLogDebug(s_log, _T("System time or timezone changed, recomputing "
 		"start times and requeuing Scheduled Activities"));
 
 	ReQueue(m_queue);

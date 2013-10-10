@@ -107,7 +107,7 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Leak: %s"), MojoObjectJson(payload).c_str());
+	MojLogDebug(s_log, _T("Leak: %s"), MojoObjectJson(payload).c_str());
 
 	MojErr err = MojErrNone;
 

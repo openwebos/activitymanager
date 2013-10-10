@@ -55,7 +55,7 @@ MojoDBProxy::PrepareStoreCommand(boost::shared_ptr<Activity> activity,
 	boost::shared_ptr<Completion> completion)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Preparing put command for [Activity %llu]"),
+	MojLogDebug(s_log, _T("Preparing put command for [Activity %llu]"),
 		activity->GetId());
 
 	return boost::make_shared<MojoDBStoreCommand>(m_service,
@@ -67,7 +67,7 @@ MojoDBProxy::PrepareDeleteCommand(boost::shared_ptr<Activity> activity,
 	boost::shared_ptr<Completion> completion)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Preparing delete command for [Activity %llu]"),
+	MojLogDebug(s_log, _T("Preparing delete command for [Activity %llu]"),
 		activity->GetId());
 
 	return boost::make_shared<MojoDBDeleteCommand>(m_service,
@@ -83,7 +83,7 @@ MojoDBProxy::CreateToken()
 void MojoDBProxy::LoadActivities()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Loading persisted Activities from MojoDB"));
+	MojLogDebug(s_log, _T("Loading persisted Activities from MojoDB"));
 
 	MojObject query;
 	query.putString(_T("from"), ActivityKind);
@@ -105,7 +105,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Processing Activities loaded from MojoDB"));
+	MojLogDebug(s_log, _T("Processing Activities loaded from MojoDB"));
 
 	/* Don't allow the Activity Manager to start up if the MojoDB load
 	 * fails ... */
@@ -272,7 +272,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 				}
 			}
 
-			MojLogNotice(s_log, _T("[Activity %llu] (\"%s\"): _id %s, rev %llu "
+			MojLogDebug(s_log, _T("[Activity %llu] (\"%s\"): _id %s, rev %llu "
 				"loaded"), act->GetId(), act->GetName().c_str(), id.data(),
 				(unsigned long long)rev);
 
@@ -292,7 +292,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 	}
 
 	if (found) {
-		MojLogInfo(s_log, _T("Preparing to request next page (\"%s\") of "
+		MojLogDebug(s_log, _T("Preparing to request next page (\"%s\") of "
 			"Activities"), page.data());
 
 		MojObject query;
@@ -311,11 +311,11 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 
 		m_call->Call();
 	} else {
-		MojLogNotice(s_log, _T("All Activities successfully loaded from "
+		MojLogDebug(s_log, _T("All Activities successfully loaded from "
 			"MojoDB"));
 
 		if (!m_oldTokens.empty()) {
-			MojLogNotice(s_log, _T("Beginning purge of old Activities from "
+			MojLogDebug(s_log, _T("Beginning purge of old Activities from "
 				"database"));
 			PreparePurgeCall();
 			m_call->Call();
@@ -337,7 +337,7 @@ void MojoDBProxy::ActivityPurgeComplete(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Purge of batch of old Activities complete"));
+	MojLogDebug(s_log, _T("Purge of batch of old Activities complete"));
 
 	/* If there was a transient error, re-call */
 	if (err != MojErrNone) {
@@ -357,7 +357,7 @@ void MojoDBProxy::ActivityPurgeComplete(MojServiceMessage *msg,
 		PreparePurgeCall();
 		m_call->Call();
 	} else {
-		MojLogInfo(s_log, _T("Done purging old Activities"));
+		MojLogDebug(s_log, _T("Done purging old Activities"));
 #ifdef ACTIVITYMANAGER_CALL_CONFIGURATOR
 		PrepareConfiguratorCall();
 		m_call->Call();
@@ -372,7 +372,7 @@ void MojoDBProxy::ActivityConfiguratorComplete(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Load of static Activity configuration complete"));
+	MojLogDebug(s_log, _T("Load of static Activity configuration complete"));
 
 	if (err != MojErrNone) {
 		MojLogWarning(s_log, _T("Failed to load static Activity configuration: "
@@ -386,7 +386,7 @@ void MojoDBProxy::ActivityConfiguratorComplete(MojServiceMessage *msg,
 void MojoDBProxy::PreparePurgeCall()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Preparing to purge batch of old Activities"));
+	MojLogDebug(s_log, _T("Preparing to purge batch of old Activities"));
 
 	MojObject ids(MojObject::TypeArray);
 	PopulatePurgeIds(ids);
@@ -404,7 +404,7 @@ void MojoDBProxy::PreparePurgeCall()
 void MojoDBProxy::PrepareConfiguratorCall()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Prepared to update Activity configuration from "
+	MojLogDebug(s_log, _T("Prepared to update Activity configuration from "
 		"static store"));
 
 	MojObject types(MojObject::TypeArray);

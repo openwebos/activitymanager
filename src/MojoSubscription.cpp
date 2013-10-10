@@ -37,7 +37,7 @@ MojoSubscription::~MojoSubscription()
 void MojoSubscription::EnableSubscription()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Enabling subscription for %s"),
+	MojLogDebug(s_log, _T("[Activity %llu] Enabling subscription for %s"),
 		m_activity->GetId(), GetSubscriber().GetString().c_str());
 
 	/* The message will take a reference to to Cancel Handler when it

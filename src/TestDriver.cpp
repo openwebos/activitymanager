@@ -74,11 +74,11 @@ void TestDriver::HandleAdoptResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Adopt Response: %s"),
+	MojLogDebug(s_log, _T("Adopt Response: %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err) {
-		MojLogInfo(s_log, _T("Adopt failed"));
+		MojLogDebug(s_log, _T("Adopt failed"));
 		m_adopt.reset();
 		return;
 	}
@@ -87,7 +87,7 @@ void TestDriver::HandleAdoptResponse(MojServiceMessage *msg,
 
 	MojErr err2 = params.put(_T("activityId"), m_activityId);
 	if (err2) {
-		MojLogInfo(s_log, _T("Failed to initialize args for complete call"));
+		MojLogDebug(s_log, _T("Failed to initialize args for complete call"));
 		m_adopt.reset();
 		return;
 	}
@@ -102,7 +102,7 @@ void TestDriver::HandleCompleteResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Complete Response: %s"),
+	MojLogDebug(s_log, _T("Complete Response: %s"),
 		MojoObjectJson(response).c_str());
 
 	m_complete.reset();

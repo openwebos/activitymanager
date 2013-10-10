@@ -154,7 +154,7 @@ static bool read_modem_present()
 MojErr ActivityManagerApp::open()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("%s initializing"), name().data());
+	MojLogDebug(s_log, _T("%s initializing"), name().data());
 
 	InitRNG();
 
@@ -224,7 +224,7 @@ MojErr ActivityManagerApp::open()
 		return MojErrNoMem;
 	}
 
-	MojLogNotice(s_log, _T("%s initialized"), name().data());
+	MojLogDebug(s_log, _T("%s initialized"), name().data());
 
 	/* System is initialized.  All object managers are prepared to instantiate
 	 * their objects as Activities are loaded from the database.  Begin
@@ -236,7 +236,7 @@ MojErr ActivityManagerApp::open()
 
 MojErr ActivityManagerApp::ready()
 {
-	MojLogNotice(s_log, _T("%s ready to accept incoming requests"),
+	MojLogDebug(s_log, _T("%s ready to accept incoming requests"),
 		name().data());
 
 	/* All stored Activities have been deserialized from the database.  All
@@ -304,7 +304,7 @@ void ActivityManagerApp::InitRNG()
 
 		initialized = true;
 
-		MojLogNotice(s_log, _T("Seeding RNG using time: sec %u, usec %u, "
+		MojLogDebug(s_log, _T("Seeding RNG using time: sec %u, usec %u, "
 			"seed %u"), (unsigned)tv.tv_sec, (unsigned)tv.tv_usec, rngSeed);
 	}
 

@@ -51,7 +51,7 @@ MojoPersistCommand::~MojoPersistCommand()
 void MojoPersistCommand::Persist()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] [PersistCommand %s]: Issuing"),
+	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Issuing"),
 		m_activity->GetId(), GetString().c_str());
 
 	/* Perform update of Parameters, if desired - modify copy, not original,
@@ -98,7 +98,7 @@ void MojoPersistCommand::PersistResponse(MojServiceMessage *msg,
 			m_call->Call();
 		}
 	} else {
-		MojLogInfo(s_log, _T("[Activity %llu] [PersistCommand %s]: Succeeded"),
+		MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Succeeded"),
 			m_activity->GetId(), GetString().c_str());
 		Complete(true);
 	}

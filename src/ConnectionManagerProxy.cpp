@@ -79,7 +79,7 @@ boost::shared_ptr<Requirement> ConnectionManagerProxy::InstantiateRequirement(
 	const MojObject& value)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
+	MojLogDebug(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
 		name.c_str(), activity->GetId());
 
 	if (name == "internet") {
@@ -140,7 +140,7 @@ void ConnectionManagerProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Registering requirements"));
+	MojLogDebug(s_log, _T("Registering requirements"));
 
 	master->RegisterRequirement("internet", shared_from_this());
 	master->RegisterRequirement("wifi", shared_from_this());
@@ -154,7 +154,7 @@ void ConnectionManagerProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Unregistering requirements"));
+	MojLogDebug(s_log, _T("Unregistering requirements"));
 
 	master->UnregisterRequirement("internet", shared_from_this());
 	master->UnregisterRequirement("wifi", shared_from_this());
@@ -167,7 +167,7 @@ void ConnectionManagerProxy::UnregisterRequirements(
 void ConnectionManagerProxy::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Enabling Connection Manager Proxy"));
+	MojLogDebug(s_log, _T("Enabling Connection Manager Proxy"));
 
 	MojObject params;
 	params.putBool(_T("subscribe"), true);
@@ -184,7 +184,7 @@ void ConnectionManagerProxy::Enable()
 void ConnectionManagerProxy::Disable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Disabling Connection Manager Proxy"));
+	MojLogDebug(s_log, _T("Disabling Connection Manager Proxy"));
 
 	m_call.reset();
 }
@@ -229,7 +229,7 @@ void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 		return;
 	}
 
-	MojLogInfo(s_log, _T("Update from Connection Manager: %s"),
+	MojLogDebug(s_log, _T("Update from Connection Manager: %s"),
 		MojoObjectJson(response).c_str());
 
 	bool isInternetConnectionAvailable = false;
@@ -240,7 +240,7 @@ void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 
 	if (isInternetConnectionAvailable) {
 		if (!m_internetRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("Internet connection is now available"));
+			MojLogDebug(s_log, _T("Internet connection is now available"));
 			m_internetRequirementCore->Met();
 			std::for_each(m_internetRequirements.begin(),
 				m_internetRequirements.end(),
@@ -252,7 +252,7 @@ void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 		}
 	} else {
 		if (m_internetRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("Internet connection is no longer "
+			MojLogDebug(s_log, _T("Internet connection is no longer "
 				"available"));
 			m_internetRequirementCore->Unmet();
 			std::for_each(m_internetRequirements.begin(),
@@ -268,7 +268,7 @@ void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 		m_wifiConfidence : m_wanConfidence;
 	if (m_internetConfidence != maxConfidence) {
 		m_internetConfidence = maxConfidence;
-		MojLogInfo(s_log, _T("Internet confidence level changed to %d"),
+		MojLogDebug(s_log, _T("Internet confidence level changed to %d"),
 			m_internetConfidence);
 		UpdateConfidenceRequirements(m_internetConfidenceCores,
 			m_internetConfidenceRequirements, m_internetConfidence);
@@ -312,7 +312,7 @@ MojErr ConnectionManagerProxy::UpdateWifiStatus(const MojObject& response)
 
 	if (wifiAvailable) {
 		if (!m_wifiRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("Wifi connection is now available"));
+			MojLogDebug(s_log, _T("Wifi connection is now available"));
 			m_wifiRequirementCore->Met();
 			std::for_each(m_wifiRequirements.begin(), m_wifiRequirements.end(),
 				boost::mem_fn(&Requirement::Met));
@@ -322,7 +322,7 @@ MojErr ConnectionManagerProxy::UpdateWifiStatus(const MojObject& response)
 		}
 	} else {
 		if (m_wifiRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("Wifi connection is no longer available"));
+			MojLogDebug(s_log, _T("Wifi connection is no longer available"));
 			m_wifiRequirementCore->Unmet();
 			std::for_each(m_wifiRequirements.begin(), m_wifiRequirements.end(),
 				boost::mem_fn(&Requirement::Unmet));
@@ -331,7 +331,7 @@ MojErr ConnectionManagerProxy::UpdateWifiStatus(const MojObject& response)
 
 	if (m_wifiConfidence != (int)confidence) {
 		m_wifiConfidence = (int)confidence;
-		MojLogInfo(s_log, _T("Wifi confidence level changed to %d"),
+		MojLogDebug(s_log, _T("Wifi confidence level changed to %d"),
 			m_wifiConfidence);
 		UpdateConfidenceRequirements(m_wifiConfidenceCores,
 			m_wifiConfidenceRequirements, m_wifiConfidence);
@@ -387,7 +387,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 
 	if (wanAvailable) {
 		if (!m_wanRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("WAN connection is now available"));
+			MojLogDebug(s_log, _T("WAN connection is now available"));
 			m_wanRequirementCore->Met();
 			std::for_each(m_wanRequirements.begin(), m_wanRequirements.end(),
 				boost::mem_fn(&Requirement::Met));
@@ -397,7 +397,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 		}
 	} else {
 		if (m_wanRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("WAN connection is no longer available"));
+			MojLogDebug(s_log, _T("WAN connection is no longer available"));
 			m_wanRequirementCore->Unmet();
 			std::for_each(m_wanRequirements.begin(), m_wanRequirements.end(),
 				boost::mem_fn(&Requirement::Unmet));
@@ -406,7 +406,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 
 	if (m_wanConfidence != (int)confidence) {
 		m_wanConfidence = (int)confidence;
-		MojLogInfo(s_log, _T("WAN confidence level changed to %d"),
+		MojLogDebug(s_log, _T("WAN confidence level changed to %d"),
 			m_wanConfidence);
 		UpdateConfidenceRequirements(m_wanConfidenceCores,
 			m_wanConfidenceRequirements, m_wanConfidence);

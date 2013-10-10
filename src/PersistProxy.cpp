@@ -54,7 +54,7 @@ PersistProxy::PrepareNoopCommand(boost::shared_ptr<Activity> activity,
 	boost::shared_ptr<Completion> completion)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Preparing noop command for [Activity %llu]"),
+	MojLogDebug(s_log, _T("Preparing noop command for [Activity %llu]"),
 		activity->GetId());
 
 	return boost::make_shared<NoopCommand>(activity, completion);

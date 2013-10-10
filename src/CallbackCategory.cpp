@@ -108,7 +108,7 @@ CallbackCategoryHandler::ScheduledWakeup(MojServiceMessage *msg, MojObject &payl
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Callback: ScheduledWakeup"));
+	MojLogDebug(s_log, _T("Callback: ScheduledWakeup"));
 
 	boost::dynamic_pointer_cast<PowerdScheduler,Scheduler>(m_scheduler)->ScheduledWakeup();
 
@@ -125,7 +125,7 @@ CallbackCategoryHandler::SchedulerTest(MojServiceMessage *msg, MojObject& payloa
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Callback: Scheduler Test Start: %s"),
+	MojLogDebug(s_log, _T("Callback: Scheduler Test Start: %s"),
 		MojoObjectJson(payload).c_str());
 
 	m_testDriver->Start(payload);

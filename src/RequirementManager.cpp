@@ -69,7 +69,7 @@ boost::shared_ptr<Requirement> MasterRequirementManager::InstantiateRequirement(
 	const MojObject& value)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Looking up specific requirement manager to "
+	MojLogDebug(s_log, _T("Looking up specific requirement manager to "
 		"instantiate [Requirement %s]"), name.c_str());
 
 	RequirementMap::iterator found = m_requirements.find(name);
@@ -86,7 +86,7 @@ void MasterRequirementManager::RegisterRequirement(const std::string& name,
 	boost::shared_ptr<RequirementManager> manager)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Registering [Manager %s] for [Requirement %s]"),
+	MojLogDebug(s_log, _T("Registering [Manager %s] for [Requirement %s]"),
 		manager->GetName().c_str(), name.c_str());
 
 	m_requirements[name] = manager;
@@ -96,7 +96,7 @@ void MasterRequirementManager::UnregisterRequirement(const std::string& name,
 	boost::shared_ptr<RequirementManager> manager)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Unregistering [Manager %s] from [Requirement %s]"),
+	MojLogDebug(s_log, _T("Unregistering [Manager %s] from [Requirement %s]"),
 		manager->GetName().c_str(), name.c_str());
 
 	RequirementMap::iterator found = m_requirements.find(name);

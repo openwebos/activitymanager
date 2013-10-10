@@ -41,7 +41,7 @@ ControlGroup::~ControlGroup()
 void ControlGroup::Init()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Initializing control group [Container %s]"),
+	MojLogDebug(s_log, _T("Initializing control group [Container %s]"),
 		m_name.c_str());
 }
 
@@ -56,7 +56,7 @@ void ControlGroup::UpdatePriority()
 	bool focused = IsFocused();
 
 	if ((m_currentPriority != priority) || (m_focused != focused)) {
-		MojLogInfo(s_log, _T("Updating priority for [Container %s] to "
+		MojLogDebug(s_log, _T("Updating priority for [Container %s] to "
 			"[%s,%s] from [%s,%s]"), m_name.c_str(),
 			ActivityPriorityNames[priority], focused ? "focused" : "unfocused",
 			ActivityPriorityNames[m_currentPriority],
@@ -71,7 +71,7 @@ void ControlGroup::MapProcess(pid_t pid)
 	// UNCOMMENT TO ENABLE CGROUPS HANDLING FROM ACTIVITYMANAGER
 	/*
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Mapping [pid %d] into [Container %s]"),
+	MojLogDebug(s_log, _T("Mapping [pid %d] into [Container %s]"),
 		(int)pid, m_name.c_str());
 	
 	// Store all pids for containter
@@ -114,7 +114,7 @@ void ControlGroup::SetPriority(ActivityPriority_t priority, bool focused)
 	std::list<int>::iterator pid, nextPid;
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Setting priority of [Container %s] to [%s,%s]"),
+	MojLogDebug(s_log, _T("Setting priority of [Container %s] to [%s,%s]"),
 		m_name.c_str(), ActivityPriorityNames[priority],
 		focused ? "focused" : "unfocused");
 

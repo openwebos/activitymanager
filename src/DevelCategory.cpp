@@ -135,7 +135,7 @@ DevelCategoryHandler::Evict(MojServiceMessage *msg, MojObject &payload)
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Evict: %s"), MojoObjectJson(payload).c_str());
+	MojLogDebug(s_log, _T("Evict: %s"), MojoObjectJson(payload).c_str());
 
 	MojErr err = MojErrNone;
 
@@ -232,7 +232,7 @@ DevelCategoryHandler::Run(MojServiceMessage *msg, MojObject &payload)
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Run: %s"), MojoObjectJson(payload).c_str());
+	MojLogDebug(s_log, _T("Run: %s"), MojoObjectJson(payload).c_str());
 
 	MojErr err = MojErrNone;
 
@@ -330,7 +330,7 @@ DevelCategoryHandler::SetConcurrency(MojServiceMessage *msg, MojObject &payload)
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("SetConcurrency: %s"),
+	MojLogDebug(s_log, _T("SetConcurrency: %s"),
 		MojoObjectJson(payload).c_str());
 
 	bool unlimited = false;
@@ -423,7 +423,7 @@ DevelCategoryHandler::PriorityControl(MojServiceMessage *msg, MojObject& payload
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("PriorityControl: %s"),
+	MojLogDebug(s_log, _T("PriorityControl: %s"),
 		MojoObjectJson(payload).c_str());
 
 	MojErr err;

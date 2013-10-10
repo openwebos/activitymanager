@@ -60,7 +60,7 @@ PowerActivity::PowerState PowerdPowerActivity::GetPowerState() const
 void PowerdPowerActivity::Begin()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Locking power on"),
+	MojLogDebug(s_log, _T("[Activity %llu] Locking power on"),
 		m_activity.lock()->GetId());
 
 	if ((m_currentState == PowerLocked) || (m_targetState == PowerLocked)) {
@@ -96,7 +96,7 @@ void PowerdPowerActivity::Begin()
 void PowerdPowerActivity::End()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Unlocking power"),
+	MojLogDebug(s_log, _T("[Activity %llu] Unlocking power"),
 		m_activity.lock()->GetId());
 
 	if ((m_currentState == PowerUnlocked) || (m_targetState == PowerUnlocked)) {
@@ -152,13 +152,13 @@ void PowerdPowerActivity::PowerLockedNotification(MojServiceMessage *msg,
 
 	if (err == MojErrNone) {
 		if (m_currentState != PowerLocked) {
-			MojLogInfo(s_log, _T("[Activity %llu] Power lock successfully "
+			MojLogDebug(s_log, _T("[Activity %llu] Power lock successfully "
 				"created"), m_activity.lock()->GetId());
 
 			m_currentState = PowerLocked;
 			m_activity.lock()->PowerLockedNotification();
 		} else {
-			MojLogInfo(s_log, _T("[Activity %llu] Power lock successfully "
+			MojLogDebug(s_log, _T("[Activity %llu] Power lock successfully "
 				"updated"), m_activity.lock()->GetId());
 		}
 
@@ -210,7 +210,7 @@ void PowerdPowerActivity::PowerUnlockedNotification(MojServiceMessage *msg,
 	MojLogTrace(s_log);
 
 	if (err == MojErrNone) {
-		MojLogInfo(s_log, _T("[Activity %llu] Power lock successfully %s"),
+		MojLogDebug(s_log, _T("[Activity %llu] Power lock successfully %s"),
 			m_activity.lock()->GetId(), debounce ? "debounced" : "removed");
 
 		// reset the call *before* the unlocked notification; if
@@ -268,7 +268,7 @@ void PowerdPowerActivity::PowerUnlockedNotificationDebounce(
 void PowerdPowerActivity::TimeoutNotification()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Attempting to update power lock"),
+	MojLogDebug(s_log, _T("[Activity %llu] Attempting to update power lock"),
 		m_activity.lock()->GetId());
 
 #ifdef ACTIVITYMANAGER_RENEW_POWER_ACTIVITIES

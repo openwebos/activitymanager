@@ -68,7 +68,7 @@ void DefaultRequirementManager::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Registering requirements"));
+	MojLogDebug(s_log, _T("Registering requirements"));
 
 	master->RegisterRequirement("never", shared_from_this());
 }
@@ -77,7 +77,7 @@ void DefaultRequirementManager::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Unregistering requirements"));
+	MojLogDebug(s_log, _T("Unregistering requirements"));
 
 	master->UnregisterRequirement("never", shared_from_this());
 }

@@ -66,7 +66,7 @@ PowerActivity::PowerState NoopPowerActivity::GetPowerState() const
 void NoopPowerActivity::Begin()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Locking power on"),
+	MojLogDebug(s_log, _T("[Activity %llu] Locking power on"),
 		m_activity.lock()->GetId());
 
 	if (m_state != PowerLocked) {
@@ -78,7 +78,7 @@ void NoopPowerActivity::Begin()
 void NoopPowerActivity::End()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("[Activity %llu] Unlocking power"),
+	MojLogDebug(s_log, _T("[Activity %llu] Unlocking power"),
 		m_activity.lock()->GetId());
 
 	if (m_state != PowerUnlocked) {

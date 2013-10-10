@@ -40,7 +40,7 @@ LunaBusProxy::~LunaBusProxy()
 void LunaBusProxy::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Enabling Luna Bus Proxy"));
+	MojLogDebug(s_log, _T("Enabling Luna Bus Proxy"));
 
 	EnableBusUpdates();
 }
@@ -48,7 +48,7 @@ void LunaBusProxy::Enable()
 void LunaBusProxy::Disable()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Disabling Luna Bus Proxy"));
+	MojLogDebug(s_log, _T("Disabling Luna Bus Proxy"));
 
 	m_busUpdates->Cancel();
 	m_busUpdates.reset();
@@ -57,7 +57,7 @@ void LunaBusProxy::Disable()
 void LunaBusProxy::EnableBusUpdates()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Enabling service updates from Luna bus"));
+	MojLogDebug(s_log, _T("Enabling service updates from Luna bus"));
 
 	MojObject params;
 	MojErr err = params.putString(_T("category"), "_private_service_status");
@@ -77,7 +77,7 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Received Luna Bus Update: %s"),
+	MojLogDebug(s_log, _T("Received Luna Bus Update: %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
@@ -144,7 +144,7 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 
 			if (!busIdVec.empty()) {
 				if (ContainsRestricted(busIdVec)) {
-					MojLogInfo(s_log, _T("Restricted names found in list of "
+					MojLogDebug(s_log, _T("Restricted names found in list of "
 						"equivalent names for service \"%s\""),
 						serviceName.data());
 				} else {
@@ -179,7 +179,7 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 		}
 
 		if (!isConnected) {
-			MojLogInfo(s_log, _T("Disconnect message for service name \"%s\""),
+			MojLogDebug(s_log, _T("Disconnect message for service name \"%s\""),
 				serviceName.data());
 			return;
 		}
@@ -209,14 +209,14 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 
 		if (!busIdVec.empty()) {
 			if (ContainsRestricted(busIdVec)) {
-				MojLogInfo(s_log, _T("Restricted names found in list of "
+				MojLogDebug(s_log, _T("Restricted names found in list of "
 					"equivalent names for service \"%s\""), serviceName.data());
 			} else {
 				m_containerManager->MapContainer(busIdVec[0].GetId(), busIdVec,
 					(pid_t)pid);
 			}
 		} else {
-			MojLogInfo(s_log, _T("No valid names found for service "
+			MojLogDebug(s_log, _T("No valid names found for service "
 				"\"%s\" while processing service connect update"),
 				serviceName.data());
 		}
@@ -227,7 +227,7 @@ void LunaBusProxy::PopulateBusIds(const MojObject& ids,
 	ContainerManager::BusIdVec& busIdVec, const MojString& serviceName) const
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Transforming JSON array %s into BusIds"),
+	MojLogDebug(s_log, _T("Transforming JSON array %s into BusIds"),
 		MojoObjectJson(ids).c_str());
 
 	if (ids.type() != MojObject::TypeArray) {
@@ -284,7 +284,7 @@ bool LunaBusProxy::FilterName(const MojString& name) const
 void LunaBusProxy::InitializeRestrictedIds()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Initializing list of restricted bus ids that "
+	MojLogDebug(s_log, _T("Initializing list of restricted bus ids that "
 		"should not be managed"));
 
 	static const char *ids[] = {

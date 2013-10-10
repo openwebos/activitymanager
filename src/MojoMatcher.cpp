@@ -46,18 +46,18 @@ MojoSimpleMatcher::~MojoSimpleMatcher()
 bool MojoSimpleMatcher::Match(const MojObject& response)
 {
 	if (!m_setupComplete) {
-		MojLogInfo(s_log, _T("Simple Matcher: Setup successfully"));
+		MojLogDebug(s_log, _T("Simple Matcher: Setup successfully"));
 		m_setupComplete = true;
 		return false;
 	} else {
-		MojLogInfo(s_log, _T("Simple Matcher: Matched"));
+		MojLogDebug(s_log, _T("Simple Matcher: Matched"));
 		return true;
 	}
 }
 
 void MojoSimpleMatcher::Reset()
 {
-	MojLogInfo(s_log, _T("Simple Matcher: Resetting"));
+	MojLogDebug(s_log, _T("Simple Matcher: Resetting"));
 
 	m_setupComplete = false;
 }
@@ -82,11 +82,11 @@ bool MojoKeyMatcher::Match(const MojObject& response)
 
 	/* If those were the droids we were looking for, fire! */
 	if (response.contains(m_key)) {
-		MojLogInfo(s_log, _T("Key Matcher: Key \"%s\" found in response %s"),
+		MojLogDebug(s_log, _T("Key Matcher: Key \"%s\" found in response %s"),
 			m_key.data(), MojoObjectJson(response).c_str());
 		return true;
 	} else {
-		MojLogInfo(s_log, _T("Key Matcher: Key \"%s\" not found in response"
+		MojLogDebug(s_log, _T("Key Matcher: Key \"%s\" not found in response"
 			"%s"), m_key.data(), MojoObjectJson(response).c_str());
 		return false;
 	}
@@ -126,17 +126,17 @@ bool MojoCompareMatcher::Match(const MojObject& response)
 			MojString oldValueString;
 			m_value.stringValue(oldValueString);
 
-			MojLogInfo(s_log, _T("Compare Matcher: Comparison key \"%s\" "
+			MojLogDebug(s_log, _T("Compare Matcher: Comparison key \"%s\" "
 				"value changed from \"%s\" to \"%s\".  Firing."), m_key.data(),
 				oldValueString.data(), valueString.data());
 
 			return true;
 		} else {
-			MojLogInfo(s_log, _T("Compare Matcher: Comparison key \"%s\" "
+			MojLogDebug(s_log, _T("Compare Matcher: Comparison key \"%s\" "
 				"value \"%s\" unchanged."), m_key.data(), valueString.data());
 		}
 	} else {
-		MojLogInfo(s_log, _T("Compare Matcher: Comparison key (%s) not "
+		MojLogDebug(s_log, _T("Compare Matcher: Comparison key (%s) not "
 			"present."), m_key.data());
 	}
 
@@ -177,11 +177,11 @@ bool MojoWhereMatcher::Match(const MojObject& response)
 	MojLogTrace(s_log);
 
 	if (CheckClauses(m_where, response)) {
-		MojLogInfo(s_log, _T("Where Matcher: Response %s matches"),
+		MojLogDebug(s_log, _T("Where Matcher: Response %s matches"),
 			MojoObjectJson(response).c_str());
 		return true;
 	} else {
-		MojLogInfo(s_log, _T("Where Matcher: Response %s does not match"),
+		MojLogDebug(s_log, _T("Where Matcher: Response %s does not match"),
 			MojoObjectJson(response).c_str());
 		return false;
 	}
@@ -239,7 +239,7 @@ void MojoWhereMatcher::ValidateOp(const MojObject& op) const
 void MojoWhereMatcher::ValidateClause(const MojObject& clause) const
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Validating where clause \"%s\""),
+	MojLogDebug(s_log, _T("Validating where clause \"%s\""),
 		MojoObjectJson(clause).c_str());
 
 	if (!clause.contains(_T("prop"))) {
@@ -269,7 +269,7 @@ void MojoWhereMatcher::ValidateClause(const MojObject& clause) const
 void MojoWhereMatcher::ValidateClauses(const MojObject& where) const
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Validating trigger clauses"));
+	MojLogDebug(s_log, _T("Validating trigger clauses"));
 
 	if (where.type() == MojObject::TypeObject) {
 		ValidateClause(where);
@@ -352,7 +352,7 @@ bool MojoWhereMatcher::CheckClause(const MojObject& clause,
 		result = false;
 	}
 
-	MojLogInfo(s_log, _T("Where Trigger: Clause %s %s"),
+	MojLogDebug(s_log, _T("Where Trigger: Clause %s %s"),
 		MojoObjectJson(clause).c_str(), result ? "matched" : "did not match");
 
 	return result;

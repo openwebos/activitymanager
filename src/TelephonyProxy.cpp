@@ -47,7 +47,7 @@ boost::shared_ptr<Requirement> TelephonyProxy::InstantiateRequirement(
 	const MojObject& value)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
+	MojLogDebug(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
 		name.c_str(), activity->GetId());
 
 	if (name == "telephony") {
@@ -74,7 +74,7 @@ void TelephonyProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Registering requirements"));
+	MojLogDebug(s_log, _T("Registering requirements"));
 
 	master->RegisterRequirement("telephony", shared_from_this());
 }
@@ -83,7 +83,7 @@ void TelephonyProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Unregistering requirements"));
+	MojLogDebug(s_log, _T("Unregistering requirements"));
 
 	master->UnregisterRequirement("telephony", shared_from_this());
 }
@@ -91,7 +91,7 @@ void TelephonyProxy::UnregisterRequirements(
 void TelephonyProxy::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Enabling TIL Proxy"));
+	MojLogDebug(s_log, _T("Enabling TIL Proxy"));
 
 	MojObject params;
 	params.putBool(_T("subscribe"), true);
@@ -109,7 +109,7 @@ void TelephonyProxy::Enable()
 void TelephonyProxy::Disable()
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Disabling TIL Proxy"));
+	MojLogDebug(s_log, _T("Disabling TIL Proxy"));
 
 	m_networkStatusQuery.reset();
 	m_platformQuery.reset();
@@ -131,7 +131,7 @@ void TelephonyProxy::NetworkStatusUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Network status update message: %s"),
+	MojLogDebug(s_log, _T("Network status update message: %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
@@ -196,7 +196,7 @@ void TelephonyProxy::PlatformQueryUpdate(MojServiceMessage *msg,
     const MojObject& response, MojErr err)
 {
     MojLogTrace(s_log);
-    MojLogInfo(s_log, _T("Platform query update message: %s"),
+    MojLogDebug(s_log, _T("Platform query update message: %s"),
         MojoObjectJson(response).c_str());
 
     if (err != MojErrNone) {
@@ -264,7 +264,7 @@ void TelephonyProxy::UpdateTelephonyState()
 {
     if (m_haveTelephonyService) {
 		if (!m_telephonyRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("Telephony service available"));
+			MojLogDebug(s_log, _T("Telephony service available"));
 			m_telephonyRequirementCore->Met();
 			std::for_each(m_telephonyRequirements.begin(),
 				m_telephonyRequirements.end(),
@@ -272,7 +272,7 @@ void TelephonyProxy::UpdateTelephonyState()
 		}
     } else {
 		if (m_telephonyRequirementCore->IsMet()) {
-			MojLogInfo(s_log, _T("Telephony service unavailable"));
+			MojLogDebug(s_log, _T("Telephony service unavailable"));
 			m_telephonyRequirementCore->Unmet();
 			std::for_each(m_telephonyRequirements.begin(),
 				m_telephonyRequirements.end(),

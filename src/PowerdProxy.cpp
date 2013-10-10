@@ -54,7 +54,7 @@ boost::shared_ptr<Requirement> PowerdProxy::InstantiateRequirement(
 	const MojObject& value)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
+	MojLogDebug(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
 		name.c_str(), activity->GetId());
 
 	if (name == "charging") {
@@ -111,7 +111,7 @@ void PowerdProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Registering requirements"));
+	MojLogDebug(s_log, _T("Registering requirements"));
 
 	master->RegisterRequirement("charging", shared_from_this());
 	master->RegisterRequirement("docked", shared_from_this());
@@ -122,7 +122,7 @@ void PowerdProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
 	MojLogTrace(s_log);
-	MojLogNotice(s_log, _T("Unregistering requirements"));
+	MojLogDebug(s_log, _T("Unregistering requirements"));
 
 	master->UnregisterRequirement("charging", shared_from_this());
 	master->UnregisterRequirement("docked", shared_from_this());
@@ -132,7 +132,7 @@ void PowerdProxy::UnregisterRequirements(
 void PowerdProxy::Enable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Enabling battery and charging signals"));
+	MojLogDebug(s_log, _T("Enabling battery and charging signals"));
 
 	EnableChargerSignals();
 	EnableBatterySignals();
@@ -141,7 +141,7 @@ void PowerdProxy::Enable()
 void PowerdProxy::Disable()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Disabling battery and charging signals"));
+	MojLogDebug(s_log, _T("Disabling battery and charging signals"));
 
 	m_chargerStatus.reset();
 	m_batteryStatus.reset();
@@ -168,7 +168,7 @@ MojInt64 PowerdProxy::GetBatteryPercent() const
 void PowerdProxy::TriggerChargerStatus()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Triggering status signals for \"charging\" and "
+	MojLogDebug(s_log, _T("Triggering status signals for \"charging\" and "
 		"\"docked\" requirements"));
 
 	MojObject params(MojObject::TypeObject);
@@ -192,7 +192,7 @@ void PowerdProxy::TriggerChargerStatus()
 void PowerdProxy::TriggerBatteryStatus()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Triggering status signals for \"battery\" "
+	MojLogDebug(s_log, _T("Triggering status signals for \"battery\" "
 		"requirement"));
 
 	MojObject params(MojObject::TypeObject);
@@ -208,7 +208,7 @@ void PowerdProxy::TriggerBatteryStatus()
 void PowerdProxy::EnableChargerSignals()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Enabling charger signals"));
+	MojLogDebug(s_log, _T("Enabling charger signals"));
 
 	MojErr err;
 	MojErr errs = MojErrNone;
@@ -236,7 +236,7 @@ void PowerdProxy::EnableChargerSignals()
 void PowerdProxy::EnableBatterySignals()
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Enabling battery signals"));
+	MojLogDebug(s_log, _T("Enabling battery signals"));
 
 	MojErr err;
 	MojErr errs = MojErrNone;
@@ -265,7 +265,7 @@ void PowerdProxy::TriggerChargerStatusResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Attempt to trigger charger status signal generated "
+	MojLogDebug(s_log, _T("Attempt to trigger charger status signal generated "
 		"response: %s"), MojoObjectJson(response).c_str());
 
 	m_triggerChargerStatus.reset();
@@ -280,7 +280,7 @@ void PowerdProxy::TriggerBatteryStatusResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Attempt to trigger battery status signal generated "
+	MojLogDebug(s_log, _T("Attempt to trigger battery status signal generated "
 		"response: %s"), MojoObjectJson(response).c_str());
 
 	m_triggerBatteryStatus.reset();
@@ -295,7 +295,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Received charger status signal: %s"),
+	MojLogDebug(s_log, _T("Received charger status signal: %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
@@ -362,7 +362,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 
 		if (m_onPuck) {
 			if (!m_dockedRequirementCore->IsMet()) {
-				MojLogNotice(s_log, _T("Device is now docked"));
+				MojLogDebug(s_log, _T("Device is now docked"));
 				m_dockedRequirementCore->Met();
 				std::for_each(m_dockedRequirements.begin(),
 					m_dockedRequirements.end(),
@@ -370,7 +370,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 			}
 		} else {
 			if (m_dockedRequirementCore->IsMet()) {
-				MojLogNotice(s_log, _T("Device is no longer docked"));
+				MojLogDebug(s_log, _T("Device is no longer docked"));
 				m_dockedRequirementCore->Unmet();
 				std::for_each(m_dockedRequirements.begin(),
 					m_dockedRequirements.end(),
@@ -380,7 +380,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 
 		if (m_inductiveChargerConnected || m_usbChargerConnected) {
 			if (!m_chargingRequirementCore->IsMet()) {
-				MojLogNotice(s_log, _T("Device is now charging"));
+				MojLogDebug(s_log, _T("Device is now charging"));
 				m_chargingRequirementCore->Met();
 				std::for_each(m_chargingRequirements.begin(),
 					m_chargingRequirements.end(),
@@ -388,7 +388,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 			}
 		} else {
 			if (m_chargingRequirementCore->IsMet()) {
-				MojLogNotice(s_log, _T("Device is no longer charging"));
+				MojLogDebug(s_log, _T("Device is no longer charging"));
 				m_chargingRequirementCore->Unmet();
 				std::for_each(m_chargingRequirements.begin(),
 					m_chargingRequirements.end(),
@@ -402,7 +402,7 @@ void PowerdProxy::BatteryStatusSignal(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Received battery status signal: %s"),
+	MojLogDebug(s_log, _T("Received battery status signal: %s"),
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {

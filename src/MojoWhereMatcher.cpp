@@ -36,11 +36,11 @@ bool MojoNewWhereMatcher::Match(const MojObject& response)
 
 	MatchResult result = CheckClause(m_where, response, AndMode);
 	if (result == Matched) {
-		MojLogInfo(s_log, _T("Where Matcher: Response %s matches"),
+		MojLogDebug(s_log, _T("Where Matcher: Response %s matches"),
 			MojoObjectJson(response).c_str());
 		return true;
 	} else {
-		MojLogInfo(s_log, _T("Where Matcher: Response %s does not match"),
+		MojLogDebug(s_log, _T("Where Matcher: Response %s does not match"),
 			MojoObjectJson(response).c_str());
 		return false;
 	}
@@ -104,7 +104,7 @@ void MojoNewWhereMatcher::ValidateOp(const MojObject& op,
 void MojoNewWhereMatcher::ValidateClause(const MojObject& clause) const
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Validating where clause \"%s\""),
+	MojLogDebug(s_log, _T("Validating where clause \"%s\""),
 		MojoObjectJson(clause).c_str());
 
 	bool found = false;
@@ -169,7 +169,7 @@ void MojoNewWhereMatcher::ValidateClause(const MojObject& clause) const
 void MojoNewWhereMatcher::ValidateClauses(const MojObject& where) const
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Validating trigger clauses"));
+	MojLogDebug(s_log, _T("Validating trigger clauses"));
 
 	if (where.type() == MojObject::TypeObject) {
 		ValidateClause(where);
@@ -202,7 +202,7 @@ MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClauses(
 			"array of clauses");
 	}
 
-	MojLogInfo(s_log, _T("Checking clauses '%s' against response '%s' (%s)"),
+	MojLogDebug(s_log, _T("Checking clauses '%s' against response '%s' (%s)"),
 		MojoObjectJson(clauses).c_str(), MojoObjectJson(response).c_str(),
 		(mode == AndMode) ? "and" : "or");
 
@@ -240,7 +240,7 @@ MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClause(
 			"of objects");
 	}
 
-	MojLogInfo(s_log, _T("Checking clause '%s' against response '%s' (%s)"),
+	MojLogDebug(s_log, _T("Checking clause '%s' against response '%s' (%s)"),
 		MojoObjectJson(clause).c_str(), MojoObjectJson(response).c_str(),
 		(mode == AndMode) ? "and" : "or");
 
@@ -279,7 +279,7 @@ MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClause(
 
 	MatchResult result = CheckProperty(prop, response, op, val, mode);
 
-	MojLogInfo(s_log, _T("Where Trigger: Clause %s %s"),
+	MojLogDebug(s_log, _T("Where Trigger: Clause %s %s"),
 		MojoObjectJson(clause).c_str(), (result == Matched) ? "matched" :
 			"did not match");
 

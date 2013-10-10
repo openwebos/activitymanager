@@ -38,7 +38,7 @@ ResourceContainer::~ResourceContainer()
 void ResourceContainer::AddEntity(boost::shared_ptr<BusEntity> entity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Adding [BusId %s] to [Container %s]"),
+	MojLogDebug(s_log, _T("Adding [BusId %s] to [Container %s]"),
 		entity->GetName().c_str(), m_name.c_str());
 
 	EntitySet::iterator found = m_entities.find(entity);
@@ -54,7 +54,7 @@ void ResourceContainer::AddEntity(boost::shared_ptr<BusEntity> entity)
 void ResourceContainer::RemoveEntity(boost::shared_ptr<BusEntity> entity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Removing [BusId %s] from [Container %s]"),
+	MojLogDebug(s_log, _T("Removing [BusId %s] from [Container %s]"),
 		entity->GetName().c_str(), m_name.c_str());
 
 	EntitySet::iterator found = m_entities.find(entity);

@@ -36,7 +36,7 @@ void PowerManager::RequestBeginPowerActivity(
 	boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Activity %lu requesting to begin power activity"),
+	MojLogDebug(s_log, _T("Activity %lu requesting to begin power activity"),
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -54,7 +54,7 @@ void PowerManager::ConfirmPowerActivityBegin(
 	boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Activity %lu confirmed power activity running"),
+	MojLogDebug(s_log, _T("Activity %lu confirmed power activity running"),
 		(unsigned long)activity->GetId());
 }
 
@@ -62,7 +62,7 @@ void PowerManager::RequestEndPowerActivity(
 	boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Activity %lu request to end power activity"),
+	MojLogDebug(s_log, _T("Activity %lu request to end power activity"),
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -79,7 +79,7 @@ void PowerManager::ConfirmPowerActivityEnd(
 	boost::shared_ptr<Activity> activity)
 {
 	MojLogTrace(s_log);
-	MojLogInfo(s_log, _T("Activity %lu confirmed power activity ended"),
+	MojLogDebug(s_log, _T("Activity %lu confirmed power activity ended"),
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
