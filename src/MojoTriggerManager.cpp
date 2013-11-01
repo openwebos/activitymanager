@@ -19,7 +19,7 @@
 #include "MojoTriggerManager.h"
 #include "MojoTrigger.h"
 #include "MojoTriggerSubscription.h"
-#include "MojoMatcher.h"
+#include "MojoWhereMatcher.h"
 
 MojoTriggerManager::MojoTriggerManager(MojService *service)
 	: m_service(service)
@@ -65,7 +65,7 @@ boost::shared_ptr<Trigger> MojoTriggerManager::CreateWhereTrigger(
 	const MojObject& params, const MojObject& where)
 {
 	boost::shared_ptr<MojoMatcher> matcher =
-		boost::make_shared<MojoWhereMatcher>(where);
+		boost::make_shared<MojoNewWhereMatcher>(where);
 
 	return CreateTrigger(activity, url, params, matcher);
 }
