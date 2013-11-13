@@ -380,9 +380,6 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 				}
 			}
 		}
-	} else {
-		MojLogWarning(s_log, _T("WAN status not returned by Connection "
-			"Manager"));
 	}
 
 	if (wanAvailable) {
