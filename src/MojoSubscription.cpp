@@ -18,6 +18,7 @@
 
 #include "MojoSubscription.h"
 #include "Activity.h"
+#include "Logging.h"
 
 #include <luna/MojLunaMessage.h>
 #include <stdexcept>
@@ -36,8 +37,8 @@ MojoSubscription::~MojoSubscription()
 
 void MojoSubscription::EnableSubscription()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Enabling subscription for %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Enabling subscription for %s",
 		m_activity->GetId(), GetSubscriber().GetString().c_str());
 
 	/* The message will take a reference to to Cancel Handler when it

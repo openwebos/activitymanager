@@ -19,7 +19,7 @@
 #include "Activity.h"
 #include "Subscription.h"
 #include "Subscriber.h"
-
+#include "Logging.h"
 #include <stdexcept>
 
 MojLogger Subscription::s_log(_T("activitymanager.subscription"));
@@ -38,8 +38,8 @@ Subscription::~Subscription()
 
 void Subscription::HandleCancelWrapper()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("%s cancelling subscription"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("%s cancelling subscription",
 		GetSubscriber().GetString().c_str());
 
 	try {
@@ -48,13 +48,14 @@ void Subscription::HandleCancelWrapper()
 		/* Any specialized implementation for the specific Subscription type */
 		HandleCancel();
 	} catch (const std::exception& except) {
-		MojLogError(s_log, _T("Unhandled exception \"%s\" occurred while "
-			"cancelling subscription from %s"), except.what(),
-			GetSubscriber().GetString().c_str());
+		LOG_ERROR(MSGID_SUBSCRIPTION_CANCEL_FAIL, 1,
+			PMLOGKS("SUBSCRIBER",GetSubscriber().GetString().c_str() ),
+			"Unhandled exception \"%s\" occurred while cancelling subscription",
+			except.what());
 	} catch (...) {
-		MojLogError(s_log, _T("Unhandled exception of unknown type occurred"
-			"cancelling subscription from %s"),
-			GetSubscriber().GetString().c_str());
+		LOG_ERROR(MSGID_SUBSCRIPTION_CANCEL_ERR,1,
+			PMLOGKS("SUBSCRIBER",GetSubscriber().GetString().c_str() ),
+			"Unhandled exception of unknown type occurred cancelling subscription");
 	}
 }
 
@@ -65,7 +66,7 @@ bool Subscription::operator<(const Subscription& rhs) const
 
 MojErr Subscription::QueueEvent(ActivityEvent_t event)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	/* Non-detailed subscriptions do not get update events */
 	if ((event == ActivityUpdateEvent) && !m_detailedEvents) {
@@ -89,14 +90,14 @@ MojErr Subscription::QueueEvent(ActivityEvent_t event)
 
 void Subscription::Plug()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	m_plugged = true;
 }
 
 void Subscription::Unplug()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	m_plugged = false;
 

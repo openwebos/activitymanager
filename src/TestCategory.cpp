@@ -22,7 +22,7 @@
 #include "MojoSubscription.h"
 #include "MojoWhereMatcher.h"
 #include "Activity.h"
-
+#include "Logging.h"
 #include <stdexcept>
 
 // TODO: I could not call these methods, so leaving them out of the generated documentation
@@ -106,8 +106,8 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Leak: %s"), MojoObjectJson(payload).c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Leak: %s", MojoObjectJson(payload).c_str());
 
 	MojErr err = MojErrNone;
 
@@ -116,14 +116,12 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 	payload.get(_T("freeAll"), freeAll);
 
 	if (freeAll) {
-		MojLogCritical(s_log, _T("RELEASING REFERENCES TO ALL INTENTIONALLY "
-			"LEAKED ACTIVITIES"));
+		LOG_DEBUG("RELEASING REFERENCES TO ALL INTENTIONALLY LEAKED ACTIVITIES");
 		while (!m_leakedActivities.empty()) {
 			boost::shared_ptr<Activity> act = m_leakedActivities.front();
 			m_leakedActivities.pop_front();
 
-			MojLogCritical(s_log, _T("RELEASING REFERENCE TO [Activity %llu]"),
-				act->GetId());
+			LOG_DEBUG("RELEASING REFERENCE TO [Activity %llu]", act->GetId());
 		}
 	} else {
 		boost::shared_ptr<Activity> act;
@@ -131,8 +129,7 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 		err = LookupActivity(msg, payload, act);
 		MojErrCheck(err);
 
-		MojLogCritical(s_log, _T("INTENTIONALLY LEAKING [Activity %llu]!!"),
-			act->GetId());
+        LOG_DEBUG("INTENTIONALLY LEAKING [Activity %llu]",act->GetId());
 
 		m_leakedActivities.push_back(act);
 	}

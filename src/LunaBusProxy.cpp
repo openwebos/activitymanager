@@ -20,6 +20,7 @@
 #include "ContainerManager.h"
 
 #include "MojoCall.h"
+#include "Logging.h"
 
 #include <stdexcept>
 
@@ -39,16 +40,16 @@ LunaBusProxy::~LunaBusProxy()
 
 void LunaBusProxy::Enable()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Enabling Luna Bus Proxy"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Enabling Luna Bus Proxy");
 
 	EnableBusUpdates();
 }
 
 void LunaBusProxy::Disable()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Disabling Luna Bus Proxy"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Disabling Luna Bus Proxy");
 
 	m_busUpdates->Cancel();
 	m_busUpdates.reset();
@@ -56,8 +57,8 @@ void LunaBusProxy::Disable()
 
 void LunaBusProxy::EnableBusUpdates()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Enabling service updates from Luna bus"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Enabling service updates from Luna bus");
 
 	MojObject params;
 	MojErr err = params.putString(_T("category"), "_private_service_status");
@@ -76,19 +77,19 @@ void LunaBusProxy::EnableBusUpdates()
 void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Received Luna Bus Update: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Received Luna Bus Update: %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			MojLogError(s_log, _T("Subscription to Luna Bus updates "
-				"experienced an uncorrectable failure: %s"),
+			LOG_WARNING(MSGID_UNSOLVABLE_LUNABUS_SUBSCR_FAIL, 0,
+			    "Subscription to Luna Bus updates experienced an uncorrectable failure: %s",
 				MojoObjectJson(response).c_str());
 			m_busUpdates.reset();
 		} else {
-			MojLogWarning(s_log, _T("Subscription to Luna Bus updates failed, "
-				"resubscribing: %s"), MojoObjectJson(response).c_str());
+			LOG_WARNING(MSGID_LUNABUS_SUBSCR_FAIL, 0, "Subscription to Luna Bus updates failed, resubscribing: %s",
+				MojoObjectJson(response).c_str());
 			EnableBusUpdates();
 		}
 		return;
@@ -99,8 +100,8 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 
 		response.get(_T("services"), services);
 		if (services.type() != MojObject::TypeArray) {
-			MojLogWarning(s_log, _T("Badly formatted Luna bus update... "
-				"services is not an array: %s"),
+			LOG_WARNING(MSGID_UNFORMATTED_LUNABUS_UPDATE, 0,
+				"Badly formatted Luna bus update... services is not an array: %s",
 				MojoObjectJson(response).c_str());
 			return;
 		}
@@ -114,17 +115,16 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 			MojString serviceName;
 			err2 = service.get(_T("serviceName"), serviceName, found);
 			if (err2 || !found) {
-				MojLogWarning(s_log, _T("Failed to retreive service name "
-					"while processing batch service status update"));
+				LOG_WARNING(MSGID_GET_SRVC_NAME_FAIL, 0,
+					    "Failed to retreive service name while processing batch service status update");
 				continue;
 			}
 
 			MojObject busIds;
 			found = service.get(_T("allNames"), busIds);
 			if (!found) {
-				MojLogWarning(s_log, _T("Failed to retreive equivalent "
-					"service names for service %s while processing batch "
-					"service status update"), serviceName.data());
+				LOG_WARNING(MSGID_GET_ALL_NAMES_FAIL, 1, PMLOGKS("Srvc_name",serviceName.data()),
+					    "Failed to retreive equivalent service names for service while processing batch service status update");
 				continue;
 			}
 
@@ -132,9 +132,8 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 			found = false;
 			err2 = service.get(_T("pid"), pid, found);
 			if (err2 || !found) {
-				MojLogWarning(s_log, _T("Failed to retreive process id for "
-					"service \"%s\" while processing batch service status "
-					"update"), serviceName.data());
+				LOG_WARNING(MSGID_GET_PID_FAIL, 1, PMLOGKS("Srvc_name",serviceName.data()),
+					    "Failed to retreive process id for the service while processing batch service status update");
 				continue;
 			}
 
@@ -144,16 +143,14 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 
 			if (!busIdVec.empty()) {
 				if (ContainsRestricted(busIdVec)) {
-					MojLogDebug(s_log, _T("Restricted names found in list of "
-						"equivalent names for service \"%s\""),
+					LOG_DEBUG("Restricted names found in list of equivalent names for service \"%s\"",
 						serviceName.data());
 				} else {
 					m_containerManager->MapContainer(busIdVec[0].GetId(),
 						busIdVec, (pid_t)pid);
 				}
 			} else {
-				MojLogWarning(s_log, _T("No valid names found for service "
-					"\"%s\" while processing batch service status update"),
+				LOG_DEBUG("No valid names found for service \"%s\" while processing batch service status update",
 					serviceName.data());
 			}
 		}
@@ -164,8 +161,8 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 
 		bool found = response.get(_T("connected"), isConnected);
 		if (!found) {
-			MojLogWarning(s_log, _T("Failed to retreive connected state "
-				"processing service update from Luna bus hub"));
+			LOG_WARNING(MSGID_GET_CONNECTED_STATE_FAIL, 0,
+				"Failed to retreive connected state processing service update from Luna bus hub");
 			return;
 		}
 
@@ -173,13 +170,13 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 		found = false;
 		MojErr err2 = response.get(_T("serviceName"), serviceName, found);
 		if (err2 || !found) {
-			MojLogWarning(s_log, _T("Failed to retreive service name while "
-				"processing service update from Luna bus hub"));
+			LOG_WARNING(MSGID_GET_SRVC_NAME_FAIL, 0,
+				"Failed to retreive service name while processing service update from Luna bus hub");
 			return;
 		}
 
 		if (!isConnected) {
-			MojLogDebug(s_log, _T("Disconnect message for service name \"%s\""),
+			LOG_DEBUG("Disconnect message for service name \"%s\"",
 				serviceName.data());
 			return;
 		}
@@ -187,9 +184,8 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 		MojObject busIds;
 		found = response.get(_T("allNames"), busIds);
 		if (!found) {
-			MojLogWarning(s_log, _T("Failed to retreive equivalent "
-				"service names for service \"%s\" while processing service "
-				"connect update"), serviceName.data());
+			LOG_WARNING(MSGID_GET_ALL_NAMES_FAIL, 1, PMLOGKS("Srvc_name",serviceName.data()),
+				    "Failed to retreive equivalent service names for service while processing service connect update");
 			return;
 		}
 
@@ -197,9 +193,8 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 		found = false;
 		err2 = response.get(_T("pid"), pid, found);
 		if (err2 || !found) {
-			MojLogWarning(s_log, _T("Failed to retreive pid for service \"%s\" "
-				"while processing connect update from Luna bus"),
-				serviceName.data());
+			LOG_WARNING(MSGID_GET_PID_FAIL, 1, PMLOGKS("Srvc_name",serviceName.data()),
+				"Failed to retreive pid for service while processing connect update from Luna bus");
 			return;
 		}
 
@@ -209,15 +204,14 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 
 		if (!busIdVec.empty()) {
 			if (ContainsRestricted(busIdVec)) {
-				MojLogDebug(s_log, _T("Restricted names found in list of "
-					"equivalent names for service \"%s\""), serviceName.data());
+				LOG_DEBUG("Restricted names found in list of equivalent names for service \"%s\"",
+					serviceName.data());
 			} else {
 				m_containerManager->MapContainer(busIdVec[0].GetId(), busIdVec,
 					(pid_t)pid);
 			}
 		} else {
-			MojLogDebug(s_log, _T("No valid names found for service "
-				"\"%s\" while processing service connect update"),
+			LOG_DEBUG("No valid names found for service \"%s\" while processing service connect update",
 				serviceName.data());
 		}
 	}
@@ -226,13 +220,13 @@ void LunaBusProxy::ProcessBusUpdate(MojServiceMessage *msg,
 void LunaBusProxy::PopulateBusIds(const MojObject& ids,
 	ContainerManager::BusIdVec& busIdVec, const MojString& serviceName) const
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Transforming JSON array %s into BusIds"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Transforming JSON array %s into BusIds",
 		MojoObjectJson(ids).c_str());
 
 	if (ids.type() != MojObject::TypeArray) {
-		MojLogWarning(s_log, _T("Equivalent bus names not passed as an array "
-			"of ids: %s"), MojoObjectJson(ids).c_str());
+		LOG_ERROR(MSGID_POPULATE_BUSID_FAIL, 0, "Equivalent bus names not passed as an array of ids: %s",
+			MojoObjectJson(ids).c_str());
 		throw std::runtime_error("Bus names not passed as an array of ids");
 	}
 
@@ -245,8 +239,8 @@ void LunaBusProxy::PopulateBusIds(const MojObject& ids,
 		MojString busIdStr;
 		MojErr err = id.stringValue(busIdStr);
 		if (err) {
-			MojLogWarning(s_log, _T("Failed to retreive bus id from JSON "
-				"object %s"), MojoObjectJson(id).c_str());
+			LOG_WARNING(MSGID_GET_BUSID_FAIL, 0, "Failed to retreive bus id from JSON object %s",
+				    MojoObjectJson(id).c_str());
 			continue;
 		}
 
@@ -283,9 +277,8 @@ bool LunaBusProxy::FilterName(const MojString& name) const
 
 void LunaBusProxy::InitializeRestrictedIds()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Initializing list of restricted bus ids that "
-		"should not be managed"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Initializing list of restricted bus ids that should not be managed");
 
 	static const char *ids[] = {
 		"com.palm.db", "com.palm.systemmanager", "com.palm.filecache",

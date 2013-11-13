@@ -18,6 +18,7 @@
 
 #include "PowerActivity.h"
 #include "Activity.h"
+#include "Logging.h"
 
 MojLogger PowerActivity::s_log(_T("activitymanager.poweractivity"));
 
@@ -65,8 +66,8 @@ PowerActivity::PowerState NoopPowerActivity::GetPowerState() const
 
 void NoopPowerActivity::Begin()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Locking power on"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Locking power on",
 		m_activity.lock()->GetId());
 
 	if (m_state != PowerLocked) {
@@ -77,8 +78,8 @@ void NoopPowerActivity::Begin()
 
 void NoopPowerActivity::End()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Unlocking power"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Unlocking power",
 		m_activity.lock()->GetId());
 
 	if (m_state != PowerUnlocked) {

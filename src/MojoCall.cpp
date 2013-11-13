@@ -21,6 +21,7 @@
 
 #include "MojoCall.h"
 #include "Activity.h"
+#include "Logging.h"
 
 const MojUInt32 MojoCall::Unlimited = MojServiceRequest::Unlimited;
 
@@ -41,7 +42,7 @@ MojoCall::MojoCall(MojService *service,
 
 MojoCall::~MojoCall()
 {
-	MojLogDebug(s_log, _T("[Call %u] Cleaning up"), m_serial);
+	LOG_DEBUG("[Call %u] Cleaning up", m_serial);
 
 	if (m_handler.get()) {
 		m_handler->Cancel();
@@ -50,28 +51,28 @@ MojoCall::~MojoCall()
 
 MojErr MojoCall::Call()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 	return Call(false, NULL);
 }
 
 MojErr MojoCall::Call(boost::shared_ptr<Activity> activity)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 	return Call(activity->GetBusType() == Activity::PublicBus,
 		activity->GetCreator().GetId().c_str());
 }
 
 MojErr MojoCall::Call(bool usePublicBus, const char *proxyRequester)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (proxyRequester) {
-		MojLogDebug(s_log, _T("[Call %u] %s(Proxy for %s) Calling %s %s"),
+		LOG_DEBUG("[Call %u] %s(Proxy for %s) Calling %s %s",
 			m_serial, usePublicBus ? "(Public) " : "",
 			proxyRequester, m_url.GetString().c_str(),
 			MojoObjectJson(m_params).c_str());
 	} else {
-		MojLogDebug(s_log, _T("[Call %u] %sCalling %s %s"), m_serial,
+		LOG_DEBUG("[Call %u] %sCalling %s %s", m_serial,
 			usePublicBus ? "(Public) " : "",
 			m_url.GetString().c_str(), MojoObjectJson(m_params).c_str());
 	}
@@ -119,8 +120,8 @@ MojErr MojoCall::Call(bool usePublicBus, const char *proxyRequester)
 
 void MojoCall::Cancel()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Call %u] Cancelling call %s"), m_serial,
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Call %u] Cancelling call %s", m_serial,
 		m_url.GetString().c_str());
 
 	if (m_handler.get()) {
@@ -137,22 +138,22 @@ unsigned MojoCall::GetSerial() const
 /* Ensure Standardized logging and exception protection are in place */
 void MojoCall::HandleResponseWrapper(MojServiceMessage *msg, MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Call %u] %s: Received response %s"), m_serial,
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Call %u] %s: Received response %s", m_serial,
 		m_url.GetString().c_str(), MojoObjectJson(response).c_str());
 
 	/* XXX If response count reached, cancel call. */
 	try {
 		HandleResponse(msg, response, err);
 	} catch (const std::exception& except) {
-		MojLogError(s_log, _T("[Call %u] %s: Unhandled exception \"%s\" "
-			"occurred processing response %s"), m_serial,
-			m_url.GetString().c_str(), except.what(),
-			MojoObjectJson(response).c_str());
+		LOG_ERROR(MSGID_CALL_RESP_UNHANDLED_EXCEPTION, 3, PMLOGKFV("serial","%u",m_serial),
+			  PMLOGKS("Url",m_url.GetString().c_str()),
+			  PMLOGKS("Exception",except.what()), "Unhandled exception occurred processing response %s",
+			  MojoObjectJson(response).c_str());
 	} catch (...) {
-		MojLogError(s_log, _T("[Call %u] %s: Unhandled exception of unknown "
-			"type occurred processing response %s"), m_serial,
-			m_url.GetString().c_str(), MojoObjectJson(response).c_str());
+		LOG_ERROR(MSGID_CALL_RESP_UNKNOWN_EXCEPTION, 2, PMLOGKFV("serial","%u",m_serial),
+			PMLOGKS("Url",m_url.GetString().c_str()),
+			"Unhandled exception of unknown type occurred processing response %s", MojoObjectJson(response).c_str());
 	}
 }
 
@@ -167,8 +168,8 @@ bool MojoCall::IsPermanentFailure(MojServiceMessage *msg, const MojObject& respo
 
 	MojLunaMessage *lunaMsg = dynamic_cast<MojLunaMessage *>(msg);
 	if (!lunaMsg) {
-		MojLogError(s_log, _T("Message %s did not originate from the "
-			"Luna Bus"), MojoObjectJson(response).c_str());
+		LOG_ERROR(MSGID_NON_LUNA_BUS_MSG, 0, "IsPermanentFailure() : Message %s did not originate from the Luna Bus",
+			  MojoObjectJson(response).c_str());
 		throw std::runtime_error("Message did not originate from the "
 			"Luna Bus");
 	}
@@ -193,10 +194,9 @@ bool MojoCall::IsProtocolError(MojServiceMessage *msg, const MojObject& response
 
 	MojLunaMessage *lunaMsg = dynamic_cast<MojLunaMessage *>(msg);
 	if (!lunaMsg) {
-		MojLogError(s_log, _T("Message %s did not originate from the "
-			"Luna Bus"), MojoObjectJson(response).c_str());
-		throw std::runtime_error("Message did not originate from the "
-			"Luna Bus");
+		LOG_ERROR(MSGID_NON_LUNA_BUS_MSG, 0, "IsProtocolError() : Message %s did not originate from the Luna Bus",
+			  MojoObjectJson(response).c_str());
+		throw std::runtime_error("Message did not originate from the Luna Bus");
 	}
 
 	const MojChar *category = lunaMsg->category();
@@ -209,8 +209,8 @@ bool MojoCall::IsProtocolError(MojServiceMessage *msg, const MojObject& response
 
 void MojoCall::HandleResponse(MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogWarning(s_log, _T("[Call %u] %s: Unhandled response \"%s\""),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Call %u] %s: Unhandled response \"%s\"",
 		m_serial, m_url.GetString().c_str(), MojoObjectJson(response).c_str());
 }
 
@@ -218,7 +218,7 @@ void MojoCall::HandleResponse(MojObject& response, MojErr err)
 void MojoCall::HandleResponse(MojServiceMessage *msg, MojObject& response,
 	MojErr err)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 	HandleResponse(response, err);
 }
 
@@ -243,10 +243,10 @@ MojoCall::MojoCallMessageHandler::GetResponseSlot()
 void MojoCall::MojoCallMessageHandler::Cancel()
 {
 	if (!m_call.expired()) {
-		MojLogDebug(MojoCall::s_log, _T("[Call %u] [Handler %u] Cancelling"),
+		LOG_DEBUG("[Call %u] [Handler %u] Cancelling",
 			m_call.lock()->GetSerial(), m_serial);
 	} else {
-		MojLogDebug(MojoCall::s_log, _T("[Handler %u] Call expired, Cancelling"),
+		LOG_DEBUG("[Handler %u] Call expired, Cancelling",
 			m_serial);
 	}
 
@@ -257,8 +257,7 @@ MojErr MojoCall::MojoCallMessageHandler::HandleResponse(
 	MojServiceMessage *msg, MojObject& response, MojErr err)
 {
 	if (m_call.expired()) {
-		MojLogDebug(MojoCall::s_log, _T("[Handler %u] Response %s received "
-			"for expired call"), m_serial, MojoObjectJson(response).c_str());
+		LOG_DEBUG("[Handler %u] Response %s received for expired call", m_serial, MojoObjectJson(response).c_str());
 		m_responseSlot.cancel();
 		return MojErrInvalidArg;
 	}

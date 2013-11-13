@@ -18,7 +18,7 @@
 
 #include "Scheduler.h"
 #include "Activity.h"
-
+#include "Logging.h"
 #include <stdexcept>
 #include <cstdlib>
 
@@ -50,10 +50,10 @@ Scheduler::~Scheduler()
 
 void Scheduler::AddItem(boost::shared_ptr<Schedule> item)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
-	MojLogDebug(s_log,
-		_T("Adding [Activity %llu] to start at %llu (%s)"),
+	LOG_DEBUG(
+		"Adding [Activity %llu] to start at %llu (%s)",
 		item->GetActivity()->GetId(),
 		(unsigned long long)item->GetNextStartTime(),
 		TimeToString(item->GetNextStartTime(), !item->IsLocal()).c_str());
@@ -81,9 +81,9 @@ void Scheduler::AddItem(boost::shared_ptr<Schedule> item)
 
 void Scheduler::RemoveItem(boost::shared_ptr<Schedule> item)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
-	MojLogDebug(s_log, _T("Removing [Activity %llu]"),
+	LOG_DEBUG("Removing [Activity %llu]",
 		item->GetActivity()->GetId());
 
 	try {
@@ -157,8 +157,8 @@ time_t Scheduler::StringToTime(const char *convert, bool& isUTC)
 
 void Scheduler::SetLocalOffset(off_t offset)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Setting local offset to %lld"), (long long)offset);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Setting local offset to %lld", (long long)offset);
 
 	bool updateWake = false;
 
@@ -179,8 +179,7 @@ void Scheduler::SetLocalOffset(off_t offset)
 off_t Scheduler::GetLocalOffset() const
 {
 	if (!m_localOffsetSet) {
-		MojLogWarning(s_log, _T("Attempt to access local offset before it "
-			"has been set"));
+		LOG_WARNING(MSGID_SCHE_OFFSET_NOTSET, 0, "Attempt to access local offset before it has been set");
 	}
 
 	return m_localOffset;
@@ -193,8 +192,8 @@ time_t Scheduler::GetSmartBaseTime() const
 
 void Scheduler::Wake()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Wake callback"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Wake callback");
 
 	m_wakeScheduled = false;
 
@@ -204,12 +203,12 @@ void Scheduler::Wake()
 /* XXX Handle timer rollover? */
 void Scheduler::DequeueAndUpdateTimeout()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	/* Nothing to do?  Then return.  A new timeout will be scheduled
 	 * the next time something is queued */
 	if (m_queue.empty() && (!m_localOffsetSet || m_localQueue.empty())) {
-		MojLogDebug(s_log, _T("Not dequeuing any items as queue is now empty"));
+		LOG_DEBUG("Not dequeuing any items as queue is now empty");
 		if (m_wakeScheduled) {
 			CancelTimeout();
 			m_wakeScheduled = false;
@@ -219,7 +218,7 @@ void Scheduler::DequeueAndUpdateTimeout()
 
 	time_t	curTime = time(NULL);
 
-	MojLogDebug(s_log, _T("Beginning to dequeue items at time %llu"),
+	LOG_DEBUG("Beginning to dequeue items at time %llu",
 		(unsigned long long)curTime);
 
 	/* If anything on the queue already happened in the past, dequeue it
@@ -233,12 +232,12 @@ void Scheduler::DequeueAndUpdateTimeout()
 		ProcessQueue(m_localQueue, curTime + m_localOffset);
 	}
 
-	MojLogDebug(s_log, _T("Done dequeuing items"));
+	LOG_DEBUG("Done dequeuing items");
 
 	/* Both queues scheduled and dequeued (or unknown if time zone is not
 	 * yet known)? */
 	if (m_queue.empty() && (!m_localOffsetSet || m_localQueue.empty())) {
-		MojLogDebug(s_log, _T("No unscheduled items remain"));
+		LOG_DEBUG("No unscheduled items remain");
 
 		if (m_wakeScheduled) {
 			CancelTimeout();
@@ -273,8 +272,8 @@ void Scheduler::ProcessQueue(ScheduleQueue& queue, time_t curTime)
 
 void Scheduler::ReQueue(ScheduleQueue& queue)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Requeuing"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Requeuing");
 
 	ScheduleQueue updated;
 
@@ -291,9 +290,8 @@ void Scheduler::ReQueue(ScheduleQueue& queue)
 
 void Scheduler::TimeChanged()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("System time or timezone changed, recomputing "
-		"start times and requeuing Scheduled Activities"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("System time or timezone changed, recomputing start times and requeuing Scheduled Activities");
 
 	ReQueue(m_queue);
 	ReQueue(m_localQueue);

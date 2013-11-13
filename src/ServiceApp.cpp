@@ -56,7 +56,7 @@
 #include <cstring>
 #include <openssl/sha.h>
 #endif
-
+#include "Logging.h"
 
 const char* const ActivityManagerApp::ClientName =
 	"com.palm.activitymanager.client";
@@ -153,8 +153,8 @@ static bool read_modem_present()
 }
 MojErr ActivityManagerApp::open()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("%s initializing"), name().data());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("%s initializing", name().data());
 
 	InitRNG();
 
@@ -224,7 +224,7 @@ MojErr ActivityManagerApp::open()
 		return MojErrNoMem;
 	}
 
-	MojLogDebug(s_log, _T("%s initialized"), name().data());
+	LOG_DEBUG("%s initialized", name().data());
 
 	/* System is initialized.  All object managers are prepared to instantiate
 	 * their objects as Activities are loaded from the database.  Begin
@@ -236,7 +236,7 @@ MojErr ActivityManagerApp::open()
 
 MojErr ActivityManagerApp::ready()
 {
-	MojLogDebug(s_log, _T("%s ready to accept incoming requests"),
+	LOG_DEBUG("%s ready to accept incoming requests",
 		name().data());
 
 	/* All stored Activities have been deserialized from the database.  All
@@ -269,13 +269,13 @@ MojErr ActivityManagerApp::ready()
 		if (upstart_event) {
 			int retVal = ::system(upstart_event);
 			if (retVal == -1) {
-				MojLogError(s_log,
-					_T("ServiceApp: Failed to emit upstart event"));
+				LOG_ERROR(MSGID_UPSTART_EMIT_FAIL,0,
+					"ServiceApp: Failed to emit upstart event");
 			}
 			g_free(upstart_event);
 		} else {
-			MojLogError(s_log,
-				_T("ServiceApp: Failed to allocate memory for upstart emit"));
+			LOG_ERROR(MSGID_UPSTART_EMIT_ALLOC_FAIL,0,
+				"ServiceApp: Failed to allocate memory for upstart emit");
 		}
 	}
 #endif
@@ -304,14 +304,14 @@ void ActivityManagerApp::InitRNG()
 
 		initialized = true;
 
-		MojLogDebug(s_log, _T("Seeding RNG using time: sec %u, usec %u, "
-			"seed %u"), (unsigned)tv.tv_sec, (unsigned)tv.tv_usec, rngSeed);
+		LOG_DEBUG("Seeding RNG using time: sec %u, usec %u, seed %u",
+			(unsigned)tv.tv_sec, (unsigned)tv.tv_usec, rngSeed);
 	}
 
 	char *oldstate = initstate(rngSeed, m_rngState, sizeof(m_rngState));
 
 	if (!oldstate) {
-		MojLogCritical(s_log, _T("Failed to initialize the RNG state"));
+		LOG_ERROR(MSGID_INIT_RNG_FAIL, 0, "Failed to initialize the RNG state");
 	}
 }
 

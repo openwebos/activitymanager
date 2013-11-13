@@ -21,6 +21,7 @@
 #include "MojoDBProxy.h"
 #include "Activity.h"
 #include "ActivityJson.h"
+#include "Logging.h"
 
 #include <stdexcept>
 
@@ -52,9 +53,9 @@ std::string MojoDBStoreCommand::GetMethod() const
 
 void MojoDBStoreCommand::UpdateParams(MojObject& params)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Updating "
-		"parameters"), m_activity->GetId(), GetString().c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] [PersistCommand %s]: Updating parameters",
+		m_activity->GetId(), GetString().c_str());
 
 	Validate(false);
 
@@ -85,17 +86,18 @@ void MojoDBStoreCommand::UpdateParams(MojObject& params)
 void MojoDBStoreCommand::PersistResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Processing "
-		"response %s"), m_activity->GetId(), GetString().c_str(),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] [PersistCommand %s]: Processing response %s",
+		m_activity->GetId(), GetString().c_str(),
 		MojoObjectJson(response).c_str());
 
 	try {
 		Validate(false);
 	} catch (const std::exception& except) {
-		MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: "
-			"Unexpected exception %s validating command"), m_activity->GetId(),
-			GetString().c_str(), except.what());
+		LOG_WARNING(MSGID_PERSIST_CMD_VALIDATE_EXCEPTION, 3,
+			PMLOGKFV("activity","%llu",m_activity->GetId()),
+			PMLOGKS("persist_command",GetString().c_str()),
+			PMLOGKS("exception",except.what()), "");
 		Complete(false);
 		return;
 	}
@@ -110,16 +112,16 @@ void MojoDBStoreCommand::PersistResponse(MojServiceMessage *msg,
 
 		found = response.get(_T("results"), resultArray);
 		if (!found) {
-			MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: "
-				"Results of MojoDB persist command not found in response"),
-				m_activity->GetId(), GetString().c_str());
+			LOG_WARNING(MSGID_PERSIST_CMD_NO_RESULTS, 2,
+				PMLOGKFV("activity","%llu",m_activity->GetId()),
+				PMLOGKS("persist_command",GetString().c_str()),
+				"Results of MojoDB persist command not found in response");
 			Complete(false);
 			return;
 		}
 
 		if (resultArray.arrayBegin() == resultArray.arrayEnd()) {
-			MojLogError(s_log, _T("MojoDB persist command returned empty "
-				"result set"));
+			LOG_WARNING(MSGID_PERSIST_CMD_EMPTY_RESULTS, 0, "MojoDB persist command returned empty result set");
 			Complete(false);
 			return;
 		}
@@ -128,26 +130,27 @@ void MojoDBStoreCommand::PersistResponse(MojServiceMessage *msg,
 
 		err2 = results.get(_T("id"), id, found);
 		if (err2) {
-			MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: "
-				"Error retreiving _id from MojoDB persist command response"),
-				m_activity->GetId(), GetString().c_str());
+			LOG_WARNING(MSGID_PERSIST_CMD_GET_ID_ERR, 2,
+				PMLOGKFV("activity","%llu",m_activity->GetId()),
+				PMLOGKS("persist_command",GetString().c_str()),
+				"Error retreiving _id from MojoDB persist command response");
 			Complete(false);
 			return;
 		}
 
 		if (!found) {
-			MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: _id "
-				"not found in MojoDB persist command response"),
-				m_activity->GetId(), GetString().c_str());
+			LOG_WARNING(MSGID_PERSIST_CMD_NO_ID, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
+				  PMLOGKS("persist_command",GetString().c_str()),
+				  "_id not found in MojoDB persist command response");
 			Complete(false);
 			return;
 		}
 
 		found = results.get(_T("rev"), rev);
 		if (!found) {
-			MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: _rev "
-				"not found in MojoDB persist command response"),
-				m_activity->GetId(), GetString().c_str());
+			LOG_ERROR(MSGID_PERSIST_CMD_RESP_REV_NOT_FOUND, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
+				  PMLOGKS("persist_command",GetString().c_str()),
+				  "_rev not found in MojoDB persist command response");
 			Complete(false);
 			return;
 		}
@@ -163,9 +166,9 @@ void MojoDBStoreCommand::PersistResponse(MojServiceMessage *msg,
 				pt->Update(id, rev);
 			}
 		} catch (...) {
-			MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: "
-				"Failed to set or update value of persist token"),
-				m_activity->GetId(), GetString().c_str());
+			LOG_ERROR(MSGID_PERSIST_TOKEN_VAL_UPDATE_FAIL, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
+				  PMLOGKS("persist_command",GetString().c_str()),
+				  "Failed to set or update value of persist token");
 			Complete(false);
 			return;
 		}
@@ -198,9 +201,9 @@ std::string MojoDBDeleteCommand::GetMethod() const
 
 void MojoDBDeleteCommand::UpdateParams(MojObject& params)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Updating "
-		"parameters"), m_activity->GetId(), GetString().c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] [PersistCommand %s]: Updating parameters",
+		m_activity->GetId(), GetString().c_str());
 
 	Validate(true);
 
@@ -217,9 +220,9 @@ void MojoDBDeleteCommand::UpdateParams(MojObject& params)
 void MojoDBDeleteCommand::PersistResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: Processing "
-		"response %s"), m_activity->GetId(), GetString().c_str(),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] [PersistCommand %s]: Processing response %s",
+		m_activity->GetId(), GetString().c_str(),
 		MojoObjectJson(response).c_str());
 
 	if (!err) {

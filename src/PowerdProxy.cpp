@@ -21,7 +21,7 @@
 #include "MojoCall.h"
 #include "Activity.h"
 #include "ActivityJson.h"
-
+#include "Logging.h"
 #include <stdexcept>
 
 PowerdProxy::PowerdProxy(MojService *service)
@@ -53,8 +53,8 @@ boost::shared_ptr<Requirement> PowerdProxy::InstantiateRequirement(
 	boost::shared_ptr<Activity> activity, const std::string& name,
 	const MojObject& value)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
 		name.c_str(), activity->GetId());
 
 	if (name == "charging") {
@@ -100,9 +100,11 @@ boost::shared_ptr<Requirement> PowerdProxy::InstantiateRequirement(
 		m_batteryRequirements.insert(*req);
 		return req;
 	} else {
-		MojLogError(s_log, _T("[Manager %s] does not know how to instantiate "
-			"[Requirement %s] for [Activity %llu]"), GetName().c_str(),
-			name.c_str(), activity->GetId());
+		LOG_ERROR(MSGID_UNKNOW_REQUIREMENT,3,
+			PMLOGKS("MANAGER",GetName().c_str()),
+			PMLOGKS("REQUIREMENT",name.c_str()),
+			PMLOGKFV("Activity","%llu",activity->GetId()),
+			"does not know how to instantiate ");
 		throw std::runtime_error("Attempt to instantiate unknown requirement");
 	}
 }
@@ -110,8 +112,8 @@ boost::shared_ptr<Requirement> PowerdProxy::InstantiateRequirement(
 void PowerdProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Registering requirements"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Registering requirements");
 
 	master->RegisterRequirement("charging", shared_from_this());
 	master->RegisterRequirement("docked", shared_from_this());
@@ -121,8 +123,8 @@ void PowerdProxy::RegisterRequirements(
 void PowerdProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Unregistering requirements"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Unregistering requirements");
 
 	master->UnregisterRequirement("charging", shared_from_this());
 	master->UnregisterRequirement("docked", shared_from_this());
@@ -131,8 +133,8 @@ void PowerdProxy::UnregisterRequirements(
 
 void PowerdProxy::Enable()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Enabling battery and charging signals"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Enabling battery and charging signals");
 
 	EnableChargerSignals();
 	EnableBatterySignals();
@@ -140,8 +142,8 @@ void PowerdProxy::Enable()
 
 void PowerdProxy::Disable()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Disabling battery and charging signals"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Disabling battery and charging signals");
 
 	m_chargerStatus.reset();
 	m_batteryStatus.reset();
@@ -167,9 +169,8 @@ MojInt64 PowerdProxy::GetBatteryPercent() const
 
 void PowerdProxy::TriggerChargerStatus()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Triggering status signals for \"charging\" and "
-		"\"docked\" requirements"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Triggering status signals for \"charging\" and \"docked\" requirements");
 
 	MojObject params(MojObject::TypeObject);
 
@@ -191,9 +192,8 @@ void PowerdProxy::TriggerChargerStatus()
 
 void PowerdProxy::TriggerBatteryStatus()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Triggering status signals for \"battery\" "
-		"requirement"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Triggering status signals for \"battery\" requirement");
 
 	MojObject params(MojObject::TypeObject);
 
@@ -207,8 +207,8 @@ void PowerdProxy::TriggerBatteryStatus()
 
 void PowerdProxy::EnableChargerSignals()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Enabling charger signals"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Enabling charger signals");
 
 	MojErr err;
 	MojErr errs = MojErrNone;
@@ -235,8 +235,8 @@ void PowerdProxy::EnableChargerSignals()
 
 void PowerdProxy::EnableBatterySignals()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Enabling battery signals"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Enabling battery signals");
 
 	MojErr err;
 	MojErr errs = MojErrNone;
@@ -264,14 +264,14 @@ void PowerdProxy::EnableBatterySignals()
 void PowerdProxy::TriggerChargerStatusResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Attempt to trigger charger status signal generated "
-		"response: %s"), MojoObjectJson(response).c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Attempt to trigger charger status signal generated response: %s",
+		MojoObjectJson(response).c_str());
 
 	m_triggerChargerStatus.reset();
 
 	if (err != MojErrNone) {
-		MojLogWarning(s_log, _T("Failed to trigger charger status signal!"));
+		LOG_WARNING(MSGID_CHARGER_STATUS_ERR,0, "Failed to trigger charger status signal!");
 		return;
 	}
 }
@@ -279,14 +279,14 @@ void PowerdProxy::TriggerChargerStatusResponse(MojServiceMessage *msg,
 void PowerdProxy::TriggerBatteryStatusResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Attempt to trigger battery status signal generated "
-		"response: %s"), MojoObjectJson(response).c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Attempt to trigger battery status signal generated response: %s",
+		MojoObjectJson(response).c_str());
 
 	m_triggerBatteryStatus.reset();
 
 	if (err != MojErrNone) {
-		MojLogWarning(s_log, _T("Failed to trigger battery status signal!"));
+		LOG_WARNING(MSGID_BATTERY_STATUS_ERR,0, "Failed to trigger battery status signal!");
 		return;
 	}
 }
@@ -294,21 +294,21 @@ void PowerdProxy::TriggerBatteryStatusResponse(MojServiceMessage *msg,
 void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Received charger status signal: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Received charger status signal: %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		m_chargerStatusSubscribed = false;
 
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			MojLogError(s_log, _T("Subscription to charger status signal "
-				"experienced an uncorrectable failure: %s"),
+			LOG_WARNING(MSGID_CHRGR_STATUS_SIG_FAIL,0,
+				"Subscription to charger status signal experienced an uncorrectable failure: %s",
 				MojoObjectJson(response).c_str());
 			m_chargerStatus.reset();
 		} else {
-			MojLogWarning(s_log, _T("Subscription to charger status signal "
-				"failed, resubscribing: %s"),
+			LOG_WARNING(MSGID_CHRGR_SIG_ENABLE,0,
+				"Subscription to charger status signal failed, resubscribing: %s",
 				MojoObjectJson(response).c_str());
 			EnableChargerSignals();
 		}
@@ -326,15 +326,15 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 	bool found = false;
 	MojErr err2 = response.get(_T("type"), chargerType, found);
 	if (err2) {
-		MojLogError(s_log, _T("Error %d retrieving charger type from charger "
-			"status signal response"), err2);
+		LOG_ERROR(MSGID_CHRGR_SIG_NO_TYPE, 1,PMLOGKFV("ERROR","%d",err2),
+			"Error retrieving charger type from charger status signal response");
 		return;
 	} else if (found) {
 		bool connected;
 		found = response.get(_T("connected"), connected);
 		if (!found) {
-			MojLogWarning(s_log, _T("Charger type \"%s\" found, but not "
-				"whether or not it's connected"), chargerType.data());
+			LOG_WARNING(MSGID_CHRGR_NOT_CONNECTED,1,PMLOGKS("TYPE",chargerType.data()),
+				"Charger type found, but not it's connected");
 			return;
 		}
 
@@ -343,8 +343,8 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 		} else if (chargerType == "inductive") {
 			m_inductiveChargerConnected = connected;
 		} else {
-			MojLogWarning(s_log, _T("Unknown charger type \"%s\" found"),
-				chargerType.data());
+			LOG_WARNING(MSGID_CHRGR_TYPE_UNKNOWN, 1, PMLOGKS("TYPE",chargerType.data()),
+				"Unknown charger type");
 			return;
 		}
 
@@ -352,8 +352,9 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 		MojString name;
 		err2 = response.get(_T("name"), name, found);
 		if (err2) {
-			MojLogError(s_log, _T("Error %d retrieving the specific "
-				"name of charger of type \"%s\""), err2, chargerType.data());
+			LOG_ERROR(MSGID_CHRGR_NO_NAME,2, PMLOGKS("TYPE",chargerType.data()),
+				PMLOGKFV("ERR", "%d", err2),
+				"Error retrieving the specific name of charger");
 		} else if (found) {
 			if (name == "puck") {
 				m_onPuck = connected;
@@ -362,7 +363,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 
 		if (m_onPuck) {
 			if (!m_dockedRequirementCore->IsMet()) {
-				MojLogDebug(s_log, _T("Device is now docked"));
+				LOG_DEBUG("Device is now docked");
 				m_dockedRequirementCore->Met();
 				std::for_each(m_dockedRequirements.begin(),
 					m_dockedRequirements.end(),
@@ -370,7 +371,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 			}
 		} else {
 			if (m_dockedRequirementCore->IsMet()) {
-				MojLogDebug(s_log, _T("Device is no longer docked"));
+				LOG_DEBUG("Device is no longer docked");
 				m_dockedRequirementCore->Unmet();
 				std::for_each(m_dockedRequirements.begin(),
 					m_dockedRequirements.end(),
@@ -380,7 +381,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 
 		if (m_inductiveChargerConnected || m_usbChargerConnected) {
 			if (!m_chargingRequirementCore->IsMet()) {
-				MojLogDebug(s_log, _T("Device is now charging"));
+				LOG_DEBUG("Device is now charging");
 				m_chargingRequirementCore->Met();
 				std::for_each(m_chargingRequirements.begin(),
 					m_chargingRequirements.end(),
@@ -388,7 +389,7 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 			}
 		} else {
 			if (m_chargingRequirementCore->IsMet()) {
-				MojLogDebug(s_log, _T("Device is no longer charging"));
+				LOG_DEBUG("Device is no longer charging");
 				m_chargingRequirementCore->Unmet();
 				std::for_each(m_chargingRequirements.begin(),
 					m_chargingRequirements.end(),
@@ -401,21 +402,21 @@ void PowerdProxy::ChargerStatusSignal(MojServiceMessage *msg,
 void PowerdProxy::BatteryStatusSignal(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Received battery status signal: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Received battery status signal: %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		m_batteryStatusSubscribed = false;
 
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			MojLogError(s_log, _T("Subscription to battery status signal "
-				"experienced an uncorrectable failure: %s"),
+			LOG_WARNING(MSGID_BATTERY_STATUS_SIG_FAIL,0,
+				"Subscription to battery status signal experienced an uncorrectable failure: %s",
 				MojoObjectJson(response).c_str());
 			m_batteryStatus.reset();
 		} else {
-			MojLogWarning(s_log, _T("Subscription to battery status signal "
-				"failed, resubscribing: %s"),
+			LOG_WARNING(MSGID_BATTERY_SIG_ENABLE,0,
+				"Subscription to battery status signal failed, resubscribing: %s",
 				MojoObjectJson(response).c_str());
 			EnableBatterySignals();
 		}

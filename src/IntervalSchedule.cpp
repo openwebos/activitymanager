@@ -20,6 +20,7 @@
 #include "Scheduler.h"
 #include "Activity.h"
 #include "ActivityJson.h"
+#include "Logging.h"
 
 #include <boost/regex.hpp>
 #include <sstream>
@@ -55,7 +56,7 @@ time_t IntervalSchedule::GetNextStartTime() const
  * points. */
 void IntervalSchedule::CalcNextStartTime()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	time_t curTime = GetTime();
 	time_t start = GetBaseStartTime();
@@ -88,7 +89,7 @@ void IntervalSchedule::CalcNextStartTime()
 		}
 	}
 
-	MojLogDebug(s_log, _T("[Activity %lu] Next start time is %s"),
+	LOG_DEBUG("[Activity %lu] Next start time is %s",
 		(unsigned long)m_activity.lock()->GetId(),
 		Scheduler::TimeToString(m_nextStart, !m_local).c_str());
 }
@@ -119,11 +120,11 @@ void IntervalSchedule::SetLastFinishedTime(time_t finished)
 
 void IntervalSchedule::InformActivityFinished()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	time_t lastFinished = GetTime();
 
-	MojLogDebug(s_log, _T("[Activity %lu] Finished at %llu"),
+	LOG_DEBUG("[Activity %lu] Finished at %llu",
 		(unsigned long)m_activity.lock()->GetId(),
 		(unsigned long long)lastFinished);
 

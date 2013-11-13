@@ -32,6 +32,7 @@
 #include "Completion.h"
 #include "ResourceManager.h"
 #include "ContainerManager.h"
+#include "Logging.h"
 
 #ifdef ACTIVITYMANAGER_USE_PUBLIC_BUS
 #include <luna/MojLunaMessage.h>
@@ -129,20 +130,20 @@ ActivityCategoryHandler::ActivityCategoryHandler(
 	, m_resourceManager(resourceManager)
 	, m_containerManager(containerManager)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Constructing"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Constructing");
 }
 
 ActivityCategoryHandler::~ActivityCategoryHandler()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Destructing"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Destructing");
 }
 
 MojErr ActivityCategoryHandler::Init()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Initializing methods"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Initializing methods");
 	MojErr err;
 
 #ifdef ACTIVITYMANAGER_USE_PUBLIC_BUS
@@ -265,8 +266,8 @@ ActivityCategoryHandler::CreateActivity(MojServiceMessage *msg, MojObject& paylo
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Create: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Create: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -350,10 +351,9 @@ ActivityCategoryHandler::CreateActivity(MojServiceMessage *msg, MojObject& paylo
 	}
 
 	if (old && !replace) {
-		MojLogWarning(s_log, _T("Create: Activity named \"%s\" created by "
-			"\"%s\" already exists as [Activity %llu] and replace was not "
-			"specified"), act->GetName().c_str(),
-			act->GetCreator().GetString().c_str(), old->GetId());
+		LOG_WARNING(MSGID_OLD_ACTIVITY_NO_REPLACE, 3, PMLOGKS("activity_name",act->GetName().c_str()),
+			    PMLOGKS("creator_name",act->GetCreator().GetString().c_str()),
+			    PMLOGKFV("old_activity","%llu",old->GetId()), "");
 
 		m_am->ReleaseActivity(act);
 		err = msg->replyError(MojErrExists, _T("Activity with that name "
@@ -406,9 +406,8 @@ ActivityCategoryHandler::FinishCreateActivity(
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Create finishing: Message from %s: "
-		"[Activity %llu]: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Create finishing: Message from %s: [Activity %llu]: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		act->GetId(), succeeded ? "succeeded" : "failed");
 
@@ -436,8 +435,8 @@ ActivityCategoryHandler::FinishCreateActivity(
 	err = msg->reply(reply);
 	MojErrGoto(err, fail);
 
-	MojLogDebug(s_log, _T("Create complete: [Activity %llu] (\"%s\") created "
-		"by %s"), act->GetId(), act->GetName().c_str(),
+	LOG_DEBUG("Create complete: [Activity %llu] (\"%s\") created by %s",
+		act->GetId(), act->GetName().c_str(),
 		MojoSubscription::GetSubscriberString(msg).c_str());
 
 	if (start) {
@@ -464,8 +463,8 @@ void
 ActivityCategoryHandler::FinishReplaceActivity(
 	boost::shared_ptr<Activity> act, bool succeeded)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Replace finishing: Replace Activity [%llu]: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Replace finishing: Replace Activity [%llu]: %s",
 		act->GetId(), succeeded ? "succeeded" : "failed");
 
 	/* Release the Activity's Persist Token.  The Activity that replaced it
@@ -542,8 +541,8 @@ ActivityCategoryHandler::JoinActivity(MojServiceMessage *msg, MojObject& payload
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Join: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Join: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -574,7 +573,7 @@ ActivityCategoryHandler::JoinActivity(MojServiceMessage *msg, MojObject& payload
 	err = msg->reply(reply);
 	MojErrCheck(err);
 
-	MojLogDebug(s_log, _T("Join: %s subscribed to [Activity %llu]"),
+	LOG_DEBUG("Join: %s subscribed to [Activity %llu]",
 		MojoSubscription::GetSubscriberString(msg).c_str(), act->GetId());
 
 	ACTIVITY_SERVICEMETHOD_END(msg);
@@ -655,8 +654,8 @@ ActivityCategoryHandler::MonitorActivity(MojServiceMessage *msg, MojObject& payl
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Monitor: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Monitor: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -685,11 +684,11 @@ ActivityCategoryHandler::MonitorActivity(MojServiceMessage *msg, MojObject& payl
 	MojErrCheck(err);
 
 	if (subscribed) {
-		MojLogDebug(s_log, _T("Monitor: %s subscribed to [Activity %llu]"),
+		LOG_DEBUG("Monitor: %s subscribed to [Activity %llu]",
 			MojoSubscription::GetSubscriberString(msg).c_str(), act->GetId());
 	} else {
-		MojLogDebug(s_log, _T("Monitor: Returned [Activity %llu] state to "
-			"%s"), act->GetId(),
+		LOG_DEBUG("Monitor: Returned [Activity %llu] state to %s",
+			act->GetId(),
 			MojoSubscription::GetSubscriberString(msg).c_str());
 	}
 
@@ -767,8 +766,8 @@ ActivityCategoryHandler::ReleaseActivity(MojServiceMessage *msg, MojObject& payl
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Release: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Release: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -781,11 +780,11 @@ ActivityCategoryHandler::ReleaseActivity(MojServiceMessage *msg, MojObject& payl
 
 	err = act->Release(MojoSubscription::GetBusId(msg));
 	if (err) {
-		MojLogDebug(s_log, _T("Release: %s failed to release [Activity %llu]"),
+		LOG_DEBUG("Release: %s failed to release [Activity %llu]",
 			MojoSubscription::GetSubscriberString(msg).c_str(), act->GetId());
 	} else {
-		MojLogDebug(s_log, _T("Release: [Activity %llu] successfully released "
-			"by %s"), act->GetId(),
+		LOG_DEBUG("Release: [Activity %llu] successfully released by %s",
+			act->GetId(),
 			MojoSubscription::GetSubscriberString(msg).c_str());
 	}
 
@@ -900,8 +899,8 @@ ActivityCategoryHandler::AdoptActivity(MojServiceMessage *msg, MojObject& payloa
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Adopt: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Adopt: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -931,13 +930,13 @@ ActivityCategoryHandler::AdoptActivity(MojServiceMessage *msg, MojObject& payloa
 
 	err = act->Adopt(sub, wait, &adopted);
 	if (err) {
-		MojLogDebug(s_log, _T("Adopt: %s failed to adopt [Activity %llu]"),
+		LOG_DEBUG("Adopt: %s failed to adopt [Activity %llu]",
 			sub->GetSubscriber().GetString().c_str(), act->GetId());
 	} else if (adopted) {
-		MojLogDebug(s_log, _T("Adopt: [Activity %llu] adopted by %s"),
+		LOG_DEBUG("Adopt: [Activity %llu] adopted by %s",
 			act->GetId(), sub->GetSubscriber().GetString().c_str());
 	} else {
-		MojLogDebug(s_log, _T("Adopt: %s queued to adopt [Activity %llu]"),
+		LOG_DEBUG("Adopt: %s queued to adopt [Activity %llu]",
 			sub->GetSubscriber().GetString().c_str(), act->GetId());
 	}
 
@@ -1043,8 +1042,8 @@ ActivityCategoryHandler::CompleteActivity(MojServiceMessage *msg, MojObject& pay
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Complete: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Complete: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1080,15 +1079,14 @@ ActivityCategoryHandler::CompleteActivity(MojServiceMessage *msg, MojObject& pay
 	/* XXX Catch and unplug */
 	err = act->Complete(MojoSubscription::GetBusId(msg), force);
 	if (err) {
-		MojLogDebug(s_log, _T("Complete: %s failed to complete "
-			"[Activity %llu]"),
+		LOG_DEBUG("Complete: %s failed to complete [Activity %llu]",
 			MojoSubscription::GetSubscriberString(msg).c_str(), act->GetId());
 
 		/* XXX Remove these once CheckComplete is in place */
 		act->SetTerminateFlag(false);
 		act->UnplugAllSubscriptions();
 	} else {
-		MojLogDebug(s_log, _T("Complete: %s completing [Activity %llu]"),
+		LOG_DEBUG("Complete: %s completing [Activity %llu]",
 			MojoSubscription::GetSubscriberString(msg).c_str(), act->GetId());
 	}
 
@@ -1112,9 +1110,8 @@ ActivityCategoryHandler::FinishCompleteActivity(
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Complete finishing: Message from %s: "
-		"[Activity %llu]: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Complete finishing: Message from %s: [Activity %llu]: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		act->GetId(), succeeded ? "succeeded" : "failed");
 
@@ -1127,9 +1124,9 @@ ActivityCategoryHandler::FinishCompleteActivity(
 
 	MojErr err = msg->replySuccess();
 	if (err)
-		MojLogError(s_log, _T("Failed to generate reply to Complete request"));
+		LOG_ERROR(MSGID_FINISH_ACTVTY_REPLY_ERR, 0, "Failed to generate reply to Complete request");
 
-	MojLogDebug(s_log, _T("Complete: %s completed [Activity %llu]"),
+	LOG_DEBUG("Complete: %s completed [Activity %llu]",
 		MojoSubscription::GetSubscriberString(msg).c_str(), act->GetId());
 
 	ACTIVITY_SERVICEMETHODFINISH_END(msg);
@@ -1199,8 +1196,8 @@ ActivityCategoryHandler::ScheduleActivity(MojServiceMessage *msg, MojObject& pay
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Schedule: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Schedule: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1213,10 +1210,10 @@ ActivityCategoryHandler::ScheduleActivity(MojServiceMessage *msg, MojObject& pay
 
 	err = m_am->StartActivity(act);
 	if (err) {
-		MojLogDebug(s_log, _T("Schedule: Failed to schedule [Activity %llu]"),
+		LOG_DEBUG("Schedule: Failed to schedule [Activity %llu]",
 			act->GetId());
 	} else {
-		MojLogDebug(s_log, _T("Schedule: [Activity %llu] scheduled"),
+		LOG_DEBUG("Schedule: [Activity %llu] scheduled",
 			act->GetId());
 	}
 
@@ -1299,8 +1296,8 @@ ActivityCategoryHandler::StartActivity(MojServiceMessage *msg, MojObject& payloa
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Start: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Start: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1313,10 +1310,10 @@ ActivityCategoryHandler::StartActivity(MojServiceMessage *msg, MojObject& payloa
 
 	err = m_am->StartActivity(act);
 	if (err) {
-		MojLogDebug(s_log, _T("Start: Failed to start [Activity %llu]"),
+		LOG_DEBUG("Start: Failed to start [Activity %llu]",
 			act->GetId());
 	} else {
-		MojLogDebug(s_log, _T("Start: [Activity %llu] started"), act->GetId());
+		LOG_DEBUG("Start: [Activity %llu] started", act->GetId());
 	}
 
 	MojErrCheck(err);
@@ -1399,8 +1396,8 @@ ActivityCategoryHandler::StopActivity(MojServiceMessage *msg, MojObject& payload
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Stop: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Stop: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1417,11 +1414,11 @@ ActivityCategoryHandler::StopActivity(MojServiceMessage *msg, MojObject& payload
 
 	err = m_am->StopActivity(act);
 	if (err) {
-		MojLogDebug(s_log, _T("Stop: Failed to stop [Activity %llu]"),
+		LOG_DEBUG("Stop: Failed to stop [Activity %llu]",
 			act->GetId());
 		act->UnplugAllSubscriptions();
 	} else {
-		MojLogDebug(s_log, _T("Stop: [Activity %llu] stopping"),
+		LOG_DEBUG("Stop: [Activity %llu] stopping",
 			act->GetId());
 	}
 
@@ -1444,9 +1441,9 @@ ActivityCategoryHandler::FinishStopActivity(
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Stop finishing: Message from %s: [Activity %llu]:"
-		" %s"), MojoSubscription::GetSubscriberString(msg).c_str(),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Stop finishing: Message from %s: [Activity %llu]: %s",
+		MojoSubscription::GetSubscriberString(msg).c_str(),
 		act->GetId(), succeeded ? "succeeded" : "failed");
 
 	if (act->IsNameRegistered()) {
@@ -1455,9 +1452,9 @@ ActivityCategoryHandler::FinishStopActivity(
 
 	MojErr err = msg->replySuccess();
 	if (err)
-		MojLogError(s_log, _T("Failed to generate reply to Stop request"));
+		LOG_ERROR(MSGID_STOP_ACTIVITY_REQ_REPLY_FAIL, 0, "");
 
-	MojLogDebug(s_log, _T("Stop: [Activity %llu] stopped"), act->GetId());
+	LOG_DEBUG("Stop: [Activity %llu] stopped", act->GetId());
 
 	ACTIVITY_SERVICEMETHODFINISH_END(msg);
 }
@@ -1533,8 +1530,8 @@ ActivityCategoryHandler::CancelActivity(MojServiceMessage *msg, MojObject& paylo
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Cancel: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Cancel: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1551,11 +1548,11 @@ ActivityCategoryHandler::CancelActivity(MojServiceMessage *msg, MojObject& paylo
 
 	err = m_am->CancelActivity(act);
 	if (err) {
-		MojLogDebug(s_log, _T("Cancel: Failed to cancel [Activity %llu]"),
+		LOG_DEBUG("Cancel: Failed to cancel [Activity %llu]",
 			act->GetId());
 		act->UnplugAllSubscriptions();
 	} else {
-		MojLogDebug(s_log, _T("Cancel: [Activity %llu] cancelling"),
+		LOG_DEBUG("Cancel: [Activity %llu] cancelling",
 			act->GetId());
 	}
 
@@ -1578,9 +1575,9 @@ ActivityCategoryHandler::FinishCancelActivity(
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Cancel finishing: Message from %s: [Activity %llu]"
-		": %s"), MojoSubscription::GetSubscriberString(msg).c_str(),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Cancel finishing: Message from %s: [Activity %llu] : %s",
+		MojoSubscription::GetSubscriberString(msg).c_str(),
 		act->GetId(), succeeded ? "succeeded" : "failed");
 
 	if (act->IsNameRegistered()) {
@@ -1589,9 +1586,9 @@ ActivityCategoryHandler::FinishCancelActivity(
 
 	MojErr err = msg->replySuccess();
 	if (err)
-		MojLogError(s_log, _T("Failed to generate reply to Cancel request"));
+		LOG_ERROR(MSGID_CANCEL_ACTIVITY_REQ_REPLY_FAIL, 0, "");
 
-	MojLogDebug(s_log, _T("Cancel: [Activity %llu] cancelled"),
+	LOG_DEBUG("Cancel: [Activity %llu] cancelled",
 		act->GetId());
 
 	ACTIVITY_SERVICEMETHODFINISH_END(msg);
@@ -1662,8 +1659,8 @@ ActivityCategoryHandler::PauseActivity(MojServiceMessage *msg, MojObject& payloa
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Pause: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Pause: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1676,10 +1673,10 @@ ActivityCategoryHandler::PauseActivity(MojServiceMessage *msg, MojObject& payloa
 
 	err = m_am->PauseActivity(act);
 	if (err) {
-		MojLogDebug(s_log, _T("Pause: Failed to pause [Activity %llu]"),
+		LOG_DEBUG("Pause: Failed to pause [Activity %llu]",
 			act->GetId());
 	} else {
-		MojLogDebug(s_log, _T("Pause: [Activity %llu] pausing"), act->GetId());
+		LOG_DEBUG("Pause: [Activity %llu] pausing", act->GetId());
 	}
 
 	MojErrCheck(err);
@@ -1757,8 +1754,8 @@ ActivityCategoryHandler::FocusActivity(MojServiceMessage *msg, MojObject& payloa
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Focus: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Focus: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1771,13 +1768,13 @@ ActivityCategoryHandler::FocusActivity(MojServiceMessage *msg, MojObject& payloa
 
 	err = m_am->FocusActivity(act);
 	if (err) {
-		MojLogDebug(s_log, _T("Focus: Failed to focus [Activity %llu]"),
+		LOG_DEBUG("Focus: Failed to focus [Activity %llu]",
 			act->GetId());
 		err = msg->replyError(err, "Failed to focus Activity");
 		MojErrCheck(err);
 		return MojErrNone;
 	} else {
-		MojLogDebug(s_log, _T("Focus: [Activity %llu] focused"), act->GetId());
+		LOG_DEBUG("Focus: [Activity %llu] focused", act->GetId());
 	}
 
 	err = msg->replySuccess();
@@ -1848,8 +1845,8 @@ ActivityCategoryHandler::UnfocusActivity(MojServiceMessage *msg, MojObject& payl
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Unfocus: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Unfocus: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -1862,13 +1859,13 @@ ActivityCategoryHandler::UnfocusActivity(MojServiceMessage *msg, MojObject& payl
 
 	err = m_am->UnfocusActivity(act);
 	if (err) {
-		MojLogDebug(s_log, _T("Unfocus: Failed to unfocus [Activity %llu]"),
+		LOG_DEBUG("Unfocus: Failed to unfocus [Activity %llu]",
 			act->GetId());
 		err = msg->replyError(err, "Failed to unfocus Activity");
 		MojErrCheck(err);
 		return MojErrNone;
 	} else {
-		MojLogDebug(s_log, _T("Unfocus: [Activity %llu] unfocused"),
+		LOG_DEBUG("Unfocus: [Activity %llu] unfocused",
 			act->GetId());
 	}
 
@@ -1944,7 +1941,7 @@ ActivityCategoryHandler::AddFocus(MojServiceMessage *msg, MojObject& payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -1976,15 +1973,15 @@ ActivityCategoryHandler::AddFocus(MojServiceMessage *msg, MojObject& payload)
 
 	err = m_am->AddFocus(sourceActivity, targetActivity);
 	if (err) {
-		MojLogDebug(s_log, _T("AddFocus: Failed to add focus from "
-			"[Activity %llu] to [Activity %llu]"), sourceActivity->GetId(),
+		LOG_DEBUG("AddFocus: Failed to add focus from [Activity %llu] to [Activity %llu]",
+			sourceActivity->GetId(),
 			targetActivity->GetId());
 		err = msg->replyError(err, "Failed to add focus");
 		MojErrCheck(err);
 		return MojErrNone;
 	} else {
-		MojLogDebug(s_log, _T("AddFocus: Successfully added focus from "
-			"[Activity %llu] to [Activity %llu]"), sourceActivity->GetId(),
+		LOG_DEBUG("AddFocus: Successfully added focus from [Activity %llu] to [Activity %llu]",
+			sourceActivity->GetId(),
 			targetActivity->GetId());
 	}
 
@@ -2150,8 +2147,8 @@ ActivityCategoryHandler::ListActivities(MojServiceMessage *msg, MojObject& paylo
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("List: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("List: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 	bool details = false;
@@ -2319,8 +2316,8 @@ ActivityCategoryHandler::GetActivityDetails(MojServiceMessage *msg, MojObject& p
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Details: Message from %s: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Details: Message from %s: %s",
 		MojoSubscription::GetSubscriberString(msg).c_str(),
 		MojoObjectJson(payload).c_str());
 
@@ -2425,7 +2422,7 @@ ActivityCategoryHandler::AssociateApp(MojServiceMessage *msg, MojObject& payload
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2485,7 +2482,7 @@ ActivityCategoryHandler::DissociateApp(MojServiceMessage *msg, MojObject& payloa
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2545,7 +2542,7 @@ ActivityCategoryHandler::AssociateService(MojServiceMessage *msg, MojObject& pay
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2605,7 +2602,7 @@ ActivityCategoryHandler::DissociateService(MojServiceMessage *msg, MojObject& pa
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2665,7 +2662,7 @@ ActivityCategoryHandler::AssociateProcess(MojServiceMessage *msg, MojObject& pay
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2725,7 +2722,7 @@ ActivityCategoryHandler::DissociateProcess(MojServiceMessage *msg, MojObject& pa
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2785,7 +2782,7 @@ ActivityCategoryHandler::AssociateNetworkFlow(MojServiceMessage *msg, MojObject&
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2845,7 +2842,7 @@ ActivityCategoryHandler::DissociateNetworkFlow(MojServiceMessage *msg, MojObject
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -2923,8 +2920,8 @@ ActivityCategoryHandler::MapProcess(MojServiceMessage *msg, MojObject& payload)
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 	MojErr err;
 
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("MapProcess: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("MapProcess: %s",
 		MojoObjectJson(payload).c_str());
 
 	MojLunaMessage *lunaMsg = dynamic_cast<MojLunaMessage *>(msg);
@@ -3042,7 +3039,7 @@ ActivityCategoryHandler::UnmapProcess(MojServiceMessage *msg, MojObject& payload
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 
@@ -3187,7 +3184,7 @@ ActivityCategoryHandler::Info(MojServiceMessage *msg, MojObject& payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err;
 
@@ -3270,14 +3267,14 @@ ActivityCategoryHandler::Enable(MojServiceMessage *msg, MojObject& payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (IsPublicMessage(msg)) {
 		MojErr err = msg->replyError(MojErrAccessDenied, "Only callers on the "
 			"private bus are allowed to enable or disable Activity dispatch");
 		MojErrCheck(err);
 	} else {
-		MojLogDebug(s_log, _T("Enabling scheduling new Activities"));
+		LOG_DEBUG("Enabling scheduling new Activities");
 		m_am->Enable(ActivityManager::EXTERNAL_ENABLE);
 
 		MojErr err = msg->replySuccess();
@@ -3346,14 +3343,14 @@ ActivityCategoryHandler::Disable(MojServiceMessage *msg, MojObject& payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (IsPublicMessage(msg)) {
 		MojErr err = msg->replyError(MojErrAccessDenied, "Only callers on the "
 			"private bus are allowed to enable or disable Activity dispatch");
 		MojErrCheck(err);
 	} else {
-		MojLogDebug(s_log, _T("Disabling scheduling new Activities"));
+		LOG_DEBUG("Disabling scheduling new Activities");
 		m_am->Disable(ActivityManager::EXTERNAL_ENABLE);
 
 		MojErr err = msg->replySuccess();
@@ -3395,7 +3392,7 @@ ActivityCategoryHandler::SubscribeActivity(MojServiceMessage *msg,
 	const MojObject& payload, const boost::shared_ptr<Activity>& act,
 	boost::shared_ptr<MojoSubscription>& sub)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	bool subscribe = false;
 	payload.get(_T("subscribe"), subscribe);
@@ -3432,11 +3429,10 @@ ActivityCategoryHandler::CheckSerial(MojServiceMessage *msg,
 		}
 
 		if (act->GetCallback()->GetSerial() != serial) {
-			MojLogWarning(s_log, _T("[Activity %llu] %s attempting to "
-				"interact with call chain with sequence serial number %u, "
-				"but it is currently at %u"), act->GetId(),
-				MojoSubscription::GetSubscriberString(msg).c_str(),
-				serial, act->GetCallback()->GetSerial());
+			LOG_ERROR(MSGID_SERIAL_NUM_MISMATCH, 4, PMLOGKFV("Activity","%llu",act->GetId()),
+				    PMLOGKS("subscriber_string",MojoSubscription::GetSubscriberString(msg).c_str()),
+				    PMLOGKFV("required_serial","%u",serial),
+				    PMLOGKFV("current_serial","%u",act->GetCallback()->GetSerial()), "");
 			throw std::runtime_error("Call sequence serial numbers do not "
 				"match");
 		}
@@ -3450,7 +3446,7 @@ ActivityCategoryHandler::EnsureCompletion(MojServiceMessage *msg,
 	MojObject& payload, PersistProxy::CommandType type,
 	CompletionFunction func, boost::shared_ptr<Activity> act)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (act->IsPersistent()) {
 		/* Ensure a Persist Token object has been allocated for the Activity.
@@ -3494,18 +3490,18 @@ ActivityCategoryHandler::EnsureReplaceCompletion(MojServiceMessage *msg,
 	MojObject& payload, boost::shared_ptr<Activity> oldActivity,
 	boost::shared_ptr<Activity> newActivity)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (!oldActivity) {
-		MojLogError(s_log, _T("Activity which new [Activity %llu] is to "
-			"replace was not specified"), newActivity->GetId());
+		LOG_ERROR(MSGID_NO_OLD_ACTIVITY, 1, PMLOGKFV("new_activity","%llu",newActivity->GetId()),
+			  "Activity which new Activity is to replace was not specified");
 		throw std::runtime_error("Activity to be replaced must be specified");
 	}
 
 	if (newActivity->IsPersistTokenSet()) {
-		MojLogError(s_log, _T("New [Activity %llu] already has persist token "
-			"set while preparing it to replace existing [Activity %llu]"),
-			newActivity->GetId(), oldActivity->GetId());
+		LOG_ERROR(MSGID_NEW_ACTIVITY_PERSIST_TOKEN_SET, 2, PMLOGKFV("new_activity","%llu",newActivity->GetId()),
+			  PMLOGKFV("old_activity","%llu",oldActivity->GetId()),
+			  "New activity already has persist token set while preparing it to replace old activity");
 		throw std::runtime_error("New Activity already has persist token "
 			"set while replacing existing Activity");
 	}

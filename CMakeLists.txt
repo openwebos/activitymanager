@@ -64,6 +64,8 @@ webos_add_compiler_flags(DEBUG -DMOJ_DEBUG)
 #webos_add_compiler_flags(ALL -Werror )
 
 webos_add_linker_options (ALL "--no-undefined")
+#Uncomment following line to see Trace logs
+#add_definitions(-DPMLOG_TRACES_ENABLED -DPMLOG_TRACE_COMPONENT="ActivityManager")
 
 file(GLOB SOURCE_FILES src/*.cpp)
 

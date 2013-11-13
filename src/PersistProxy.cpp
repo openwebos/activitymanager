@@ -19,6 +19,7 @@
 #include "PersistProxy.h"
 #include "PersistCommand.h"
 #include "Activity.h"
+#include "Logging.h"
 
 #include <stdexcept>
 
@@ -53,8 +54,8 @@ boost::shared_ptr<PersistCommand>
 PersistProxy::PrepareNoopCommand(boost::shared_ptr<Activity> activity,
 	boost::shared_ptr<Completion> completion)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Preparing noop command for [Activity %llu]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Preparing noop command for [Activity %llu]",
 		activity->GetId());
 
 	return boost::make_shared<NoopCommand>(activity, completion);

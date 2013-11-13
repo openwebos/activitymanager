@@ -19,6 +19,7 @@
 #include "DefaultRequirementManager.h"
 #include "Requirement.h"
 #include "Activity.h"
+#include "Logging.h"
 
 #include <stdexcept>
 
@@ -57,9 +58,8 @@ DefaultRequirementManager::InstantiateRequirement(
 				"specified, the only legal value is 'true'");
 		}
 	} else {
-		MojLogError(s_log, _T("[Manager %s] does not know how to instantiate "
-			"[Requirement %s] for [Activity %llu]"), GetName().c_str(),
-			name.c_str(), activity->GetId());
+		LOG_ERROR(MSGID_REQUIREMENT_INSTANTIATE_FAIL, 3, PMLOGKS("Manager",GetName().c_str()),
+			  PMLOGKFV("Activity","%llu",activity->GetId()), PMLOGKS("Requirement",name.c_str()), "");
 		throw std::runtime_error("Attempt to instantiate unknown requirement");
 	}
 }
@@ -67,8 +67,8 @@ DefaultRequirementManager::InstantiateRequirement(
 void DefaultRequirementManager::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Registering requirements"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Registering requirements");
 
 	master->RegisterRequirement("never", shared_from_this());
 }
@@ -76,8 +76,8 @@ void DefaultRequirementManager::RegisterRequirements(
 void DefaultRequirementManager::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Unregistering requirements"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Unregistering requirements");
 
 	master->UnregisterRequirement("never", shared_from_this());
 }

@@ -20,7 +20,7 @@
 #include "ActivityManager.h"
 #include "Activity.h"
 #include "MojoCall.h"
-
+#include "Logging.h"
 #include <stdexcept>
 #include <time.h>
 
@@ -50,8 +50,8 @@ boost::shared_ptr<Requirement> SystemManagerProxy::InstantiateRequirement(
 	boost::shared_ptr<Activity> activity, const std::string& name,
 	const MojObject& value)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Instantiating [Requirement %s] for [Activity %llu]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
 		name.c_str(), activity->GetId());
 
 	if (name == "bootup") {
@@ -66,9 +66,10 @@ boost::shared_ptr<Requirement> SystemManagerProxy::InstantiateRequirement(
 				"the only legal value is 'true'");
 		}
 	} else {
-		MojLogError(s_log, _T("[Manager %s] does not know how to instantiate "
-			"[Requirement %s] for [Activity %llu]"), GetName().c_str(),
-			name.c_str(), activity->GetId());
+		LOG_ERROR(MSGID_SM_UNKNOWN_REQ, 3, PMLOGKS("MANAGER", GetName().c_str()),
+			PMLOGKS("REQ",name.c_str()),
+			PMLOGKFV("ACTIVITY_ID","%llu",activity->GetId()),
+			"does not know how to instantiate Requirement" );
 		throw std::runtime_error("Attempt to instantiate unknown requirement");
 	}
 }
@@ -76,8 +77,8 @@ boost::shared_ptr<Requirement> SystemManagerProxy::InstantiateRequirement(
 void SystemManagerProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Registering requirements"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Registering requirements");
 
 	master->RegisterRequirement("bootup", shared_from_this());
 }
@@ -85,16 +86,16 @@ void SystemManagerProxy::RegisterRequirements(
 void SystemManagerProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Unregistering requirements"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Unregistering requirements");
 
 	master->UnregisterRequirement("bootup", shared_from_this());
 }
 
 void SystemManagerProxy::Enable()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Enabling System Manager Proxy"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Enabling System Manager Proxy");
 
 	MojObject params;
 	params.putBool(_T("subscribe"), true);
@@ -110,8 +111,8 @@ void SystemManagerProxy::Enable()
 
 void SystemManagerProxy::Disable()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Disabling System Manager Proxy"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Disabling System Manager Proxy");
 
 	m_bootstatus.reset();
 }
@@ -127,22 +128,22 @@ void SystemManagerProxy::Disable()
 void SystemManagerProxy::BootStatusUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Boot status update message: %s"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Boot status update message: %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			MojLogError(s_log, _T("Subscription to System Manager "
-				"experienced an uncorrectable failure: %s"),
+			LOG_WARNING(MSGID_SM_BOOTSTS_UPDATE_FAIL,0,
+				"Subscription to System Manager experienced an uncorrectable failure: %s",
 				MojoObjectJson(response).c_str());
 			m_bootstatus.reset();
 			/* XXX Kick start if it hasn't been, for resilience?  Or
 			 * fail-secure? (Might want to fail that way for OTA
 			 * data migration) */
 		} else {
-			MojLogWarning(s_log, _T("Subscription to System Manager failed, "
-				"retrying: %s"), MojoObjectJson(response).c_str());
+			LOG_WARNING(MSGID_SM_BOOTSTS_UPDATE_RETRY,0,
+				"Subscription to System Manager failed retrying: %s", MojoObjectJson(response).c_str());
 			static struct timespec sleep = { 0, 250000000};
 			nanosleep(&sleep, NULL);
 			m_bootstatus->Call();
@@ -155,8 +156,8 @@ void SystemManagerProxy::BootStatusUpdate(MojServiceMessage *msg,
 
 	found = response.get(_T("finished"), finished);
 	if (!found) {
-		MojLogWarning(s_log, _T("Bootup status not returned by System "
-			"Manager: %s"), MojoObjectJson(response).c_str());
+		LOG_WARNING(MSGID_SM_BOOTSTS_NOTRETURNED,0,
+			"Bootup status not returned by System Manager: %s", MojoObjectJson(response).c_str());
 	} else {
 		if (finished) {
 			if (!m_bootIssued) {

@@ -20,6 +20,7 @@
 #include "ResourceContainer.h"
 #include "BusId.h"
 #include "BusEntity.h"
+#include "Logging.h"
 
 MojLogger ContainerManager::s_log(_T("activitymanager.resourcecontainermanager"));
 
@@ -37,15 +38,15 @@ ContainerManager::~ContainerManager()
 boost::shared_ptr<ResourceContainer> ContainerManager::GetContainer(
 	const std::string& name)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Looking up [Container %s]"), name.c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Looking up [Container %s]", name.c_str());
 
 	ContainerMap::iterator found = m_containers.find(name);
 	if (found != m_containers.end()) {
 		return found->second;
 	}
 
-	MojLogDebug(s_log, _T("Allocating new container for [Container %s]"),
+	LOG_DEBUG("Allocating new container for [Container %s]",
 		name.c_str());
 
 	boost::shared_ptr<ResourceContainer> container = CreateContainer(name);
@@ -64,8 +65,8 @@ boost::shared_ptr<ResourceContainer> ContainerManager::GetContainer(
 void ContainerManager::MapContainer(
 	const std::string& name, const BusIdVec& ids, pid_t pid)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Mapping pid %d into [Container %s]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Mapping pid %d into [Container %s]",
 		(int)pid, name.c_str());
 
 	/* Do not invalidate old Entities.  Just leave them in whatever container
@@ -111,17 +112,17 @@ void ContainerManager::MapContainer(
 
 void ContainerManager::InformEntityUpdated(boost::shared_ptr<BusEntity> entity)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[BusId %s] has been updated"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[BusId %s] has been updated",
 		entity->GetName().c_str());
 
 	EntityContainerMap::iterator citer = m_entityContainers.find(entity);
 	if (citer == m_entityContainers.end()) {
-		MojLogDebug(s_log, _T("No container currently mapped for "
-			"[BusId %s]"), entity->GetName().c_str());
+		LOG_DEBUG("No container currently mapped for [BusId %s]",
+			entity->GetName().c_str());
 	} else {
 		citer->second->UpdatePriority();
-		MojLogDebug(s_log, _T("[BusId %s] priority is now \"%s\""),
+		LOG_DEBUG("[BusId %s] priority is now \"%s\"",
 			entity->GetName().c_str(),
 			ActivityPriorityNames[citer->second->GetPriority()]);
 	}
@@ -129,13 +130,13 @@ void ContainerManager::InformEntityUpdated(boost::shared_ptr<BusEntity> entity)
 
 void ContainerManager::Enable()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (m_enabled) {
-		MojLogDebug(s_log, _T("Container Manager already enabled"));
+		LOG_DEBUG("Container Manager already enabled");
 	}
 
-	MojLogDebug(s_log, _T("Enabling Container Manager"));
+	LOG_DEBUG("Enabling Container Manager");
 
 	m_enabled = true;
 
@@ -146,13 +147,13 @@ void ContainerManager::Enable()
 
 void ContainerManager::Disable()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (!m_enabled) {
-		MojLogDebug(s_log, _T("Container Manager already disabled"));
+		LOG_DEBUG("Container Manager already disabled");
 	}
 
-	MojLogDebug(s_log, _T("Disabling Container Manager"));
+	LOG_DEBUG("Disabling Container Manager");
 
 	m_enabled = false;
 

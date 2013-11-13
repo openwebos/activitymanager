@@ -17,6 +17,7 @@
 // LICENSE@@@
 
 #include "MojoMatcher.h"
+#include "Logging.h"
 
 #include <stdexcept>
 
@@ -46,18 +47,18 @@ MojoSimpleMatcher::~MojoSimpleMatcher()
 bool MojoSimpleMatcher::Match(const MojObject& response)
 {
 	if (!m_setupComplete) {
-		MojLogDebug(s_log, _T("Simple Matcher: Setup successfully"));
+		LOG_DEBUG("Simple Matcher: Setup successfully");
 		m_setupComplete = true;
 		return false;
 	} else {
-		MojLogDebug(s_log, _T("Simple Matcher: Matched"));
+		LOG_DEBUG("Simple Matcher: Matched");
 		return true;
 	}
 }
 
 void MojoSimpleMatcher::Reset()
 {
-	MojLogDebug(s_log, _T("Simple Matcher: Resetting"));
+	LOG_DEBUG("Simple Matcher: Resetting");
 
 	m_setupComplete = false;
 }
@@ -78,16 +79,16 @@ MojoKeyMatcher::~MojoKeyMatcher()
 
 bool MojoKeyMatcher::Match(const MojObject& response)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	/* If those were the droids we were looking for, fire! */
 	if (response.contains(m_key)) {
-		MojLogDebug(s_log, _T("Key Matcher: Key \"%s\" found in response %s"),
+		LOG_DEBUG("Key Matcher: Key \"%s\" found in response %s",
 			m_key.data(), MojoObjectJson(response).c_str());
 		return true;
 	} else {
-		MojLogDebug(s_log, _T("Key Matcher: Key \"%s\" not found in response"
-			"%s"), m_key.data(), MojoObjectJson(response).c_str());
+		LOG_DEBUG("Key Matcher: Key \"%s\" not found in response %s", 
+			m_key.data(), MojoObjectJson(response).c_str());
 		return false;
 	}
 }
@@ -115,7 +116,7 @@ MojoCompareMatcher::~MojoCompareMatcher()
 
 bool MojoCompareMatcher::Match(const MojObject& response)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (response.contains(m_key)) {
 		MojObject value;
@@ -126,18 +127,18 @@ bool MojoCompareMatcher::Match(const MojObject& response)
 			MojString oldValueString;
 			m_value.stringValue(oldValueString);
 
-			MojLogDebug(s_log, _T("Compare Matcher: Comparison key \"%s\" "
-				"value changed from \"%s\" to \"%s\".  Firing."), m_key.data(),
+			LOG_DEBUG("Compare Matcher: Comparison key \"%s\" value changed from \"%s\" to \"%s\".  Firing.", 
+				m_key.data(),
 				oldValueString.data(), valueString.data());
 
 			return true;
 		} else {
-			MojLogDebug(s_log, _T("Compare Matcher: Comparison key \"%s\" "
-				"value \"%s\" unchanged."), m_key.data(), valueString.data());
+			LOG_DEBUG("Compare Matcher: Comparison key \"%s\" value \"%s\" unchanged.",
+				m_key.data(), valueString.data());
 		}
 	} else {
-		MojLogDebug(s_log, _T("Compare Matcher: Comparison key (%s) not "
-			"present."), m_key.data());
+		LOG_DEBUG("Compare Matcher: Comparison key (%s) not present.",
+			m_key.data());
 	}
 
 	return false;
@@ -174,14 +175,14 @@ MojoWhereMatcher::~MojoWhereMatcher()
 
 bool MojoWhereMatcher::Match(const MojObject& response)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (CheckClauses(m_where, response)) {
-		MojLogDebug(s_log, _T("Where Matcher: Response %s matches"),
+		LOG_DEBUG("Where Matcher: Response %s matches",
 			MojoObjectJson(response).c_str());
 		return true;
 	} else {
-		MojLogDebug(s_log, _T("Where Matcher: Response %s does not match"),
+		LOG_DEBUG("Where Matcher: Response %s does not match",
 			MojoObjectJson(response).c_str());
 		return false;
 	}
@@ -238,8 +239,8 @@ void MojoWhereMatcher::ValidateOp(const MojObject& op) const
 
 void MojoWhereMatcher::ValidateClause(const MojObject& clause) const
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Validating where clause \"%s\""),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Validating where clause \"%s\"",
 		MojoObjectJson(clause).c_str());
 
 	if (!clause.contains(_T("prop"))) {
@@ -268,8 +269,8 @@ void MojoWhereMatcher::ValidateClause(const MojObject& clause) const
 
 void MojoWhereMatcher::ValidateClauses(const MojObject& where) const
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Validating trigger clauses"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Validating trigger clauses");
 
 	if (where.type() == MojObject::TypeObject) {
 		ValidateClause(where);
@@ -293,7 +294,7 @@ void MojoWhereMatcher::ValidateClauses(const MojObject& where) const
 bool MojoWhereMatcher::CheckClause(const MojObject& clause,
 	const MojObject& response) const
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 	bool result;
 
 	if (clause.type() != MojObject::TypeObject) {
@@ -352,7 +353,7 @@ bool MojoWhereMatcher::CheckClause(const MojObject& clause,
 		result = false;
 	}
 
-	MojLogDebug(s_log, _T("Where Trigger: Clause %s %s"),
+	LOG_DEBUG("Where Trigger: Clause %s %s",
 		MojoObjectJson(clause).c_str(), result ? "matched" : "did not match");
 
 	return result;
@@ -361,7 +362,7 @@ bool MojoWhereMatcher::CheckClause(const MojObject& clause,
 bool MojoWhereMatcher::CheckClauses(const MojObject& clauses,
 	const MojObject& response) const
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (clauses.type() == MojObject::TypeObject) {
 		return CheckClause(clauses, response);

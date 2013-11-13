@@ -19,7 +19,7 @@
 #include "ResourceContainer.h"
 #include "ContainerManager.h"
 #include "BusEntity.h"
-
+#include "Logging.h"
 #include <stdexcept>
 
 MojLogger ResourceContainer::s_log(_T("activitymanager.resourcecontainer"));
@@ -37,14 +37,14 @@ ResourceContainer::~ResourceContainer()
 
 void ResourceContainer::AddEntity(boost::shared_ptr<BusEntity> entity)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Adding [BusId %s] to [Container %s]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Adding [BusId %s] to [Container %s]",
 		entity->GetName().c_str(), m_name.c_str());
 
 	EntitySet::iterator found = m_entities.find(entity);
 	if (found != m_entities.end()) {
-		MojLogWarning(s_log, _T("[BusId %s] has already been added to "
-			"[Container %s]"), entity->GetName().c_str(), m_name.c_str());
+		LOG_DEBUG("[BusId %s] has already been added to [Container %s]",
+			entity->GetName().c_str(), m_name.c_str());
 		return;
 	}
 
@@ -53,14 +53,14 @@ void ResourceContainer::AddEntity(boost::shared_ptr<BusEntity> entity)
 
 void ResourceContainer::RemoveEntity(boost::shared_ptr<BusEntity> entity)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Removing [BusId %s] from [Container %s]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Removing [BusId %s] from [Container %s]",
 		entity->GetName().c_str(), m_name.c_str());
 
 	EntitySet::iterator found = m_entities.find(entity);
 	if (found == m_entities.end()) {
-		MojLogWarning(s_log, _T("[BusId %s] is not currently mapped to "
-			"[Container %s]"), entity->GetName().c_str(), m_name.c_str());
+		LOG_DEBUG("[BusId %s] is not currently mapped to [Container %s]",
+			entity->GetName().c_str(), m_name.c_str());
 		return;
 	}
 

@@ -17,6 +17,7 @@
 // LICENSE@@@
 
 #include "GlibScheduler.h"
+#include "Logging.h"
 
 GlibScheduler::GlibScheduler()
 {
@@ -28,16 +29,13 @@ GlibScheduler::~GlibScheduler()
 
 void GlibScheduler::Enable()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Enabling scheduler"));
+	LOG_DEBUG("Enabling scheduler");
 }
 
 void GlibScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 {
-	MojLogTrace(s_log);
-
-	MojLogDebug(s_log, _T("Updating wakeup timer: next wakeup %llu, "
-		"current time %llu"), (unsigned long long)nextWakeup,
+	LOG_DEBUG("Updating wakeup timer: next wakeup %llu, current time %llu",
+		(unsigned long long)nextWakeup,
 		(unsigned long long)curTime);
 
 	m_timeout = boost::make_shared<Timeout<GlibScheduler> >(
@@ -49,8 +47,7 @@ void GlibScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 
 void GlibScheduler::CancelTimeout()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Scheduler timeout cancelled"));
+	LOG_TRACE("Scheduler timeout cancelled");
 
 	if (m_timeout) {
 		m_timeout.reset();
@@ -59,8 +56,7 @@ void GlibScheduler::CancelTimeout()
 
 void GlibScheduler::TimeoutCallback()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Scheduler timeout callback"));
+	LOG_TRACE("Scheduler timeout callback");
 
 	m_timeout.reset();
 

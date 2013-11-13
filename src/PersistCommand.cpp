@@ -20,6 +20,7 @@
 #include "PersistToken.h"
 #include "Completion.h"
 #include "Activity.h"
+#include "Logging.h"
 
 #include <stdexcept>
 
@@ -54,10 +55,10 @@ std::string PersistCommand::GetString() const
  * command is a member of. */
 void PersistCommand::Append(boost::shared_ptr<PersistCommand> command)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 	if (command == shared_from_this()) {
-		MojLogError(s_log, _T("[PersistCommand %s]: Attempt to append command "
-			"directly to itself"), GetString().c_str());
+		LOG_WARNING(MSGID_APPEND_CMD_TOSELF,1,PMLOGKS("persist_command",GetString().c_str()),
+			 "Attempt to append command directly to itself");
 		throw std::runtime_error("Attempt to append Persist Command directly "
 			"to itself");
 	}
@@ -67,9 +68,8 @@ void PersistCommand::Append(boost::shared_ptr<PersistCommand> command)
 	for (target = shared_from_this(); target->m_next;
 		target = target->m_next) {
 		if (target->m_next == shared_from_this()) {
-			MojLogError(s_log, _T("Append failed: [PersistCommand %s] already "
-				"referenced from [PersistCommand %s]"),
-				command->GetString().c_str(), target->GetString().c_str());
+			LOG_WARNING( MSGID_APPEND_CREATE_LOOP, 2, PMLOGKS("persist_command",command->GetString().c_str()),
+                PMLOGKS("persist_command",target->GetString().c_str()),"Append Failed");
 			throw std::runtime_error("Attempt to append Persist Command would "
 				"create a loop");
 		}
@@ -80,20 +80,22 @@ void PersistCommand::Append(boost::shared_ptr<PersistCommand> command)
 
 void PersistCommand::Complete(bool success)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	/* All steps of Complete must execute, including launching the next
 	 * command in the chain.  All exceptions must be handled locally. */
 	try {
 		m_completion->Complete(success);
 	} catch (const std::exception& except) {
-		MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: "
-			"Unexpected exception %s while trying to complete"),
-			m_activity->GetId(), GetString().c_str(), except.what());
+		LOG_WARNING(MSGID_CMD_COMPLETE_EXCEPTION,3,
+			PMLOGKFV("activity","%llu",m_activity->GetId()),
+		    PMLOGKS("persist_command",GetString().c_str()),
+			PMLOGKS("exception",except.what()),"Unexpected exception while trying to complete");
 	} catch (...) {
-		MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: Unknown "
-			"exception while trying to complete"), m_activity->GetId(),
-			GetString().c_str());
+		LOG_WARNING(MSGID_CMD_COMPLETE_EXCEPTION,2,
+			PMLOGKFV("activity","%llu",m_activity->GetId()),
+		    PMLOGKS("persist_command",GetString().c_str()),"exception while trying to complete");
+
 	}
 
 	/* Tricky order here.  Unhooking this command will probably destroy it,
@@ -112,13 +114,14 @@ void PersistCommand::Complete(bool success)
 	try {
 		m_activity->UnhookPersistCommand(shared_from_this());
 	} catch (const std::exception& except) {
-		MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: "
-			"Unexpected exception \"%s\" unhooking command"),
-			m_activity->GetId(), GetString().c_str(), except.what());
+		LOG_WARNING( MSGID_CMD_UNHOOK_EXCEPTION,3,
+			PMLOGKFV("activity","%llu",m_activity->GetId()),
+            PMLOGKS("persist_command",GetString().c_str()),
+			PMLOGKS("exception",except.what()),"Unexpected exception unhooking command" );
 	} catch (...) {
-		MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: Unknown "
-			"exception unhooking command"), m_activity->GetId(),
-			GetString().c_str());
+		LOG_WARNING(MSGID_CMD_UNHOOK_EXCEPTION,2,
+			PMLOGKFV("activity","%llu",m_activity->GetId()),
+            PMLOGKS("persist_command",GetString().c_str()),"exception unhooking command");
 	}
 
 	if (next) {
@@ -128,20 +131,25 @@ void PersistCommand::Complete(bool success)
 
 void PersistCommand::Validate(bool checkTokenValid) const
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (!m_activity->IsPersistTokenSet()) {
-		MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: Persist "
-			"Token is not set"), m_activity->GetId(), GetString().c_str());
+		LOG_ERROR(MSGID_PERSIST_TOKEN_NOT_SET,2,
+			PMLOGKFV("activity","%llu",m_activity->GetId()),
+ 		    PMLOGKS("persist_command",GetString().c_str()),
+            "Persist token for Activity is not set");
+
 		throw std::runtime_error("Persist token for Activity is not set");
 	}
 
 	if (checkTokenValid) {
 		boost::shared_ptr<PersistToken> pt = m_activity->GetPersistToken();
 		if (!pt->IsValid()) {
-			MojLogError(s_log, _T("[Activity %llu] [PersistCommand %s]: "
-				"Persist Token is not valid"), m_activity->GetId(),
-				GetString().c_str());
+			LOG_ERROR(MSGID_PERSIST_TOKEN_INVALID, 2,
+				PMLOGKFV("activity","%llu",m_activity->GetId()),
+ 		        PMLOGKS("persist_command",GetString().c_str()),
+			    "Persist token for Activity is set but not valid" );
+
 			throw std::runtime_error("Persist token for Activity is set "
 				"but not valid");
 		}
@@ -160,8 +168,8 @@ NoopCommand::~NoopCommand()
 
 void NoopCommand::Persist()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] [PersistCommand %s]: No-op command"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] [PersistCommand %s]: No-op command",
 		m_activity->GetId(), GetString().c_str());
 	Complete(true);
 }

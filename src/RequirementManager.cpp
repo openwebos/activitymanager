@@ -18,7 +18,7 @@
 
 #include "RequirementManager.h"
 #include "DefaultRequirementManager.h"
-
+#include "Logging.h"
 #include <algorithm>
 #include <stdexcept>
 
@@ -68,14 +68,15 @@ boost::shared_ptr<Requirement> MasterRequirementManager::InstantiateRequirement(
 	boost::shared_ptr<Activity> activity, const std::string& name,
 	const MojObject& value)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Looking up specific requirement manager to "
-		"instantiate [Requirement %s]"), name.c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Looking up specific requirement manager to instantiate [Requirement %s]",
+		name.c_str());
 
 	RequirementMap::iterator found = m_requirements.find(name);
 	if (found == m_requirements.end()) {
-		MojLogWarning(s_log, _T("Manager for [Requirement %s] not found"),
-			name.c_str());
+		LOG_ERROR(MSGID_REQ_MANAGER_NOT_FOUND,1,
+			PMLOGKS("Requirement",name.c_str()),
+			"Manager not found for instantiate ");
 		throw std::runtime_error("Manager for requirement not found");
 	}
 
@@ -85,8 +86,8 @@ boost::shared_ptr<Requirement> MasterRequirementManager::InstantiateRequirement(
 void MasterRequirementManager::RegisterRequirement(const std::string& name,
 	boost::shared_ptr<RequirementManager> manager)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Registering [Manager %s] for [Requirement %s]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Registering [Manager %s] for [Requirement %s]",
 		manager->GetName().c_str(), name.c_str());
 
 	m_requirements[name] = manager;
@@ -95,20 +96,17 @@ void MasterRequirementManager::RegisterRequirement(const std::string& name,
 void MasterRequirementManager::UnregisterRequirement(const std::string& name,
 	boost::shared_ptr<RequirementManager> manager)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Unregistering [Manager %s] from [Requirement %s]"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Unregistering [Manager %s] from [Requirement %s]",
 		manager->GetName().c_str(), name.c_str());
 
 	RequirementMap::iterator found = m_requirements.find(name);
 	if (found == m_requirements.end()) {
-		MojLogWarning(s_log, _T("No manager found for [Requirement %s] "
-			"attempting to unregister [Manager %s]"), name.c_str(),
-			manager->GetName().c_str());
+		LOG_DEBUG("No manager found for [Requirement %s], attempting to unregister [Manager %s]",
+			name.c_str(),manager->GetName().c_str());
 	} else if (found->second != manager) {
-		MojLogWarning(s_log, _T("[Manager %s] not currently registered for "
-			"[Requirement %s], it is registered to [Manager %s]"),
-			manager->GetName().c_str(), name.c_str(),
-			found->second->GetName().c_str());
+		LOG_DEBUG("[Manager %s] not currently registered for [Requirement %s], it is registered to [Manager %s]",
+			manager->GetName().c_str(), name.c_str(),found->second->GetName().c_str());
 	} else {
 		m_requirements.erase(found);
 	}

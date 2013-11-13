@@ -20,7 +20,7 @@
 #include "Scheduler.h"
 #include "Activity.h"
 #include "ActivityJson.h"
-
+#include "Logging.h"
 #include <ctime>
 
 const time_t Schedule::DAY_ONE = (60*60*24);
@@ -50,9 +50,9 @@ time_t Schedule::GetNextStartTime() const
 
 void Schedule::CalcNextStartTime()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Not an interval schedule, so next "
-		"start time not updated"), m_activity.lock()->GetId());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Not an interval schedule, so next start time not updated",
+		m_activity.lock()->GetId());
 }
 
 time_t Schedule::GetTime() const
@@ -85,8 +85,8 @@ bool Schedule::operator<(const Schedule& rhs) const
 
 void Schedule::Queue()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Queueing with Scheduler"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Queueing with Scheduler",
 		m_activity.lock()->GetId());
 
 	if (IsQueued())
@@ -100,8 +100,8 @@ void Schedule::Queue()
 
 void Schedule::UnQueue()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Unqueueing from Scheduler"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Unqueueing from Scheduler",
 		m_activity.lock()->GetId());
 
 	m_scheduler->RemoveItem(shared_from_this());
@@ -115,8 +115,8 @@ bool Schedule::IsQueued() const
 
 void Schedule::Scheduled()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Scheduled"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Scheduled",
 		m_activity.lock()->GetId());
 
 	m_scheduled = true;
@@ -130,8 +130,8 @@ bool Schedule::IsScheduled() const
 
 void Schedule::InformActivityFinished()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Finished"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Finished",
 		m_activity.lock()->GetId());
 }
 

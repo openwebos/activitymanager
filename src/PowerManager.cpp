@@ -19,7 +19,7 @@
 #include "PowerManager.h"
 #include "PowerActivity.h"
 #include "Activity.h"
-
+#include "Logging.h"
 #include <stdexcept>
 
 MojLogger PowerManager::s_log(_T("activitymanager.powermanager"));
@@ -35,8 +35,8 @@ PowerManager::~PowerManager()
 void PowerManager::RequestBeginPowerActivity(
 	boost::shared_ptr<Activity> activity)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Activity %lu requesting to begin power activity"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Activity %lu requesting to begin power activity",
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -53,16 +53,16 @@ void PowerManager::RequestBeginPowerActivity(
 void PowerManager::ConfirmPowerActivityBegin(
 	boost::shared_ptr<Activity> activity)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Activity %lu confirmed power activity running"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Activity %lu confirmed power activity running",
 		(unsigned long)activity->GetId());
 }
 
 void PowerManager::RequestEndPowerActivity(
 	boost::shared_ptr<Activity> activity)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Activity %lu request to end power activity"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Activity %lu request to end power activity",
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -78,8 +78,8 @@ void PowerManager::RequestEndPowerActivity(
 void PowerManager::ConfirmPowerActivityEnd(
 	boost::shared_ptr<Activity> activity)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Activity %lu confirmed power activity ended"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Activity %lu confirmed power activity ended",
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -92,7 +92,7 @@ void PowerManager::ConfirmPowerActivityEnd(
 
 MojErr PowerManager::InfoToJson(MojObject& rep) const
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err;
 

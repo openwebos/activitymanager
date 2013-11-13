@@ -17,7 +17,7 @@
 // LICENSE@@@
 
 #include "Timeout.h"
-
+#include "Logging.h"
 MojLogger TimeoutBase::s_log(_T("activitymanager.timeout"));
 
 TimeoutBase::TimeoutBase(unsigned seconds)
@@ -33,7 +33,7 @@ TimeoutBase::~TimeoutBase()
 
 void TimeoutBase::Arm()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (m_timeout) {
 		Cancel();
@@ -49,7 +49,7 @@ void TimeoutBase::Arm()
 
 void TimeoutBase::Cancel()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (m_timeout) {
 		if (!g_source_is_destroyed(m_timeout)) {
@@ -62,8 +62,8 @@ void TimeoutBase::Cancel()
 
 gboolean TimeoutBase::StaticWakeupTimeout(gpointer data)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Wakeup"));
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Wakeup");
 
 	TimeoutBase *base = static_cast<TimeoutBase *>(data);
 
@@ -73,10 +73,9 @@ gboolean TimeoutBase::StaticWakeupTimeout(gpointer data)
 	try {
 		base->WakeupTimeout();
 	} catch (const std::exception& except) {
-		MojLogError(s_log, _T("Unhandled exception \"%s\" occurred"),
-			except.what());
+		LOG_ERROR(MSGID_TIMEOUT_EXCEPTION,0, "Unhandled exception \"%s\" occurred",except.what());
 	} catch (...) {
-		MojLogError(s_log, _T("Unhandled exception of unknown type occurred"));
+		LOG_ERROR(MSGID_TIMEOUT_ERR_UNKNOWN,0, "Unhandled exception of unknown type occurred");
 	}
 
 	return false;

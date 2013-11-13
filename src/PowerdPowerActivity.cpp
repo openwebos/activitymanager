@@ -19,7 +19,7 @@
 #include "PowerdPowerActivity.h"
 #include "Activity.h"
 #include "MojoCall.h"
-
+#include "Logging.h"
 #include <sstream>
 
 #ifdef ACTIVITYMANAGER_RENEW_POWER_ACTIVITIES
@@ -47,8 +47,7 @@ PowerdPowerActivity::PowerdPowerActivity(
 PowerdPowerActivity::~PowerdPowerActivity()
 {
 	if (m_currentState != PowerUnlocked) {
-		MojLogError(s_log, _T("Power Activity serial %lu destroyed while "
-			"power is not unlocked"), m_serial);
+		LOG_DEBUG("Power Activity serial %lu destroyed while power is not unlocked", m_serial);
 	}
 }
 
@@ -59,8 +58,8 @@ PowerActivity::PowerState PowerdPowerActivity::GetPowerState() const
 
 void PowerdPowerActivity::Begin()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Locking power on"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Locking power on",
 		m_activity.lock()->GetId());
 
 	if ((m_currentState == PowerLocked) || (m_targetState == PowerLocked)) {
@@ -81,12 +80,14 @@ void PowerdPowerActivity::Begin()
 
 	MojErr err = CreateRemotePowerActivity();
 	if (err) {
-		MojLogError(s_log, _T("[Activity %llu] Failed to issue command to "
-			"create power lock"), m_activity.lock()->GetId());
+		LOG_ERROR(MSGID_PWR_LOCK_CREATE_FAIL,1,
+			PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+			"Failed to issue command to create power lock");
 
 		/* Fake it so the Activity doesn't stall */
-		MojLogWarning(s_log, _T("[Activity %llu] Faking power locked "
-			"notification"), m_activity.lock()->GetId());
+		LOG_WARNING(MSGID_PWR_LOCK_FAKE_NOTI,1,
+			PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+			"Faking power locked notification");
 
 		m_currentState = PowerLocked;
 		m_activity.lock()->PowerLockedNotification();
@@ -95,8 +96,8 @@ void PowerdPowerActivity::Begin()
 
 void PowerdPowerActivity::End()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Unlocking power"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Unlocking power",
 		m_activity.lock()->GetId());
 
 	if ((m_currentState == PowerUnlocked) || (m_targetState == PowerUnlocked)) {
@@ -125,15 +126,16 @@ void PowerdPowerActivity::End()
 	}
 
 	if (err) {
-		MojLogError(s_log, _T("[Activity %llu] Failed to issue command to "
-			"%s power lock"), m_activity.lock()->GetId(),
-			debounce ? "debounce" : "remove");
+		LOG_ERROR(MSGID_PWR_UNLOCK_CREATE_FAIL,1,
+			PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+			"Failed to issue command to %s power unlock", debounce ? "debounce" : "remove");
 
 		/* Fake it so the Activity doesn't stall - the lock will fall off
 		 * on its own... not that that's a good thing, but better than
 		 * nothing. */
-		MojLogWarning(s_log, _T("[Activity %llu] Faking power unlocked "
-			"notification"), m_activity.lock()->GetId());
+		LOG_WARNING(MSGID_PWR_UNLOCK_FAKE_NOTI,1,
+			PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+			"Faking power unlocked notification");
 
 		m_currentState = PowerUnlocked;
 		m_activity.lock()->PowerUnlockedNotification();
@@ -148,18 +150,18 @@ unsigned long PowerdPowerActivity::GetSerial() const
 void PowerdPowerActivity::PowerLockedNotification(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (err == MojErrNone) {
 		if (m_currentState != PowerLocked) {
-			MojLogDebug(s_log, _T("[Activity %llu] Power lock successfully "
-				"created"), m_activity.lock()->GetId());
+			LOG_DEBUG("[Activity %llu] Power lock successfully created",
+				m_activity.lock()->GetId());
 
 			m_currentState = PowerLocked;
 			m_activity.lock()->PowerLockedNotification();
 		} else {
-			MojLogDebug(s_log, _T("[Activity %llu] Power lock successfully "
-				"updated"), m_activity.lock()->GetId());
+			LOG_DEBUG("[Activity %llu] Power lock successfully updated",
+				m_activity.lock()->GetId());
 		}
 
 		if (!m_timeout) {
@@ -174,13 +176,15 @@ void PowerdPowerActivity::PowerLockedNotification(MojServiceMessage *msg,
 		m_call.reset();
 	} else {
 		if (m_currentState != PowerLocked) {
-			MojLogError(s_log, _T("[Activity %llu] Attempt to create power "
-				"lock failed, retrying. Error %s"),
-				m_activity.lock()->GetId(), MojoObjectJson(response).c_str());
+			LOG_WARNING(MSGID_PWRLK_NOTI_CREATE_FAIL,1,
+				PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+				"Attempt to create power lock failed, retrying. Error %s",
+				 MojoObjectJson(response).c_str());
 		} else {
-			MojLogError(s_log, _T("[Activity %llu] Attempt to update power "
-				"lock failed, retrying. Error %s"),
-				m_activity.lock()->GetId(), MojoObjectJson(response).c_str());
+			LOG_WARNING(MSGID_PWRLK_NOTI_UPDATE_FAIL,1,
+				PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+				"Attempt to update power lock failed, retrying. Error %s",
+				MojoObjectJson(response).c_str());
 		}
 
 		m_call.reset();
@@ -188,14 +192,16 @@ void PowerdPowerActivity::PowerLockedNotification(MojServiceMessage *msg,
 		/* Retry - powerd may have restarted. */
 		MojErr err2 = CreateRemotePowerActivity();
 		if (err2) {
-			MojLogError(s_log, _T("[Activity %llu] Failed to issue command "
-				"to create power lock"), m_activity.lock()->GetId());
+			LOG_WARNING(MSGID_PWR_LOCK_CREATE_FAIL,1,
+				PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+				"Failed to issue command to create power lock in Noti" );
 
 			/* If power was not currently locked, fake the create so the
 			 * Activity doesn't hang */
 			if (m_currentState != PowerLocked) {
-				MojLogWarning(s_log, _T("[Activity %llu] Faking power locked "
-					"notification"), m_activity.lock()->GetId());
+				LOG_WARNING(MSGID_PWR_LOCK_FAKE_NOTI,1,
+					PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+					"Faking power locked notification in noti");
 
 				m_currentState = PowerLocked;
 				m_activity.lock()->PowerLockedNotification();
@@ -207,10 +213,10 @@ void PowerdPowerActivity::PowerLockedNotification(MojServiceMessage *msg,
 void PowerdPowerActivity::PowerUnlockedNotification(MojServiceMessage *msg,
 	const MojObject& response, MojErr err, bool debounce)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	if (err == MojErrNone) {
-		MojLogDebug(s_log, _T("[Activity %llu] Power lock successfully %s"),
+		LOG_DEBUG("[Activity %llu] Power lock successfully %s",
 			m_activity.lock()->GetId(), debounce ? "debounced" : "removed");
 
 		// reset the call *before* the unlocked notification; if
@@ -221,8 +227,9 @@ void PowerdPowerActivity::PowerUnlockedNotification(MojServiceMessage *msg,
 		m_currentState = PowerUnlocked;
 		m_activity.lock()->PowerUnlockedNotification();
 	} else {
-		MojLogError(s_log, _T("[Activity %llu] Attempt to %s power lock "
-			"failed, retrying. Error: %s"), m_activity.lock()->GetId(),
+		LOG_WARNING(MSGID_PWRULK_NOTI_ERR,1,
+			PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+			"Attempt to %s power lock failed, retrying. Error: %s",
 			debounce ? "debounce" : "remove",
 			MojoObjectJson(response).c_str());
 
@@ -237,14 +244,16 @@ void PowerdPowerActivity::PowerUnlockedNotification(MojServiceMessage *msg,
 		}
 
 		if (err2) {
-			MojLogError(s_log, _T("[Activity %llu] Failed to issue command "
-				"to %s power lock"), m_activity.lock()->GetId(),
+			LOG_WARNING(MSGID_PWR_UNLOCK_CREATE_ERR,1,
+				PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+				"Failed to issue command to %s power lock",
 				debounce ? "debounce" : "remove");
 
 			/* Not much to do at this point, let the Activity move on
 			 * so it doesn't hang. */
-			MojLogWarning(s_log, _T("[Activity %llu] Faking power unlocked "
-				"notification"), m_activity.lock()->GetId());
+			LOG_WARNING(MSGID_PWR_UNLOCK_FAKE_NOTI,1,
+				PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+				"Faking power unlocked notification in Noti");
 
 			m_currentState = PowerUnlocked;
 			m_activity.lock()->PowerUnlockedNotification();
@@ -267,21 +276,23 @@ void PowerdPowerActivity::PowerUnlockedNotificationDebounce(
 
 void PowerdPowerActivity::TimeoutNotification()
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("[Activity %llu] Attempting to update power lock"),
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("[Activity %llu] Attempting to update power lock",
 		m_activity.lock()->GetId());
 
 #ifdef ACTIVITYMANAGER_RENEW_POWER_ACTIVITIES
 	MojErr err = CreateRemotePowerActivity();
 	if (err) {
-		MojLogError(s_log, _T("[Activity %llu] Failed to issue command to "
-			"update power lock"), m_activity.lock()->GetId());
+		LOG_ERROR(MSGID_PWR_ACTIVITY_CREATE_ERR,1,
+			PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+			"Failed to issue command to update power lock");
 		m_timeout->Arm();
 	}
 #else
-	MojLogWarning(s_log, _T("[Activity %llu] Power Activity exceeded maximum "
-		"length of %d seconds, not being renewed"), m_activity.lock()->GetId(),
-		PowerActivityLockDuration);
+	LOG_WARNING(MSGID_PWR_TIMEOUT_NOTI,2,
+	    PMLOGKFV("Activity","%llu",m_activity.lock()->GetId()),
+	    PMLOGKFV("LOCKDURATION","%d",PowerActivityLockDuration),
+	    "Power Activity exceeded maximum length of seconds, not being renewed");
 #endif
 }
 
@@ -299,7 +310,7 @@ std::string PowerdPowerActivity::GetRemotePowerActivityName() const
 
 MojErr PowerdPowerActivity::CreateRemotePowerActivity(bool debounce)
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err;
 	MojObject params;
@@ -331,7 +342,7 @@ MojErr PowerdPowerActivity::CreateRemotePowerActivity(bool debounce)
 
 MojErr PowerdPowerActivity::RemoveRemotePowerActivity()
 {
-	MojLogTrace(s_log);
+	LOG_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err;
 	MojObject params;

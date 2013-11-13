@@ -18,6 +18,7 @@
 
 #include "ControlGroupManager.h"
 #include "ControlGroup.h"
+#include "Logging.h"
 
 #ifdef MOJ_LINUX
 #include <sys/vfs.h>
@@ -38,15 +39,15 @@ ControlGroupManager::ControlGroupManager(const std::string& root,
 
 	int err = statfs(m_root.c_str(), &cgroupstat);
 	if (err) {
-		MojLogError(s_log, _T("Error \"%s\" attempting to stat cgroup "
-			"filesystem root \"%s\""), strerror(errno), m_root.c_str());
+		LOG_ERROR(MSGID_CGROUP_FS_ROOT_STAT_FAIL, 2, PMLOGKS("Reason",strerror(errno)),
+			  PMLOGKS("filesystem_root",m_root.c_str()), "");
 		return;
 	}
 
 	if (cgroupstat.f_type != CGROUP_SUPER_MAGIC) {
-		MojLogError(s_log, _T("cgroup filesystem root type (%08x) does "
-			"not match cgroup magic type (%08x)"), (unsigned)cgroupstat.f_type,
-			(unsigned)CGROUP_SUPER_MAGIC);
+		LOG_ERROR(MSGID_FS_TYPE_MISMATCH, 0,"cgroup filesystem root type (%08x) does not match cgroup magic type (%08x)",
+			  (unsigned)cgroupstat.f_type,
+			  (unsigned)CGROUP_SUPER_MAGIC);
 		return;
 	}
 
@@ -61,8 +62,8 @@ ControlGroupManager::~ControlGroupManager()
 boost::shared_ptr<ResourceContainer> ControlGroupManager::CreateContainer(
 	const std::string& name)
 {
-	MojLogTrace(s_log);
-	MojLogDebug(s_log, _T("Creating [Container %s]"), name.c_str());
+	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_DEBUG("Creating [Container %s]", name.c_str());
 
 	boost::shared_ptr<ControlGroup> controlGroup;
 
