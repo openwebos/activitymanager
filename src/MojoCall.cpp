@@ -39,12 +39,6 @@ MojoCall::MojoCall(MojService *service,
 	m_serial = s_serial++;
 }
 
-MojoCall::MojoCall()
-	: m_subSerial(0)
-{
-	m_serial = s_serial++;
-}
-
 MojoCall::~MojoCall()
 {
 	MojLogDebug(s_log, _T("[Call %u] Cleaning up"), m_serial);

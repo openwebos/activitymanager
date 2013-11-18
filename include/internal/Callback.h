@@ -48,7 +48,6 @@ public:
 
 protected:
 	bool	m_complete;
-	bool	m_succeeded;
 
 	unsigned	m_serial;
 

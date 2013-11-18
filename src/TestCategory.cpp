@@ -225,7 +225,8 @@ TestCategoryHandler::LookupActivity(MojServiceMessage *msg, MojObject& payload, 
 	try {
 		act = m_json->LookupActivity(payload, MojoSubscription::GetBusId(msg));
 	} catch (const std::exception& except) {
-		msg->replyError(MojErrNotFound, except.what());
+		MojErr err = msg->replyError(MojErrNotFound, except.what());
+		MojErrCheck(err);
 		return MojErrNotFound;
 	}
 

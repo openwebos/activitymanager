@@ -51,7 +51,6 @@ public:
 		const MojObject& response, MojErr err);
 
 protected:
-	MojoCall();
 
 	void HandleResponseWrapper(MojServiceMessage *msg, MojObject& response, MojErr err);
 

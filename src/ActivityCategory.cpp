@@ -3371,7 +3371,8 @@ ActivityCategoryHandler::LookupActivity(MojServiceMessage *msg, MojObject& paylo
 	try {
 		act = m_json->LookupActivity(payload, MojoSubscription::GetBusId(msg));
 	} catch (const std::exception& except) {
-		msg->replyError(MojErrNotFound, except.what());
+		MojErr err = msg->replyError(MojErrNotFound, except.what());
+		MojErrCheck(err);
 		return MojErrNotFound;
 	}
 
