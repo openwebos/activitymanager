@@ -18,7 +18,7 @@
 
 description "@WEBOS_PROJECT_SUMMARY@"
 
-start on datastore-initialized
+start on rest-boot-done and datastore-initialized
 stop on started start_update
 emits activitymanager-ready
 
