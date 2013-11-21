@@ -171,7 +171,7 @@ MojErr ActivityManagerApp::open()
 		m_resourceManager = boost::make_shared<MasterResourceManager>();
 #ifndef WEBOS_TARGET_MACHINE_IMPL_SIMULATOR
 		m_controlGroupManager = boost::make_shared<ControlGroupManager>(
-			"/dev/cgroups", m_resourceManager);
+			"/sys/fs/cgroup/cpuset", m_resourceManager);
 		m_resourceManager->SetManager("cpu", m_controlGroupManager);
 		m_busProxy = boost::make_shared<LunaBusProxy>(m_controlGroupManager,
 			&m_client);
