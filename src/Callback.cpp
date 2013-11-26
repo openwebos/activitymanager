@@ -24,6 +24,7 @@ MojLogger Callback::s_log(_T("activitymanager.callback"));
 Callback::Callback(boost::shared_ptr<Activity> activity)
 	: m_serial(UnassignedSerial)
 	, m_activity(activity)
+	, m_complete(false)
 {
 }
 

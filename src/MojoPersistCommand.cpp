@@ -67,8 +67,8 @@ void MojoPersistCommand::Persist()
 			&MojoPersistCommand::PersistResponse, m_service, m_method, params);
 		m_call->Call();
 	} catch (const std::exception& except) {
-		LOG_ERROR(MSGID_PERSIST_ATMPT_UNEXPECTD_EXCPTN, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
-			  PMLOGKS("Persist_command",GetString().c_str()),PMLOGKS("Exception",except.what()),
+		LOG_ERROR(MSGID_PERSIST_ATMPT_UNEXPECTD_EXCPTN, 3, PMLOGKFV("activity","%llu",m_activity->GetId()),
+			  PMLOGKS("Persist_command",GetString().c_str()), PMLOGKS("Exception",except.what()),
 			  "Unexpected exception while attempting to persist");
 		Complete(false);
 	} catch (...) {
