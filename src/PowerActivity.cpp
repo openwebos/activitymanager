@@ -66,8 +66,8 @@ PowerActivity::PowerState NoopPowerActivity::GetPowerState() const
 
 void NoopPowerActivity::Begin()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Locking power on",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Locking power on",
 		m_activity.lock()->GetId());
 
 	if (m_state != PowerLocked) {
@@ -78,8 +78,8 @@ void NoopPowerActivity::Begin()
 
 void NoopPowerActivity::End()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Unlocking power",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Unlocking power",
 		m_activity.lock()->GetId());
 
 	if (m_state != PowerUnlocked) {

@@ -37,14 +37,14 @@ MojoCallback::~MojoCallback()
 
 MojErr MojoCallback::Call()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	boost::shared_ptr<Activity> activity = m_activity.lock();
 
 	/* Update the command sequence Serial number */
 	SetSerial((unsigned)::random() % UINT_MAX);
 
-	LOG_DEBUG("[Activity %llu] Callback %s: Calling [Serial %u]",
+	LOG_AM_DEBUG("[Activity %llu] Callback %s: Calling [Serial %u]",
 		activity->GetId(), m_url.GetString().c_str(), GetSerial());
 
 	MojErr err;
@@ -71,8 +71,8 @@ MojErr MojoCallback::Call()
 
 void MojoCallback::Cancel()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Callback %s: Cancelling",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Callback %s: Cancelling",
 		m_activity.lock()->GetId(), m_url.GetString().c_str());
 
 	if (m_call) {
@@ -82,8 +82,8 @@ void MojoCallback::Cancel()
 
 void MojoCallback::Failed(FailureType failure)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Callback %s: Failed%s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Callback %s: Failed%s",
 		m_activity.lock()->GetId(), m_url.GetString().c_str(),
 		(failure == TransientFailure) ? " (transient)" : "");
 
@@ -93,8 +93,8 @@ void MojoCallback::Failed(FailureType failure)
 
 void MojoCallback::Succeeded()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Callback %s: Succeeded",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Callback %s: Succeeded",
 		m_activity.lock()->GetId(), m_url.GetString().c_str());
 
 	m_call.reset();
@@ -104,8 +104,8 @@ void MojoCallback::Succeeded()
 void MojoCallback::HandleResponse(MojServiceMessage *msg,
 	const MojObject& rep, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Callback %s: Response %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Callback %s: Response %s",
 		m_activity.lock()->GetId(), m_url.GetString().c_str(),
 		MojoObjectJson(rep).c_str());
 

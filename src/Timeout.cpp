@@ -33,7 +33,7 @@ TimeoutBase::~TimeoutBase()
 
 void TimeoutBase::Arm()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (m_timeout) {
 		Cancel();
@@ -49,7 +49,7 @@ void TimeoutBase::Arm()
 
 void TimeoutBase::Cancel()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (m_timeout) {
 		if (!g_source_is_destroyed(m_timeout)) {
@@ -62,8 +62,8 @@ void TimeoutBase::Cancel()
 
 gboolean TimeoutBase::StaticWakeupTimeout(gpointer data)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Wakeup");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Wakeup");
 
 	TimeoutBase *base = static_cast<TimeoutBase *>(data);
 
@@ -73,9 +73,9 @@ gboolean TimeoutBase::StaticWakeupTimeout(gpointer data)
 	try {
 		base->WakeupTimeout();
 	} catch (const std::exception& except) {
-		LOG_ERROR(MSGID_TIMEOUT_EXCEPTION,0, "Unhandled exception \"%s\" occurred",except.what());
+		LOG_AM_ERROR(MSGID_TIMEOUT_EXCEPTION,0, "Unhandled exception \"%s\" occurred",except.what());
 	} catch (...) {
-		LOG_ERROR(MSGID_TIMEOUT_ERR_UNKNOWN,0, "Unhandled exception of unknown type occurred");
+		LOG_AM_ERROR(MSGID_TIMEOUT_ERR_UNKNOWN,0, "Unhandled exception of unknown type occurred");
 	}
 
 	return false;

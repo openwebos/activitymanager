@@ -74,24 +74,24 @@ MojoExclusiveTrigger::~MojoExclusiveTrigger()
 
 void MojoExclusiveTrigger::Arm(boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (activity != m_activity.lock()) {
-		LOG_ERROR(MSGID_CANT_TRIGGER_DIFF_ACTIVITY,2, PMLOGKFV("activity","%llu", activity->GetId()),
+		LOG_AM_ERROR(MSGID_CANT_TRIGGER_DIFF_ACTIVITY,2, PMLOGKFV("activity","%llu", activity->GetId()),
 			PMLOGKFV("Owner_Activity","%llu", m_activity.lock()->GetId()), "");
 		throw std::runtime_error("Can't arm trigger for a different "
 			"Activity");
 	}
 
 	if (!m_subscription) {
-		LOG_DEBUG("[Activity %llu] Can't arm trigger that has no subscription",
+		LOG_AM_DEBUG("[Activity %llu] Can't arm trigger that has no subscription",
 			m_activity.lock()->GetId()); // LATHA_TBD
 		throw std::runtime_error("Can't arm trigger that has no subscription");
 	}
 
 	m_triggered = false;
 
-	LOG_DEBUG("[Activity %llu] Arming Trigger on \"%s\"",
+	LOG_AM_DEBUG("[Activity %llu] Arming Trigger on \"%s\"",
 		m_activity.lock()->GetId(), m_subscription->GetURL().GetURL().data());
 
 	if (!m_subscription->IsSubscribed()) {
@@ -101,21 +101,21 @@ void MojoExclusiveTrigger::Arm(boost::shared_ptr<Activity> activity)
 
 void MojoExclusiveTrigger::Disarm(boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (activity != m_activity.lock()) {
-		LOG_WARNING(MSGID_DISARM_TRIGGER_FOR_ACTIVITY,2, PMLOGKFV("Activity","%llu",activity->GetId()),
+		LOG_AM_WARNING(MSGID_DISARM_TRIGGER_FOR_ACTIVITY,2, PMLOGKFV("Activity","%llu",activity->GetId()),
 			   PMLOGKFV("Owner_Activity","%llu",m_activity.lock()->GetId()), "");
 		throw std::runtime_error("Can't disarm trigger for a different "
 			"Activity");
 	}
 
 	if (m_subscription) {
-		LOG_DEBUG("[Activity %llu] Disarming Trigger on \"%s\"",
+		LOG_AM_DEBUG("[Activity %llu] Disarming Trigger on \"%s\"",
 			m_activity.lock()->GetId(),
 			m_subscription->GetURL().GetURL().data());
 	} else {
-		LOG_DEBUG("[Activity %llu] Disarming Trigger",
+		LOG_AM_DEBUG("[Activity %llu] Disarming Trigger",
 			m_activity.lock()->GetId());
 	}
 
@@ -128,8 +128,8 @@ void MojoExclusiveTrigger::Disarm(boost::shared_ptr<Activity> activity)
 
 void MojoExclusiveTrigger::Fire()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Trigger firing",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Trigger firing",
 		m_activity.lock()->GetId());
 
 	m_triggered = true;
@@ -141,7 +141,7 @@ bool MojoExclusiveTrigger::IsArmed(
 	boost::shared_ptr<const Activity> activity) const
 {
 	if (m_activity.lock() != activity) {
-		LOG_WARNING(MSGID_DISARM_TRIGGER_FOR_ACTIVITY,2, PMLOGKFV("Activity","%llu",activity->GetId()),
+		LOG_AM_WARNING(MSGID_DISARM_TRIGGER_FOR_ACTIVITY,2, PMLOGKFV("Activity","%llu",activity->GetId()),
 			   PMLOGKFV("Owner_Activity","%llu",m_activity.lock()->GetId()), "");
 
 		return false;
@@ -154,7 +154,7 @@ bool MojoExclusiveTrigger::IsTriggered(
 	boost::shared_ptr<const Activity> activity) const
 {
 	if (m_activity.lock() != activity) {
-		LOG_WARNING(MSGID_CHECK_TRIGGER_FIRED, 1,
+		LOG_AM_WARNING(MSGID_CHECK_TRIGGER_FIRED, 1,
 		    PMLOGKFV("Owner_Activity","%llu",activity->GetId()), "");
 		return false;
 	}
@@ -175,20 +175,20 @@ boost::shared_ptr<const Activity> MojoExclusiveTrigger::GetActivity() const
 void MojoExclusiveTrigger::ProcessResponse(const MojObject& response,
 	MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	/* Subscription guarantees any errors received are from the subscribing
 	 * Service.  Transient bus errors are handled automatically.
 	 *
 	 * XXX have an option to disable auto-resubscribe */
 	if (err) {
-		LOG_DEBUG("[Activity %llu] Trigger call \"%s\" failed",
+		LOG_AM_DEBUG("[Activity %llu] Trigger call \"%s\" failed",
 			m_activity.lock()->GetId(),
 			m_subscription->GetURL().GetURL().data());
 		m_response = response;
 		Fire();
 	} else if (m_matcher->Match(response)) {
-		LOG_DEBUG("[Activity %llu] Trigger call \"%s\" fired!",
+		LOG_AM_DEBUG("[Activity %llu] Trigger call \"%s\" fired!",
 			m_activity.lock()->GetId(),
 			m_subscription->GetURL().GetURL().data());
 		m_response = response;

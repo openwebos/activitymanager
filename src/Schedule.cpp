@@ -50,8 +50,8 @@ time_t Schedule::GetNextStartTime() const
 
 void Schedule::CalcNextStartTime()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Not an interval schedule, so next start time not updated",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Not an interval schedule, so next start time not updated",
 		m_activity.lock()->GetId());
 }
 
@@ -85,8 +85,8 @@ bool Schedule::operator<(const Schedule& rhs) const
 
 void Schedule::Queue()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Queueing with Scheduler",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Queueing with Scheduler",
 		m_activity.lock()->GetId());
 
 	if (IsQueued())
@@ -100,8 +100,8 @@ void Schedule::Queue()
 
 void Schedule::UnQueue()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Unqueueing from Scheduler",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Unqueueing from Scheduler",
 		m_activity.lock()->GetId());
 
 	m_scheduler->RemoveItem(shared_from_this());
@@ -115,8 +115,8 @@ bool Schedule::IsQueued() const
 
 void Schedule::Scheduled()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Scheduled",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Scheduled",
 		m_activity.lock()->GetId());
 
 	m_scheduled = true;
@@ -130,8 +130,8 @@ bool Schedule::IsScheduled() const
 
 void Schedule::InformActivityFinished()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Finished",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Finished",
 		m_activity.lock()->GetId());
 }
 

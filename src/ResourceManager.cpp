@@ -43,8 +43,8 @@ MasterResourceManager::~MasterResourceManager()
 
 void MasterResourceManager::Associate(boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Associating all subscribers of [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Associating all subscribers of [Activity %llu]",
 		activity->GetId());
 
 	/* Place all processes associated with the unique subscribers of the
@@ -60,8 +60,8 @@ void MasterResourceManager::Associate(boost::shared_ptr<Activity> activity)
 void MasterResourceManager::Associate(boost::shared_ptr<Activity> activity,
 	const BusId& id)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Associating [Activity %llu] with [BusId %s] on all Managers",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Associating [Activity %llu] with [BusId %s] on all Managers",
 		activity->GetId(), id.GetString().c_str());
 
 	/* Look up Bus Entity, and Associate the Activity. */
@@ -72,8 +72,8 @@ void MasterResourceManager::Associate(boost::shared_ptr<Activity> activity,
 
 void MasterResourceManager::Dissociate(boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Dissociating all subscribers of [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Dissociating all subscribers of [Activity %llu]",
 		activity->GetId());
 
 	/* Remove associations between the Activity and any remaining unique
@@ -88,8 +88,8 @@ void MasterResourceManager::Dissociate(boost::shared_ptr<Activity> activity)
 
 void MasterResourceManager::Dissociate(boost::shared_ptr<Activity> activity, const BusId& id)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Dissociating [Activity %llu] from [BusId %s] on all Managers",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Dissociating [Activity %llu] from [BusId %s] on all Managers",
 		activity->GetId(), id.GetString().c_str());
 
 	/* Look up the Bus Entity, and Dissociate the Activity. */
@@ -101,8 +101,8 @@ void MasterResourceManager::Dissociate(boost::shared_ptr<Activity> activity, con
 void MasterResourceManager::UpdateAssociations(
 	boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Updating all unique entities associated with [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Updating all unique entities associated with [Activity %llu]",
 		activity->GetId());
 
 	Activity::SubscriberIdVec subscribers = activity->GetUniqueSubscribers();
@@ -116,13 +116,13 @@ void MasterResourceManager::UpdateAssociations(
 void MasterResourceManager::SetManager(const std::string& resource,
 	boost::shared_ptr<ResourceManager> manager)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Assigning Resource Manager for resource \"%s\"",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Assigning Resource Manager for resource \"%s\"",
 		resource.c_str());
 
 	ResourceManagerMap::iterator found = m_managers.find(resource);
 	if (found != m_managers.end()) {
-		LOG_ERROR(MSGID_RM_ALREADY_SET, 1,
+		LOG_AM_ERROR(MSGID_RM_ALREADY_SET, 1,
 			PMLOGKS("Resource", resource.c_str()),
 			"Resource Manager for resource has already been set");
 		throw std::runtime_error("Resource Manager already set for resource");
@@ -134,13 +134,13 @@ void MasterResourceManager::SetManager(const std::string& resource,
  	 * Master */
 	if (m_enabled) {
 		if (!manager->IsEnabled()) {
-			LOG_DEBUG("Enabling Resource Manager for resource %s",
+			LOG_AM_DEBUG("Enabling Resource Manager for resource %s",
 				resource.c_str());
 			manager->Enable();
 		}
 	} else {
 		if (manager->IsEnabled()) {
-			LOG_DEBUG("Disabling Resource Manager for resource %s",
+			LOG_AM_DEBUG("Disabling Resource Manager for resource %s",
 				resource.c_str());
 			manager->Disable();
 		}
@@ -149,8 +149,8 @@ void MasterResourceManager::SetManager(const std::string& resource,
 
 boost::shared_ptr<BusEntity> MasterResourceManager::GetEntity(const BusId& id)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Looking up entity for [BusId %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Looking up entity for [BusId %s]",
 		id.GetString().c_str());
 
 	EntityMap::iterator found = m_entities.find(id);
@@ -158,7 +158,7 @@ boost::shared_ptr<BusEntity> MasterResourceManager::GetEntity(const BusId& id)
 		return found->second;
 	}
 
-	LOG_DEBUG("Allocating new entity for [BusId %s]",
+	LOG_AM_DEBUG("Allocating new entity for [BusId %s]",
 		id.GetString().c_str());
 
 	boost::shared_ptr<BusEntity> entity = boost::make_shared<BusEntity>(id);
@@ -170,8 +170,8 @@ boost::shared_ptr<BusEntity> MasterResourceManager::GetEntity(const BusId& id)
 void MasterResourceManager::InformEntityUpdated(
 	boost::shared_ptr<BusEntity> entity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Informing all managers that [BusId %s] has been updated",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Informing all managers that [BusId %s] has been updated",
 		entity->GetName().c_str());
 
 	for (ResourceManagerMap::iterator iter = m_managers.begin();
@@ -181,12 +181,12 @@ void MasterResourceManager::InformEntityUpdated(
 }
 void MasterResourceManager::Enable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Enabling all Resource Managers");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Enabling all Resource Managers");
 
 	for (ResourceManagerMap::iterator iter = m_managers.begin();
 		iter != m_managers.end(); ++iter) {
-		LOG_DEBUG("Enabling Resource Manager for resource %s",
+		LOG_AM_DEBUG("Enabling Resource Manager for resource %s",
 			iter->first.c_str());
 		iter->second->Enable();
 	}
@@ -196,12 +196,12 @@ void MasterResourceManager::Enable()
 
 void MasterResourceManager::Disable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Disabling all Resource Managers");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Disabling all Resource Managers");
 
 	for (ResourceManagerMap::iterator iter = m_managers.begin();
 		iter != m_managers.end(); ++iter) {
-		LOG_DEBUG("Disabling Resource Manager for resource %s",
+		LOG_AM_DEBUG("Disabling Resource Manager for resource %s",
 			iter->first.c_str());
 		iter->second->Disable();
 	}

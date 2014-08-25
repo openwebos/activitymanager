@@ -34,24 +34,24 @@ PowerdScheduler::~PowerdScheduler()
 
 void PowerdScheduler::ScheduledWakeup()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Powerd wakeup callback received");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Powerd wakeup callback received");
 
 	Wake();
 }
 
 void PowerdScheduler::Enable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Powerd scheduler enabled");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Powerd scheduler enabled");
 
 	MonitorSystemTime();
 }
 
 void PowerdScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Updating powerd scheduling callback - nextWakeup %llu, current time %llu",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Updating powerd scheduling callback - nextWakeup %llu, current time %llu",
 		(unsigned long long)nextWakeup, (unsigned long long)curTime);
 
 	MojErr err;
@@ -79,7 +79,7 @@ void PowerdScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 	MojErrAccumulate(errs, err);
 
 	if (errs) {
-		LOG_ERROR(MSGID_SET_TIMEOUT_PARAM_ERR,0,
+		LOG_AM_ERROR(MSGID_SET_TIMEOUT_PARAM_ERR,0,
 			"Error constructing parameters for powerd set timeout call");
 		throw std::runtime_error("Error constructing parameters for "
 			"powerd set timeout call");
@@ -94,15 +94,15 @@ void PowerdScheduler::UpdateTimeout(time_t nextWakeup, time_t curTime)
 
 void PowerdScheduler::CancelTimeout()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Cancelling powerd timeout");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Cancelling powerd timeout");
 
 	MojObject params;
 
 	MojErr err = params.putString(_T("key"), PowerdWakeupKey);
 
 	if (err) {
-		LOG_ERROR(MSGID_CLEAR_TIMEOUT_PARAM_ERR,0,
+		LOG_AM_ERROR(MSGID_CLEAR_TIMEOUT_PARAM_ERR,0,
 			"Error constructing parameters for powerd clear timeout call");
 		throw std::runtime_error("Error constructing parameters for powerd "
 			"clear timeout call");
@@ -117,13 +117,13 @@ void PowerdScheduler::CancelTimeout()
 
 void PowerdScheduler::MonitorSystemTime()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Subscribing to System Time change notifications");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Subscribing to System Time change notifications");
 
 	MojObject params;
 	MojErr err = params.putBool(_T("subscribe"), true);
 	if (err) {
-		LOG_ERROR(MSGID_GET_SYSTIME_PARAM_ERR,0,
+		LOG_AM_ERROR(MSGID_GET_SYSTIME_PARAM_ERR,0,
 			"Error constructing parameters for subscription to System Time Service");
 		throw std::runtime_error("Error constructing parameters for "
 			"subscription to System Time Service");
@@ -151,22 +151,22 @@ size_t PowerdScheduler::FormatWakeupTime(time_t wake, char *at,
 void PowerdScheduler::HandleTimeoutSetResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Timeout Set response %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Timeout Set response %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_WARNING(MSGID_SCH_WAKEUP_REG_ERR,0,
+			LOG_AM_WARNING(MSGID_SCH_WAKEUP_REG_ERR,0,
 				"Failed to register scheduled wakeup: %s", MojoObjectJson(response).c_str());
 		} else {
-			LOG_WARNING(MSGID_SCH_WAKEUP_REG_RETRY,0,
+			LOG_AM_WARNING(MSGID_SCH_WAKEUP_REG_RETRY,0,
 				"Failed to register scheduled wakeup, retrying: %s", MojoObjectJson(response).c_str());
 			m_call->Call();
 			return;
 		}
 	} else {
-		LOG_DEBUG("Successfully registered scheduled wakeup");
+		LOG_AM_DEBUG("Successfully registered scheduled wakeup");
 	}
 
 	m_call.reset();
@@ -175,22 +175,22 @@ void PowerdScheduler::HandleTimeoutSetResponse(MojServiceMessage *msg,
 void PowerdScheduler::HandleTimeoutClearResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Timeout Clear response %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Timeout Clear response %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_WARNING(MSGID_SCH_WAKEUP_CANCEL_ERR ,0,
+			LOG_AM_WARNING(MSGID_SCH_WAKEUP_CANCEL_ERR ,0,
 				"Failed to cancel scheduled wakeup: %s",MojoObjectJson(response).c_str());
 		} else {
-			LOG_WARNING(MSGID_SCH_WAKEUP_CANCEL_RETRY,0,
+			LOG_AM_WARNING(MSGID_SCH_WAKEUP_CANCEL_RETRY,0,
 				"Failed to cancel scheduled wakeup, retrying: %s", MojoObjectJson(response).c_str());
 			m_call->Call();
 			return;
 		}
 	} else {
-		LOG_DEBUG("Successfully cancelled scheduled wakeup");
+		LOG_AM_DEBUG("Successfully cancelled scheduled wakeup");
 	}
 
 	m_call.reset();
@@ -199,18 +199,18 @@ void PowerdScheduler::HandleTimeoutClearResponse(MojServiceMessage *msg,
 void PowerdScheduler::HandleSystemTimeResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("System Time response %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("System Time response %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_WARNING(MSGID_SYS_TIME_RSP_FAIL,0,
+			LOG_AM_WARNING(MSGID_SYS_TIME_RSP_FAIL,0,
 				"System Time subscription experienced an uncorrectable failure: %s",
 				MojoObjectJson(response).c_str());
 			m_systemTimeCall.reset();
 		} else {
-			LOG_WARNING(MSGID_GET_SYSTIME_RETRY,0,
+			LOG_AM_WARNING(MSGID_GET_SYSTIME_RETRY,0,
 				"System Time subscription failed, retrying: %s", MojoObjectJson(response).c_str());
 			MonitorSystemTime();
 		}
@@ -221,10 +221,10 @@ void PowerdScheduler::HandleSystemTimeResponse(MojServiceMessage *msg,
 
 	bool found = response.get(_T("offset"), localOffset);
 	if (!found) {
-		LOG_WARNING(MSGID_SYSTIME_NO_OFFSET,0,
+		LOG_AM_WARNING(MSGID_SYSTIME_NO_OFFSET,0,
 			"System Time message is missing timezone offset");
 	} else {
-		LOG_DEBUG("System Time timezone offset: %lld",
+		LOG_AM_DEBUG("System Time timezone offset: %lld",
 			(long long)localOffset);
 
 		localOffset *= 60;

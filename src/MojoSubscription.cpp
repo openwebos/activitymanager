@@ -37,8 +37,8 @@ MojoSubscription::~MojoSubscription()
 
 void MojoSubscription::EnableSubscription()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Enabling subscription for %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Enabling subscription for %s",
 		m_activity->GetId(), GetSubscriber().GetString().c_str());
 
 	/* The message will take a reference to to Cancel Handler when it

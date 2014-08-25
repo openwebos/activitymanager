@@ -51,8 +51,8 @@ MojoPersistCommand::~MojoPersistCommand()
 
 void MojoPersistCommand::Persist()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] [PersistCommand %s]: Issuing",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] [PersistCommand %s]: Issuing",
 		m_activity->GetId(), GetString().c_str());
 
 	/* Perform update of Parameters, if desired - modify copy, not original,
@@ -67,12 +67,12 @@ void MojoPersistCommand::Persist()
 			&MojoPersistCommand::PersistResponse, m_service, m_method, params);
 		m_call->Call();
 	} catch (const std::exception& except) {
-		LOG_ERROR(MSGID_PERSIST_ATMPT_UNEXPECTD_EXCPTN, 3, PMLOGKFV("activity","%llu",m_activity->GetId()),
+		LOG_AM_ERROR(MSGID_PERSIST_ATMPT_UNEXPECTD_EXCPTN, 3, PMLOGKFV("activity","%llu",m_activity->GetId()),
 			  PMLOGKS("Persist_command",GetString().c_str()), PMLOGKS("Exception",except.what()),
 			  "Unexpected exception while attempting to persist");
 		Complete(false);
 	} catch (...) {
-		LOG_ERROR(MSGID_PERSIST_ATMPT_UNKNWN_EXCPTN, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
+		LOG_AM_ERROR(MSGID_PERSIST_ATMPT_UNKNWN_EXCPTN, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
 			  PMLOGKS("Persist_command",GetString().c_str()), "Unknown exception while attempting to persist");
 		Complete(false);
 	}
@@ -81,23 +81,23 @@ void MojoPersistCommand::Persist()
 void MojoPersistCommand::PersistResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_WARNING(MSGID_PERSIST_CMD_RESP_FAIL, 4, PMLOGKFV("activity","%llu",m_activity->GetId()),
+			LOG_AM_WARNING(MSGID_PERSIST_CMD_RESP_FAIL, 4, PMLOGKFV("activity","%llu",m_activity->GetId()),
 				  PMLOGKS("persist_command",GetString().c_str()),
 				  PMLOGKS("Errtext",MojoObjectString(response, _T("errorText")).c_str()),
 				  PMLOGKFV("Errcode","%d",(int)err), "");
 			Complete(false);
 		} else {
-			LOG_WARNING(MSGID_PERSIST_CMD_TRANSIENT_ERR, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
+			LOG_AM_WARNING(MSGID_PERSIST_CMD_TRANSIENT_ERR, 2, PMLOGKFV("activity","%llu",m_activity->GetId()),
 				    PMLOGKS("persist_command",GetString().c_str()), "Failed with transient error, retrying: %s",
 				    MojoObjectJson(response).c_str());
 			m_call->Call();
 		}
 	} else {
-		LOG_DEBUG("[Activity %llu] [PersistCommand %s]: Succeeded",
+		LOG_AM_DEBUG("[Activity %llu] [PersistCommand %s]: Succeeded",
 			m_activity->GetId(), GetString().c_str());
 		Complete(true);
 	}

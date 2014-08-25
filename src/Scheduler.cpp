@@ -50,9 +50,9 @@ Scheduler::~Scheduler()
 
 void Scheduler::AddItem(boost::shared_ptr<Schedule> item)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
-	LOG_DEBUG(
+	LOG_AM_DEBUG(
 		"Adding [Activity %llu] to start at %llu (%s)",
 		item->GetActivity()->GetId(),
 		(unsigned long long)item->GetNextStartTime(),
@@ -81,9 +81,9 @@ void Scheduler::AddItem(boost::shared_ptr<Schedule> item)
 
 void Scheduler::RemoveItem(boost::shared_ptr<Schedule> item)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
-	LOG_DEBUG("Removing [Activity %llu]",
+	LOG_AM_DEBUG("Removing [Activity %llu]",
 		item->GetActivity()->GetId());
 
 	try {
@@ -157,8 +157,8 @@ time_t Scheduler::StringToTime(const char *convert, bool& isUTC)
 
 void Scheduler::SetLocalOffset(off_t offset)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Setting local offset to %lld", (long long)offset);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Setting local offset to %lld", (long long)offset);
 
 	bool updateWake = false;
 
@@ -179,7 +179,7 @@ void Scheduler::SetLocalOffset(off_t offset)
 off_t Scheduler::GetLocalOffset() const
 {
 	if (!m_localOffsetSet) {
-		LOG_WARNING(MSGID_SCHE_OFFSET_NOTSET, 0, "Attempt to access local offset before it has been set");
+		LOG_AM_WARNING(MSGID_SCHE_OFFSET_NOTSET, 0, "Attempt to access local offset before it has been set");
 	}
 
 	return m_localOffset;
@@ -192,8 +192,8 @@ time_t Scheduler::GetSmartBaseTime() const
 
 void Scheduler::Wake()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Wake callback");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Wake callback");
 
 	m_wakeScheduled = false;
 
@@ -203,12 +203,12 @@ void Scheduler::Wake()
 /* XXX Handle timer rollover? */
 void Scheduler::DequeueAndUpdateTimeout()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	/* Nothing to do?  Then return.  A new timeout will be scheduled
 	 * the next time something is queued */
 	if (m_queue.empty() && (!m_localOffsetSet || m_localQueue.empty())) {
-		LOG_DEBUG("Not dequeuing any items as queue is now empty");
+		LOG_AM_DEBUG("Not dequeuing any items as queue is now empty");
 		if (m_wakeScheduled) {
 			CancelTimeout();
 			m_wakeScheduled = false;
@@ -218,7 +218,7 @@ void Scheduler::DequeueAndUpdateTimeout()
 
 	time_t	curTime = time(NULL);
 
-	LOG_DEBUG("Beginning to dequeue items at time %llu",
+	LOG_AM_DEBUG("Beginning to dequeue items at time %llu",
 		(unsigned long long)curTime);
 
 	/* If anything on the queue already happened in the past, dequeue it
@@ -232,12 +232,12 @@ void Scheduler::DequeueAndUpdateTimeout()
 		ProcessQueue(m_localQueue, curTime + m_localOffset);
 	}
 
-	LOG_DEBUG("Done dequeuing items");
+	LOG_AM_DEBUG("Done dequeuing items");
 
 	/* Both queues scheduled and dequeued (or unknown if time zone is not
 	 * yet known)? */
 	if (m_queue.empty() && (!m_localOffsetSet || m_localQueue.empty())) {
-		LOG_DEBUG("No unscheduled items remain");
+		LOG_AM_DEBUG("No unscheduled items remain");
 
 		if (m_wakeScheduled) {
 			CancelTimeout();
@@ -272,8 +272,8 @@ void Scheduler::ProcessQueue(ScheduleQueue& queue, time_t curTime)
 
 void Scheduler::ReQueue(ScheduleQueue& queue)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Requeuing");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Requeuing");
 
 	ScheduleQueue updated;
 
@@ -290,8 +290,8 @@ void Scheduler::ReQueue(ScheduleQueue& queue)
 
 void Scheduler::TimeChanged()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("System time or timezone changed, recomputing start times and requeuing Scheduled Activities");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("System time or timezone changed, recomputing start times and requeuing Scheduled Activities");
 
 	ReQueue(m_queue);
 	ReQueue(m_localQueue);

@@ -47,7 +47,7 @@ ActivityManager::ActivityManager(boost::shared_ptr<MasterResourceManager>
 	, m_yieldTimeoutSeconds(DefaultBackgroundInteractiveYieldSeconds)
 	, m_resourceManager(resourceManager)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 #ifndef ACTIVITYMANAGER_RANDOM_IDS
 	/* Activity ID 0 is reserved */
 	m_nextActivityId = 1;
@@ -60,8 +60,8 @@ ActivityManager::~ActivityManager()
 
 void ActivityManager::RegisterActivityId(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Registering ID", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Registering ID", act->GetId());
 
 	ActivityMap::const_iterator found = m_activities.find(act->GetId());
 	if (found != m_activities.end()) {
@@ -73,8 +73,8 @@ void ActivityManager::RegisterActivityId(boost::shared_ptr<Activity> act)
 
 void ActivityManager::RegisterActivityName(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Registering as %s/\"%s\"",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Registering as %s/\"%s\"",
 		act->GetId(), act->GetCreator().GetString().c_str(),
 		act->GetName().c_str());
 
@@ -86,8 +86,8 @@ void ActivityManager::RegisterActivityName(boost::shared_ptr<Activity> act)
 
 void ActivityManager::UnregisterActivityName(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Unregistering from %s/\"%s\"",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Unregistering from %s/\"%s\"",
 		act->GetId(), act->GetCreator().GetString().c_str(),
 		act->GetName().c_str());
 
@@ -118,7 +118,7 @@ boost::shared_ptr<Activity> ActivityManager::GetActivity(
 
 boost::shared_ptr<Activity> ActivityManager::GetActivity(activityId_t id)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	ActivityMap::iterator iter = m_activities.find(id);
 	if (iter != m_activities.end()) {
@@ -130,7 +130,7 @@ boost::shared_ptr<Activity> ActivityManager::GetActivity(activityId_t id)
 
 boost::shared_ptr<Activity> ActivityManager::GetNewActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	boost::shared_ptr<Activity> act;
 
@@ -168,18 +168,18 @@ boost::shared_ptr<Activity> ActivityManager::GetNewActivity()
 	}
 #endif	/* ACTIVITYMANAGER_RANDOM_IDS */
 
-	LOG_DEBUG("[Activity %llu] Allocated", act->GetId());
+	LOG_AM_DEBUG("[Activity %llu] Allocated", act->GetId());
 
 	return act;
 }
 
 boost::shared_ptr<Activity> ActivityManager::GetNewActivity(activityId_t id)
 {
-	LOG_DEBUG("[Activity %llu] Forcing allocation", id);
+	LOG_AM_DEBUG("[Activity %llu] Forcing allocation", id);
 
 	ActivityMap::iterator iter = m_activities.find(id);
 	if (iter != m_activities.end()) {
-		LOG_WARNING(MSGID_SAME_ACTIVITY_ID_FOUND, 1, PMLOGKFV("Activity","%llu",id), "");
+		LOG_AM_WARNING(MSGID_SAME_ACTIVITY_ID_FOUND, 1, PMLOGKFV("Activity","%llu",id), "");
 	}
 
 	boost::shared_ptr<Activity> act = boost::make_shared<Activity>(id,
@@ -191,14 +191,14 @@ boost::shared_ptr<Activity> ActivityManager::GetNewActivity(activityId_t id)
 
 void ActivityManager::ReleaseActivity(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Releasing", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Releasing", act->GetId());
 
 	EvictQueue(act);
 
 	ActivityMap::iterator iter = m_activities.find(act->GetId());
 	if (iter == m_activities.end()) {
-		LOG_WARNING(MSGID_RELEASE_ACTIVITY_NOTFOUND, 1, PMLOGKFV("Activity","%llu",act->GetId()),
+		LOG_AM_WARNING(MSGID_RELEASE_ACTIVITY_NOTFOUND, 1, PMLOGKFV("Activity","%llu",act->GetId()),
 			"Not found in Activity table while attempting to release");
 	} else {
 		if (iter->second == act) {
@@ -211,7 +211,7 @@ void ActivityManager::ReleaseActivity(boost::shared_ptr<Activity> act)
 
 ActivityManager::ActivityVec ActivityManager::GetActivities() const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	ActivityVec out;
 	out.reserve(m_activities.size());
@@ -225,8 +225,8 @@ ActivityManager::ActivityVec ActivityManager::GetActivities() const
 
 MojErr ActivityManager::StartActivity(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Start", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Start", act->GetId());
 
 	act->SendCommand(ActivityStartCommand);
 
@@ -235,8 +235,8 @@ MojErr ActivityManager::StartActivity(boost::shared_ptr<Activity> act)
 
 MojErr ActivityManager::StopActivity(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Stop", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Stop", act->GetId());
 
 	act->SendCommand(ActivityStopCommand);
 
@@ -245,8 +245,8 @@ MojErr ActivityManager::StopActivity(boost::shared_ptr<Activity> act)
 
 MojErr ActivityManager::CancelActivity(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Cancel", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Cancel", act->GetId());
 
 	act->SendCommand(ActivityCancelCommand);
 
@@ -255,8 +255,8 @@ MojErr ActivityManager::CancelActivity(boost::shared_ptr<Activity> act)
 
 MojErr ActivityManager::PauseActivity(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Pause", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Pause", act->GetId());
 
 	act->SendCommand(ActivityPauseCommand);
 
@@ -265,11 +265,11 @@ MojErr ActivityManager::PauseActivity(boost::shared_ptr<Activity> act)
 
 MojErr ActivityManager::FocusActivity(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Focus [Activity %llu]", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Focus [Activity %llu]", act->GetId());
 
 	if (act->IsFocused()) {
-		LOG_DEBUG("[Activity %llu] is already focused",
+		LOG_AM_DEBUG("[Activity %llu] is already focused",
 			act->GetId());
 		return MojErrNone;
 	}
@@ -285,7 +285,7 @@ MojErr ActivityManager::FocusActivity(boost::shared_ptr<Activity> act)
 	/* Remove focus from all Activities that had focus before. */
 	while (!oldFocused.empty()) {
 		Activity& focusedActivity = oldFocused.front();
-		LOG_DEBUG("Removing focus from previously focused [Activity %llu]",
+		LOG_AM_DEBUG("Removing focus from previously focused [Activity %llu]",
 			focusedActivity.GetId());
 		focusedActivity.SetFocus(false);
 		m_resourceManager->UpdateAssociations(
@@ -298,11 +298,11 @@ MojErr ActivityManager::FocusActivity(boost::shared_ptr<Activity> act)
 
 MojErr ActivityManager::UnfocusActivity(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Unfocus [Activity %llu]", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Unfocus [Activity %llu]", act->GetId());
 
 	if (!act->IsFocused()) {
-		LOG_WARNING(MSGID_UNFOCUS_ACTIVITY_FAILED, 1, PMLOGKFV("Activity","%llu",act->GetId()),
+		LOG_AM_WARNING(MSGID_UNFOCUS_ACTIVITY_FAILED, 1, PMLOGKFV("Activity","%llu",act->GetId()),
 			    "Can't remove focus from activity which is not focused");
 		return MojErrInvalidArg;
 	}
@@ -313,7 +313,7 @@ MojErr ActivityManager::UnfocusActivity(boost::shared_ptr<Activity> act)
 	if (act->m_focusedListItem.is_linked()) {
 		act->m_focusedListItem.unlink();
 	} else {
-		LOG_WARNING(MSGID_ACTIVITY_NOT_ON_FOCUSSED_LIST, 1, PMLOGKFV("Activity","%llu",act->GetId()),
+		LOG_AM_WARNING(MSGID_ACTIVITY_NOT_ON_FOCUSSED_LIST, 1, PMLOGKFV("Activity","%llu",act->GetId()),
 			    "activity not on focus list while removing focus");
 	}
 
@@ -323,19 +323,19 @@ MojErr ActivityManager::UnfocusActivity(boost::shared_ptr<Activity> act)
 MojErr ActivityManager::AddFocus(boost::shared_ptr<Activity> source,
 	boost::shared_ptr<Activity> target)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Add focus from [Activity %llu] to [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Add focus from [Activity %llu] to [Activity %llu]",
 		source->GetId(), target->GetId());
 
 	if (!source->IsFocused()) {
-		LOG_WARNING(MSGID_SRC_ACTIVITY_UNFOCUSSED, 2, PMLOGKFV("src_activity","%llu",source->GetId()),
+		LOG_AM_WARNING(MSGID_SRC_ACTIVITY_UNFOCUSSED, 2, PMLOGKFV("src_activity","%llu",source->GetId()),
 			    PMLOGKFV("target_activity","%llu",target->GetId()),
 			    "Can't add focus from src_activity to target_activity as source is not focused");
 		return MojErrInvalidArg;
 	}
 
 	if (target->IsFocused()) {
-		LOG_DEBUG("Target is already focused adding focus from [Activity %llu] to [Activity %llu]",
+		LOG_AM_DEBUG("Target is already focused adding focus from [Activity %llu] to [Activity %llu]",
 			source->GetId(), target->GetId());
 		return MojErrNone;
 	}
@@ -349,18 +349,18 @@ MojErr ActivityManager::AddFocus(boost::shared_ptr<Activity> source,
 
 void ActivityManager::Enable(unsigned mask)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (mask & EXTERNAL_ENABLE) {
-		LOG_DEBUG("Enabling Activity Manager: External");
+		LOG_AM_DEBUG("Enabling Activity Manager: External");
 	}
 
 	if (mask & UI_ENABLE) {
-		LOG_DEBUG("Enabling Activity Manager: Device UI enabled");
+		LOG_AM_DEBUG("Enabling Activity Manager: Device UI enabled");
 	}
 
 	if ((mask & ENABLE_MASK) != mask) {
-		LOG_DEBUG("Unknown bits set in mask in call to Enable: %x", mask);
+		LOG_AM_DEBUG("Unknown bits set in mask in call to Enable: %x", mask);
 	}
 
 	m_enabled |= (mask & ENABLE_MASK);
@@ -372,18 +372,18 @@ void ActivityManager::Enable(unsigned mask)
 
 void ActivityManager::Disable(unsigned mask)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (mask & EXTERNAL_ENABLE) {
-		LOG_DEBUG("Disabling Activity Manager: External");
+		LOG_AM_DEBUG("Disabling Activity Manager: External");
 	}
 
 	if (mask & UI_ENABLE) {
-		LOG_DEBUG("Disabling Activity Manager: Device UI disabled");
+		LOG_AM_DEBUG("Disabling Activity Manager: Device UI disabled");
 	}
 
 	if ((mask & ENABLE_MASK) != mask) {
-		LOG_DEBUG("Unknown bits set in mask in call to Disable: %x", mask);
+		LOG_AM_DEBUG("Unknown bits set in mask in call to Disable: %x", mask);
 	}
 
 	m_enabled &= ~mask;
@@ -399,12 +399,12 @@ bool ActivityManager::IsEnabled() const
 
 unsigned int ActivityManager::SetBackgroundConcurrencyLevel(unsigned int level)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 	if (level != UnlimitedBackgroundConcurrency) {
-		LOG_DEBUG("Background concurrency level set to %u",
+		LOG_AM_DEBUG("Background concurrency level set to %u",
 			level);
 	} else {
-		LOG_DEBUG("Background concurrency level set to Unlimited");
+		LOG_AM_DEBUG("Background concurrency level set to Unlimited");
 	}
 
 	unsigned int oldLevel = m_backgroundConcurrencyLevel;
@@ -419,8 +419,8 @@ unsigned int ActivityManager::SetBackgroundConcurrencyLevel(unsigned int level)
 void ActivityManager::EvictBackgroundActivity(
 	boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Attempting to evict [Activity %llu] from background queue",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Attempting to evict [Activity %llu] from background queue",
 		act->GetId());
 
 	ActivityRunQueue::iterator iter;
@@ -436,7 +436,7 @@ void ActivityManager::EvictBackgroundActivity(
 		act->m_runQueueItem.unlink();
 		m_runQueue[RunQueueLongBackground].push_back(*act);
 	} else {
-		LOG_ERROR(MSGID_ACTIVITY_NOT_ON_BACKGRND_Q, 1, PMLOGKFV("Activity","%llu",act->GetId()), "");
+		LOG_AM_ERROR(MSGID_ACTIVITY_NOT_ON_BACKGRND_Q, 1, PMLOGKFV("Activity","%llu",act->GetId()), "");
 		throw std::runtime_error("Activity not on background queue");
 	}
 
@@ -445,8 +445,8 @@ void ActivityManager::EvictBackgroundActivity(
 
 void ActivityManager::EvictAllBackgroundActivities()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Evicting all background Activities to the long running background Activity list");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Evicting all background Activities to the long running background Activity list");
 
 	while (!m_runQueue[RunQueueBackground].empty()) {
 		Activity& act = m_runQueue[RunQueueBackground].front();
@@ -460,8 +460,8 @@ void ActivityManager::EvictAllBackgroundActivities()
 void ActivityManager::RunReadyBackgroundActivity(
 	boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Attepting to run ready [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Attepting to run ready [Activity %llu]",
 		act->GetId());
 
 	ActivityRunQueue::iterator iter;
@@ -489,15 +489,15 @@ void ActivityManager::RunReadyBackgroundActivity(
 		return;
 	}
 
-	LOG_WARNING(MSGID_ACTIVITY_NOT_ON_READY_Q, 1, PMLOGKFV("Activity","%llu",act->GetId()),
+	LOG_AM_WARNING(MSGID_ACTIVITY_NOT_ON_READY_Q, 1, PMLOGKFV("Activity","%llu",act->GetId()),
 		    "activity not found on ready queue");
 	throw std::runtime_error("Activity not on ready queue");
 }
 
 void ActivityManager::RunAllReadyActivities()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Running all Activities currently in the Ready state");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Running all Activities currently in the Ready state");
 
 	while (!m_runQueue[RunQueueReadyInteractive].empty()) {
 		RunReadyBackgroundInteractiveActivity(
@@ -514,8 +514,8 @@ void ActivityManager::RunAllReadyActivities()
 void ActivityManager::InformActivityInitialized(
 	boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Initialized and ready to be scheduled",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Initialized and ready to be scheduled",
 		act->GetId());
 
 	/* If an Activity is restarting, it will be parked (temporarily) in
@@ -536,13 +536,13 @@ void ActivityManager::InformActivityInitialized(
 
 void ActivityManager::InformActivityReady(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Now ready to run", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Now ready to run", act->GetId());
 
 	if (act->m_runQueueItem.is_linked()) {
 		act->m_runQueueItem.unlink();
 	} else {
-		LOG_DEBUG("[Activity %llu] not found on any run queue when moving to ready state",
+		LOG_AM_DEBUG("[Activity %llu] not found on any run queue when moving to ready state",
 			act->GetId());
 	}
 
@@ -562,14 +562,14 @@ void ActivityManager::InformActivityReady(boost::shared_ptr<Activity> act)
 
 void ActivityManager::InformActivityNotReady(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] No longer ready to run",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] No longer ready to run",
 		act->GetId());
 
 	if (act->m_runQueueItem.is_linked()) {
 		act->m_runQueueItem.unlink();
 	} else {
-		LOG_DEBUG("[Activity %llu] not found on any run queue when moving to not ready state",
+		LOG_AM_DEBUG("[Activity %llu] not found on any run queue when moving to not ready state",
 			act->GetId());
 	}
 
@@ -578,14 +578,14 @@ void ActivityManager::InformActivityNotReady(boost::shared_ptr<Activity> act)
 
 void ActivityManager::InformActivityRunning(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Running", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Running", act->GetId());
 }
 
 void ActivityManager::InformActivityEnding(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Ending", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Ending", act->GetId());
 
 	/* Nothing to do here yet, it still has subscribers who may have processing
 	 * to do. */
@@ -593,8 +593,8 @@ void ActivityManager::InformActivityEnding(boost::shared_ptr<Activity> act)
 
 void ActivityManager::InformActivityEnd(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Has ended", act->GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Has ended", act->GetId());
 
 	/* If Activity was never fully initialized, it's ok for it not to be on
 	 * a queue here */
@@ -613,8 +613,8 @@ void ActivityManager::InformActivityEnd(boost::shared_ptr<Activity> act)
 void ActivityManager::InformActivityGainedSubscriberId(
 	boost::shared_ptr<Activity> act, const BusId& id)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Gained subscriber [BusId %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Gained subscriber [BusId %s]",
 		act->GetId(), id.GetString().c_str());
 
 	m_resourceManager->Associate(act, id);
@@ -623,8 +623,8 @@ void ActivityManager::InformActivityGainedSubscriberId(
 void ActivityManager::InformActivityLostSubscriberId(
 	boost::shared_ptr<Activity> act, const BusId& id)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Lost subscriber [BusId %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Lost subscriber [BusId %s]",
 		act->GetId(), id.GetString().c_str());
 
 	m_resourceManager->Dissociate(act, id);
@@ -632,14 +632,14 @@ void ActivityManager::InformActivityLostSubscriberId(
 
 void ActivityManager::ScheduleAllActivities()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Scheduling all Activities");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Scheduling all Activities");
 
 	while (!m_runQueue[RunQueueInitialized].empty()) {
 		Activity& act = m_runQueue[RunQueueInitialized].front();
 		act.m_runQueueItem.unlink();
 
-		LOG_DEBUG("Granting [Activity %llu] permission to schedule",
+		LOG_AM_DEBUG("Granting [Activity %llu] permission to schedule",
 			act.GetId());
 
 		m_runQueue[RunQueueScheduled].push_back(act);
@@ -649,10 +649,10 @@ void ActivityManager::ScheduleAllActivities()
 
 void ActivityManager::EvictQueue(boost::shared_ptr<Activity> act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (act->m_runQueueItem.is_linked()) {
-		LOG_DEBUG("[Activity %llu] evicted from run queue on release",
+		LOG_AM_DEBUG("[Activity %llu] evicted from run queue on release",
 			act->GetId());
 		act->m_runQueueItem.unlink();
 	}
@@ -660,8 +660,8 @@ void ActivityManager::EvictQueue(boost::shared_ptr<Activity> act)
 
 void ActivityManager::RunActivity(Activity& act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Running [Activity %llu]", act.GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Running [Activity %llu]", act.GetId());
 
 	m_resourceManager->Associate(act.shared_from_this());
 	act.RunActivity();
@@ -669,13 +669,13 @@ void ActivityManager::RunActivity(Activity& act)
 
 void ActivityManager::RunReadyBackgroundActivity(Activity& act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Running background [Activity %llu]", act.GetId());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Running background [Activity %llu]", act.GetId());
 
 	if (act.m_runQueueItem.is_linked()) {
 		act.m_runQueueItem.unlink();
 	} else {
-		LOG_WARNING(MSGID_ATTEMPT_RUN_BACKGRND_ACTIVITY, 1, PMLOGKFV("Activity","%llu",act.GetId()), "");
+		LOG_AM_WARNING(MSGID_ATTEMPT_RUN_BACKGRND_ACTIVITY, 1, PMLOGKFV("Activity","%llu",act.GetId()), "");
 	}
 
 	m_runQueue[RunQueueBackground].push_back(act);
@@ -685,14 +685,14 @@ void ActivityManager::RunReadyBackgroundActivity(Activity& act)
 
 void ActivityManager::RunReadyBackgroundInteractiveActivity(Activity& act)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Running background interactive [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Running background interactive [Activity %llu]",
 		act.GetId());
 
 	if (act.m_runQueueItem.is_linked()) {
 		act.m_runQueueItem.unlink();
 	} else {
-		LOG_DEBUG("[Activity %llu] was not queued attempting to run background interactive Activity",
+		LOG_AM_DEBUG("[Activity %llu] was not queued attempting to run background interactive Activity",
 			 act.GetId());
 	}
 
@@ -709,8 +709,8 @@ unsigned ActivityManager::GetRunningBackgroundActivitiesCount() const
 
 void ActivityManager::CheckReadyQueue()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Checking to see if more background Activities can run");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Checking to see if more background Activities can run");
 
 	bool ranInteractive = false;
 
@@ -746,13 +746,13 @@ void ActivityManager::CheckReadyQueue()
 
 void ActivityManager::UpdateYieldTimeout()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (!m_interactiveYieldTimeout) {
-		LOG_DEBUG("Arming background interactive yield timeout for %u seconds",
+		LOG_AM_DEBUG("Arming background interactive yield timeout for %u seconds",
 			m_yieldTimeoutSeconds);
 	} else {
-		LOG_DEBUG("Updating background interactive yield timeout for %u seconds",
+		LOG_AM_DEBUG("Updating background interactive yield timeout for %u seconds",
 			m_yieldTimeoutSeconds);
 	}
 
@@ -764,19 +764,19 @@ void ActivityManager::UpdateYieldTimeout()
 
 void ActivityManager::CancelYieldTimeout()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Cancelling background interactive yield timeout");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Cancelling background interactive yield timeout");
 
 	m_interactiveYieldTimeout.reset();
 }
 
 void ActivityManager::InteractiveYieldTimeout()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Background interactive yield timeout triggered");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Background interactive yield timeout triggered");
 
 	if (m_runQueue[RunQueueReadyInteractive].empty()) {
-		LOG_DEBUG("Ready interactive queue is empty, cancelling yield timeout");
+		LOG_AM_DEBUG("Ready interactive queue is empty, cancelling yield timeout");
 		CancelYieldTimeout();
 		return;
 	}
@@ -806,14 +806,14 @@ void ActivityManager::InteractiveYieldTimeout()
 	/* If there aren't already too many yielding... */
 	if (iter == m_runQueue[RunQueueBackgroundInteractive].end()) {
 		if (victim) {
-			LOG_DEBUG("Requesting that [Activity %llu] yield",
+			LOG_AM_DEBUG("Requesting that [Activity %llu] yield",
 				victim->GetId());
 			victim->YieldActivity();
 		} else {
-			LOG_DEBUG("All running background interactive Activities are already yielding");
+			LOG_AM_DEBUG("All running background interactive Activities are already yielding");
 		}
 	} else {
-		LOG_DEBUG("Number of yielding Activities is already equal to the number of ready interactive Activities waiting in the queue");
+		LOG_AM_DEBUG("Number of yielding Activities is already equal to the number of ready interactive Activities waiting in the queue");
 	}
 
 	UpdateYieldTimeout();
@@ -876,7 +876,7 @@ bool ActivityManager::ActivityIdComp::operator()(
 
 MojErr ActivityManager::InfoToJson(MojObject& rep) const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err = MojErrNone;
 

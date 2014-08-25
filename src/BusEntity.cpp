@@ -35,8 +35,8 @@ BusEntity::~BusEntity()
 
 void BusEntity::AssociateActivity(boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] associating with [Entity %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] associating with [Entity %s]",
 		activity->GetId(), m_id.GetString().c_str());
 
 	ActivityAssociations::insert_commit_data id;
@@ -44,7 +44,7 @@ void BusEntity::AssociateActivity(boost::shared_ptr<Activity> activity)
 		m_associations.insert_check(activity,
 			BusEntity::ActivityAssociationComp(), id);
 	if (!result.second) {
-		LOG_DEBUG("[Activity %llu] already associated with [Entity %s]",
+		LOG_AM_DEBUG("[Activity %llu] already associated with [Entity %s]",
 			activity->GetId(), m_id.GetString().c_str());
 		/* Don't throw here.  Be resilient. */
 	} else {
@@ -58,14 +58,14 @@ void BusEntity::AssociateActivity(boost::shared_ptr<Activity> activity)
 
 void BusEntity::DissociateActivity(boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] dissociating from [Entity %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] dissociating from [Entity %s]",
 		activity->GetId(), m_id.GetString().c_str());
 
 	ActivityAssociations::iterator found = m_associations.find(activity,
 		BusEntity::ActivityAssociationComp());
 	if (found == m_associations.end()) {
-		LOG_DEBUG("[Activity %llu] is not currently associated with [Entity %s]",
+		LOG_AM_DEBUG("[Activity %llu] is not currently associated with [Entity %s]",
 			activity->GetId(), m_id.GetString().c_str());
 		/* Don't throw here.  Be resilient. */
 	} else {
@@ -152,15 +152,15 @@ void BusEntity::PushJson(MojObject& array, bool includeActivities) const
 void BusEntity::ReassociateActivity(
 	boost::shared_ptr<ActivitySetAutoAssociation> association)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Updating association between [Activity %llu] and [Entity %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Updating association between [Activity %llu] and [Entity %s]",
 		association->GetActivity()->GetId(),
 		m_id.GetString().c_str());
 
 	if (association->m_link.is_linked()) {
 		association->m_link.unlink();
 	} else {
-		LOG_DEBUG("Association between [Activity %llu] and [Entity %s] was not linked",
+		LOG_AM_DEBUG("Association between [Activity %llu] and [Entity %s] was not linked",
 			association->GetActivity()->GetId(),
 			m_id.GetString().c_str());
 	}
@@ -168,7 +168,7 @@ void BusEntity::ReassociateActivity(
 	std::pair<ActivityAssociations::iterator, bool> result =
 		m_associations.insert(*association);
 	if (!result.second) {
-		LOG_WARNING(MSGID_ASSOSCIATN_UPDATE_FAIL, 3, PMLOGKS("Reason","another association already present"),
+		LOG_AM_WARNING(MSGID_ASSOSCIATN_UPDATE_FAIL, 3, PMLOGKS("Reason","another association already present"),
 			  PMLOGKFV("Activity","%llu",association->GetActivity()->GetId()),
 			  PMLOGKS("Entity",m_id.GetString().c_str()), "");
 	}

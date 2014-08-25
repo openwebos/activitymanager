@@ -91,7 +91,7 @@ boost::shared_ptr<Activity> MojoJsonConverter::CreateActivity(
 		try {
 			act->SetCreator(ProcessBusId(creator));
 		} catch (...) {
-			LOG_ERROR(MSGID_DECODE_CREATOR_ID_FAILED, 2, PMLOGKFV("activity","%llu",id),
+			LOG_AM_ERROR(MSGID_DECODE_CREATOR_ID_FAILED, 2, PMLOGKFV("activity","%llu",id),
 				  PMLOGKS("creator_id",MojoObjectJson(creator).c_str()),
 				  "Unable to decode creator id while reloading");
 			m_am->ReleaseActivity(act);
@@ -113,7 +113,7 @@ boost::shared_ptr<Activity> MojoJsonConverter::CreateActivity(
 				if (bus == Activity::PrivateBus) {
 					act->SetCreator(ProcessBusId(creator));
 				} else {
-					LOG_ERROR(MSGID_PBUS_CALLER_SETTING_CREATOR, 2, PMLOGKFV("activity","%llu",act->GetId()),
+					LOG_AM_ERROR(MSGID_PBUS_CALLER_SETTING_CREATOR, 2, PMLOGKFV("activity","%llu",act->GetId()),
 						    PMLOGKS("creator_id",MojoObjectJson(creator).c_str()),
 						    "Attempt to set creator by caller from the public bus");
 					throw std::runtime_error("Callers from the public bus "
@@ -178,13 +178,13 @@ boost::shared_ptr<Activity> MojoJsonConverter::CreateActivity(
 			act->SetSchedule(schedule);
 		}
 	} catch (const std::exception& except) {
-		LOG_ERROR(MSGID_EXCEPTION_IN_RELOADING_ACTIVITY, 2, PMLOGKFV("activity","%llu",act->GetId()),
+		LOG_AM_ERROR(MSGID_EXCEPTION_IN_RELOADING_ACTIVITY, 2, PMLOGKFV("activity","%llu",act->GetId()),
 			  PMLOGKS("Exception",except.what()), "Unexpected exception reloading Activity from: '%s'",
 			  MojoObjectJson(spec).c_str());
 		m_am->ReleaseActivity(act);
 		throw;
 	} catch (...) {
-		LOG_ERROR(MSGID_RELOAD_ACTVTY_UNKNWN_EXCPTN, 1, PMLOGKFV("activity","%llu",act->GetId()),
+		LOG_AM_ERROR(MSGID_RELOAD_ACTVTY_UNKNWN_EXCPTN, 1, PMLOGKFV("activity","%llu",act->GetId()),
 			  "Unknown exception reloading Activity from: %s", MojoObjectJson(spec).c_str());
 		m_am->ReleaseActivity(act);
 		throw;
@@ -238,7 +238,7 @@ void MojoJsonConverter::UpdateActivity(
 	if (spec.get(_T("callback"), callbackSpec)) {
 		if (callbackSpec.type() == MojObject::TypeBool) {
 			if (!callbackSpec.boolValue()) {
-				LOG_ERROR(MSGID_RM_ACTVTY_CB_ATTEMPT, 1, PMLOGKFV("activity","%llu",act->GetId()),
+				LOG_AM_ERROR(MSGID_RM_ACTVTY_CB_ATTEMPT, 1, PMLOGKFV("activity","%llu",act->GetId()),
 					    "Attempt to remove callback on Complete");
 				throw std::runtime_error("Activity callback may not be "
 					"removed by Complete");
@@ -258,13 +258,13 @@ void MojoJsonConverter::UpdateActivity(
 			setMetadata = true;
 			MojErr err = metadata.toJson(metadataJson);
 			if (err) {
-				LOG_ERROR(MSGID_DECODE_METADATA_FAIL, 1, PMLOGKFV("activity","%llu",act->GetId()),
+				LOG_AM_ERROR(MSGID_DECODE_METADATA_FAIL, 1, PMLOGKFV("activity","%llu",act->GetId()),
 					    "Failed to decode metadata to JSON while attempting to update");
 				throw std::runtime_error("Failed to decode metadata to json");
 			}
 		} else if (metadata.type() == MojObject::TypeBool) {
 			if (metadata.boolValue()) {
-				LOG_ERROR(MSGID_METADATA_UPDATE_TO_NONOBJ_TYPE, 1, PMLOGKFV("activity","%llu",act->GetId()),
+				LOG_AM_ERROR(MSGID_METADATA_UPDATE_TO_NONOBJ_TYPE, 1, PMLOGKFV("activity","%llu",act->GetId()),
 					    "Attempt to update metadata to non-object type");
 				throw std::runtime_error("Attempt to set metadata to a "
 					"non-object type");
@@ -272,7 +272,7 @@ void MojoJsonConverter::UpdateActivity(
 				clearMetadata = true;
 			}
 		} else {
-			LOG_ERROR(MSGID_METADATA_UPDATE_TO_NONOBJ_TYPE, 1, PMLOGKFV("activity","%llu",act->GetId()),
+			LOG_AM_ERROR(MSGID_METADATA_UPDATE_TO_NONOBJ_TYPE, 1, PMLOGKFV("activity","%llu",act->GetId()),
 				    "Attempt to update metadata to non-object type");
 			throw std::runtime_error("Activity metadata must be set to an "
 				"object if present");
@@ -538,7 +538,7 @@ boost::shared_ptr<Schedule> MojoJsonConverter::CreateSchedule(
 				Scheduler::StringToTime(lastFinishedStr.data(),
 					lastFinishedIsUTC);
 			if (isUTC != lastFinishedIsUTC) {
-				LOG_DEBUG("Last finished should use the same time format as the other times in the schedule");
+				LOG_AM_DEBUG("Last finished should use the same time format as the other times in the schedule");
 			}
 			intervalSchedule->SetLastFinishedTime(lastFinishedTime);
 		}
@@ -749,7 +749,7 @@ void MojoJsonConverter::ProcessRequirements(
 				addedRequirements.push_back(req);
 			} catch (...) {
 #ifdef WEBOS_TARGET_MACHINE_IMPL_SIMULATOR
-				LOG_WARNING(MSGID_MGR_NOT_FOUND_FOR_REQUIREMENT, 1, PMLOGKS("Requirement",iter.key().data()),
+				LOG_AM_WARNING(MSGID_MGR_NOT_FOUND_FOR_REQUIREMENT, 1, PMLOGKS("Requirement",iter.key().data()),
 					    "Unable to find Manager for requirement, skipping");
 #else
 				/* Really should pre-check the requirements to make sure
@@ -803,7 +803,7 @@ BusId MojoJsonConverter::ProcessBusId(const MojObject& spec)
 			}
 			return BusId(serviceId.data(), BusService);
 		} else if (spec.contains(_T("anonId"))) {
-			LOG_WARNING(MSGID_PERSISTED_ANONID_FOUND, 0, "anonId subscriber found persisted in MojoDB");
+			LOG_AM_WARNING(MSGID_PERSISTED_ANONID_FOUND, 0, "anonId subscriber found persisted in MojoDB");
 			bool found = false;
 			MojString anonId;
 			MojErr err = spec.get(_T("anonId"), anonId, found);

@@ -34,7 +34,7 @@ TestDriver::~TestDriver()
 
 void TestDriver::Start(MojObject& response)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	MojObject activity;
 
@@ -73,12 +73,12 @@ void TestDriver::Start(MojObject& response)
 void TestDriver::HandleAdoptResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Adopt Response: %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Adopt Response: %s",
 		MojoObjectJson(response).c_str());
 
 	if (err) {
-		LOG_DEBUG("Adopt failed");
+		LOG_AM_DEBUG("Adopt failed");
 		m_adopt.reset();
 		return;
 	}
@@ -87,7 +87,7 @@ void TestDriver::HandleAdoptResponse(MojServiceMessage *msg,
 
 	MojErr err2 = params.put(_T("activityId"), m_activityId);
 	if (err2) {
-		LOG_DEBUG("Failed to initialize args for complete call");
+		LOG_AM_DEBUG("Failed to initialize args for complete call");
 		m_adopt.reset();
 		return;
 	}
@@ -101,8 +101,8 @@ void TestDriver::HandleAdoptResponse(MojServiceMessage *msg,
 void TestDriver::HandleCompleteResponse(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Complete Response: %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Complete Response: %s",
 		MojoObjectJson(response).c_str());
 
 	m_complete.reset();

@@ -54,8 +54,8 @@ boost::shared_ptr<PersistCommand>
 PersistProxy::PrepareNoopCommand(boost::shared_ptr<Activity> activity,
 	boost::shared_ptr<Completion> completion)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Preparing noop command for [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Preparing noop command for [Activity %llu]",
 		activity->GetId());
 
 	return boost::make_shared<NoopCommand>(activity, completion);

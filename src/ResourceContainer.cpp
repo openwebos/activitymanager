@@ -37,13 +37,13 @@ ResourceContainer::~ResourceContainer()
 
 void ResourceContainer::AddEntity(boost::shared_ptr<BusEntity> entity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Adding [BusId %s] to [Container %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Adding [BusId %s] to [Container %s]",
 		entity->GetName().c_str(), m_name.c_str());
 
 	EntitySet::iterator found = m_entities.find(entity);
 	if (found != m_entities.end()) {
-		LOG_DEBUG("[BusId %s] has already been added to [Container %s]",
+		LOG_AM_DEBUG("[BusId %s] has already been added to [Container %s]",
 			entity->GetName().c_str(), m_name.c_str());
 		return;
 	}
@@ -53,13 +53,13 @@ void ResourceContainer::AddEntity(boost::shared_ptr<BusEntity> entity)
 
 void ResourceContainer::RemoveEntity(boost::shared_ptr<BusEntity> entity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Removing [BusId %s] from [Container %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Removing [BusId %s] from [Container %s]",
 		entity->GetName().c_str(), m_name.c_str());
 
 	EntitySet::iterator found = m_entities.find(entity);
 	if (found == m_entities.end()) {
-		LOG_DEBUG("[BusId %s] is not currently mapped to [Container %s]",
+		LOG_AM_DEBUG("[BusId %s] is not currently mapped to [Container %s]",
 			entity->GetName().c_str(), m_name.c_str());
 		return;
 	}

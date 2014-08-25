@@ -30,22 +30,22 @@
  * e.g.)
  * LOG_CRITICAL(msgid, 2, PMLOGKS("key1", "value1"), PMLOGKFV("key2", "%d", value2), "free text message");
  **********************************************/
-#define LOG_CRITICAL(msgid, kvcount, ...) \
+#define LOG_AM_CRITICAL(msgid, kvcount, ...) \
         PmLogCritical(getactivitymanagercontext(), msgid, kvcount, ##__VA_ARGS__)
 
-#define LOG_ERROR(msgid, kvcount, ...) \
+#define LOG_AM_ERROR(msgid, kvcount, ...) \
         PmLogError(getactivitymanagercontext(), msgid, kvcount,##__VA_ARGS__)
 
-#define LOG_WARNING(msgid, kvcount, ...) \
+#define LOG_AM_WARNING(msgid, kvcount, ...) \
         PmLogWarning(getactivitymanagercontext(), msgid, kvcount, ##__VA_ARGS__)
 
-#define LOG_INFO(msgid, kvcount, ...) \
+#define LOG_AM_INFO(msgid, kvcount, ...) \
         PmLogInfo(getactivitymanagercontext(), msgid, kvcount, ##__VA_ARGS__)
 
-#define LOG_DEBUG(...) \
+#define LOG_AM_DEBUG(...) \
         PmLogDebug(getactivitymanagercontext(), ##__VA_ARGS__)
 
-#define LOG_TRACE(...) \
+#define LOG_AM_TRACE(...) \
         PMLOG_TRACE(__VA_ARGS__);
 
 
