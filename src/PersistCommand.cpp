@@ -55,9 +55,9 @@ std::string PersistCommand::GetString() const
  * command is a member of. */
 void PersistCommand::Append(boost::shared_ptr<PersistCommand> command)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 	if (command == shared_from_this()) {
-		LOG_WARNING(MSGID_APPEND_CMD_TOSELF,1,PMLOGKS("persist_command",GetString().c_str()),
+		LOG_AM_WARNING(MSGID_APPEND_CMD_TOSELF,1,PMLOGKS("persist_command",GetString().c_str()),
 			 "Attempt to append command directly to itself");
 		throw std::runtime_error("Attempt to append Persist Command directly "
 			"to itself");
@@ -68,7 +68,7 @@ void PersistCommand::Append(boost::shared_ptr<PersistCommand> command)
 	for (target = shared_from_this(); target->m_next;
 		target = target->m_next) {
 		if (target->m_next == shared_from_this()) {
-			LOG_WARNING( MSGID_APPEND_CREATE_LOOP, 2, PMLOGKS("persist_command",command->GetString().c_str()),
+			LOG_AM_WARNING( MSGID_APPEND_CREATE_LOOP, 2, PMLOGKS("persist_command",command->GetString().c_str()),
                 PMLOGKS("persist_command",target->GetString().c_str()),"Append Failed");
 			throw std::runtime_error("Attempt to append Persist Command would "
 				"create a loop");
@@ -80,19 +80,19 @@ void PersistCommand::Append(boost::shared_ptr<PersistCommand> command)
 
 void PersistCommand::Complete(bool success)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	/* All steps of Complete must execute, including launching the next
 	 * command in the chain.  All exceptions must be handled locally. */
 	try {
 		m_completion->Complete(success);
 	} catch (const std::exception& except) {
-		LOG_WARNING(MSGID_CMD_COMPLETE_EXCEPTION,3,
+		LOG_AM_WARNING(MSGID_CMD_COMPLETE_EXCEPTION,3,
 			PMLOGKFV("activity","%llu",m_activity->GetId()),
 		    PMLOGKS("persist_command",GetString().c_str()),
 			PMLOGKS("exception",except.what()),"Unexpected exception while trying to complete");
 	} catch (...) {
-		LOG_WARNING(MSGID_CMD_COMPLETE_EXCEPTION,2,
+		LOG_AM_WARNING(MSGID_CMD_COMPLETE_EXCEPTION,2,
 			PMLOGKFV("activity","%llu",m_activity->GetId()),
 		    PMLOGKS("persist_command",GetString().c_str()),"exception while trying to complete");
 
@@ -114,12 +114,12 @@ void PersistCommand::Complete(bool success)
 	try {
 		m_activity->UnhookPersistCommand(shared_from_this());
 	} catch (const std::exception& except) {
-		LOG_WARNING( MSGID_CMD_UNHOOK_EXCEPTION,3,
+		LOG_AM_WARNING( MSGID_CMD_UNHOOK_EXCEPTION,3,
 			PMLOGKFV("activity","%llu",m_activity->GetId()),
             PMLOGKS("persist_command",GetString().c_str()),
 			PMLOGKS("exception",except.what()),"Unexpected exception unhooking command" );
 	} catch (...) {
-		LOG_WARNING(MSGID_CMD_UNHOOK_EXCEPTION,2,
+		LOG_AM_WARNING(MSGID_CMD_UNHOOK_EXCEPTION,2,
 			PMLOGKFV("activity","%llu",m_activity->GetId()),
             PMLOGKS("persist_command",GetString().c_str()),"exception unhooking command");
 	}
@@ -131,10 +131,10 @@ void PersistCommand::Complete(bool success)
 
 void PersistCommand::Validate(bool checkTokenValid) const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (!m_activity->IsPersistTokenSet()) {
-		LOG_ERROR(MSGID_PERSIST_TOKEN_NOT_SET,2,
+		LOG_AM_ERROR(MSGID_PERSIST_TOKEN_NOT_SET,2,
 			PMLOGKFV("activity","%llu",m_activity->GetId()),
  		    PMLOGKS("persist_command",GetString().c_str()),
             "Persist token for Activity is not set");
@@ -145,7 +145,7 @@ void PersistCommand::Validate(bool checkTokenValid) const
 	if (checkTokenValid) {
 		boost::shared_ptr<PersistToken> pt = m_activity->GetPersistToken();
 		if (!pt->IsValid()) {
-			LOG_ERROR(MSGID_PERSIST_TOKEN_INVALID, 2,
+			LOG_AM_ERROR(MSGID_PERSIST_TOKEN_INVALID, 2,
 				PMLOGKFV("activity","%llu",m_activity->GetId()),
  		        PMLOGKS("persist_command",GetString().c_str()),
 			    "Persist token for Activity is set but not valid" );
@@ -168,8 +168,8 @@ NoopCommand::~NoopCommand()
 
 void NoopCommand::Persist()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] [PersistCommand %s]: No-op command",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] [PersistCommand %s]: No-op command",
 		m_activity->GetId(), GetString().c_str());
 	Complete(true);
 }

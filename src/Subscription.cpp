@@ -38,8 +38,8 @@ Subscription::~Subscription()
 
 void Subscription::HandleCancelWrapper()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("%s cancelling subscription",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("%s cancelling subscription",
 		GetSubscriber().GetString().c_str());
 
 	try {
@@ -48,12 +48,12 @@ void Subscription::HandleCancelWrapper()
 		/* Any specialized implementation for the specific Subscription type */
 		HandleCancel();
 	} catch (const std::exception& except) {
-		LOG_ERROR(MSGID_SUBSCRIPTION_CANCEL_FAIL, 1,
+		LOG_AM_ERROR(MSGID_SUBSCRIPTION_CANCEL_FAIL, 1,
 			PMLOGKS("SUBSCRIBER",GetSubscriber().GetString().c_str() ),
 			"Unhandled exception \"%s\" occurred while cancelling subscription",
 			except.what());
 	} catch (...) {
-		LOG_ERROR(MSGID_SUBSCRIPTION_CANCEL_ERR,1,
+		LOG_AM_ERROR(MSGID_SUBSCRIPTION_CANCEL_ERR,1,
 			PMLOGKS("SUBSCRIBER",GetSubscriber().GetString().c_str() ),
 			"Unhandled exception of unknown type occurred cancelling subscription");
 	}
@@ -66,7 +66,7 @@ bool Subscription::operator<(const Subscription& rhs) const
 
 MojErr Subscription::QueueEvent(ActivityEvent_t event)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	/* Non-detailed subscriptions do not get update events */
 	if ((event == ActivityUpdateEvent) && !m_detailedEvents) {
@@ -90,14 +90,14 @@ MojErr Subscription::QueueEvent(ActivityEvent_t event)
 
 void Subscription::Plug()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	m_plugged = true;
 }
 
 void Subscription::Unplug()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	m_plugged = false;
 

@@ -56,7 +56,7 @@ time_t IntervalSchedule::GetNextStartTime() const
  * points. */
 void IntervalSchedule::CalcNextStartTime()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	time_t curTime = GetTime();
 	time_t start = GetBaseStartTime();
@@ -89,7 +89,7 @@ void IntervalSchedule::CalcNextStartTime()
 		}
 	}
 
-	LOG_DEBUG("[Activity %lu] Next start time is %s",
+	LOG_AM_DEBUG("[Activity %lu] Next start time is %s",
 		(unsigned long)m_activity.lock()->GetId(),
 		Scheduler::TimeToString(m_nextStart, !m_local).c_str());
 }
@@ -120,11 +120,11 @@ void IntervalSchedule::SetLastFinishedTime(time_t finished)
 
 void IntervalSchedule::InformActivityFinished()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	time_t lastFinished = GetTime();
 
-	LOG_DEBUG("[Activity %lu] Finished at %llu",
+	LOG_AM_DEBUG("[Activity %lu] Finished at %llu",
 		(unsigned long)m_activity.lock()->GetId(),
 		(unsigned long long)lastFinished);
 

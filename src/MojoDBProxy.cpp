@@ -55,8 +55,8 @@ boost::shared_ptr<PersistCommand>
 MojoDBProxy::PrepareStoreCommand(boost::shared_ptr<Activity> activity,
 	boost::shared_ptr<Completion> completion)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Preparing put command for [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Preparing put command for [Activity %llu]",
 		activity->GetId());
 
 	return boost::make_shared<MojoDBStoreCommand>(m_service,
@@ -67,8 +67,8 @@ boost::shared_ptr<PersistCommand>
 MojoDBProxy::PrepareDeleteCommand(boost::shared_ptr<Activity> activity,
 	boost::shared_ptr<Completion> completion)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Preparing delete command for [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Preparing delete command for [Activity %llu]",
 		activity->GetId());
 
 	return boost::make_shared<MojoDBDeleteCommand>(m_service,
@@ -83,8 +83,8 @@ MojoDBProxy::CreateToken()
 
 void MojoDBProxy::LoadActivities()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Loading persisted Activities from MojoDB");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Loading persisted Activities from MojoDB");
 
 	MojObject query;
 	query.putString(_T("from"), ActivityKind);
@@ -105,14 +105,14 @@ void MojoDBProxy::LoadActivities()
 void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Processing Activities loaded from MojoDB");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Processing Activities loaded from MojoDB");
 
 	/* Don't allow the Activity Manager to start up if the MojoDB load
 	 * fails ... */
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_ERROR(MSGID_LOAD_ACTIVITIES_FROM_DB_FAIL, 0,
+			LOG_AM_ERROR(MSGID_LOAD_ACTIVITIES_FROM_DB_FAIL, 0,
 				     "Uncorrectable error loading Activities from MojoDB: %s", MojoObjectJson(response).c_str());
 #ifdef ACTIVITYMANAGER_REQUIRE_DB
 			m_app->shutdown();
@@ -120,7 +120,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 			m_app->ready();
 #endif
 		} else {
-			LOG_WARNING(MSGID_ACTIVITIES_LOAD_ERR, 0, "Error loading Activities from MojoDB, retrying: %s",
+			LOG_AM_WARNING(MSGID_ACTIVITIES_LOAD_ERR, 0, "Error loading Activities from MojoDB, retrying: %s",
                                     MojoObjectJson(response).c_str());
 			m_call->Call();
 		}
@@ -144,26 +144,26 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 			bool found;
 			found = rep.get(_T("activityId"), activityId);
 			if (!found) {
-				LOG_WARNING(MSGID_ACTIVITYID_NOT_FOUND, 0, "activityId not found loading Activities");
+				LOG_AM_WARNING(MSGID_ACTIVITYID_NOT_FOUND, 0, "activityId not found loading Activities");
 					continue;
 			}
 
 			MojString id;
 			MojErr err = rep.get(_T("_id"), id, found);
 			if (err) {
-				LOG_WARNING(MSGID_RETRIEVE_ID_FAIL, 0, "Error retrieving _id from results returned from MojoDB");
+				LOG_AM_WARNING(MSGID_RETRIEVE_ID_FAIL, 0, "Error retrieving _id from results returned from MojoDB");
 				continue;
 			}
 
 			if (!found) {
-				LOG_WARNING(MSGID_ID_NOT_FOUND, 0, "_id not found loading Activities from MojoDB");
+				LOG_AM_WARNING(MSGID_ID_NOT_FOUND, 0, "_id not found loading Activities from MojoDB");
 				continue;
 			}
 
 			MojInt64 rev;
 			found = rep.get(_T("_rev"), rev);
 			if (!found) {
-				LOG_WARNING(MSGID_REV_NOT_FOUND, 0, "_rev not found loading Activities from MojoDB");
+				LOG_AM_WARNING(MSGID_REV_NOT_FOUND, 0, "_rev not found loading Activities from MojoDB");
 				continue;
 			}
 
@@ -175,12 +175,12 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 			try {
 				act = m_json->CreateActivity(rep, Activity::PrivateBus, true);
 			} catch (const std::exception& except) {
-				LOG_WARNING(MSGID_CREATE_ACTIVITY_EXCEPTION, 1, PMLOGKS("Exception",except.what()),
+				LOG_AM_WARNING(MSGID_CREATE_ACTIVITY_EXCEPTION, 1, PMLOGKS("Exception",except.what()),
 					  "Activity: %s", MojoObjectJson(rep).c_str());
 				m_oldTokens.push_back(pt);
 				continue;
 			} catch (...) {
-				LOG_WARNING(MSGID_UNKNOWN_EXCEPTION, 0, "Activity : %s. Unknown exception decoding encoded",
+				LOG_AM_WARNING(MSGID_UNKNOWN_EXCEPTION, 0, "Activity : %s. Unknown exception decoding encoded",
 					  MojoObjectJson(rep).c_str());
 				m_oldTokens.push_back(pt);
 				continue;
@@ -193,7 +193,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 			try {
 				m_am->RegisterActivityId(act);
 			} catch (...) {
-				LOG_ERROR(MSGID_ACTIVITY_ID_REG_FAIL, 1, PMLOGKFV("Activity","%llu", act->GetId()), "");
+				LOG_AM_ERROR(MSGID_ACTIVITY_ID_REG_FAIL, 1, PMLOGKFV("Activity","%llu", act->GetId()), "");
 
 				/* Another Activity is already registered.  Determine which
 				 * is newer, and kill the older one. */
@@ -205,7 +205,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 						PersistToken>(old->GetPersistToken());
 
 				if (pt->GetRev() > oldPt->GetRev()) {
-					LOG_WARNING(MSGID_ACTIVITY_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
+					LOG_AM_WARNING(MSGID_ACTIVITY_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
 						    PMLOGKFV("revision","%llu",(unsigned long long)pt->GetRev()),
 						    PMLOGKFV("old_Activity","%llu",old->GetId()),
 						    PMLOGKFV("old_revision","%llu",(unsigned long long)oldPt->GetRev()), "");
@@ -216,7 +216,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 
 					m_am->RegisterActivityId(act);
 				} else {
-					LOG_WARNING(MSGID_ACTIVITY_NOT_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
+					LOG_AM_WARNING(MSGID_ACTIVITY_NOT_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
 						    PMLOGKFV("revision","%llu",(unsigned long long)pt->GetRev()),
 						    PMLOGKFV("old_Activity","%llu",old->GetId()),
 						    PMLOGKFV("old_revision","%llu",(unsigned long long)oldPt->GetRev()), "");
@@ -230,7 +230,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 			try {
 				m_am->RegisterActivityName(act);
 			} catch (...) {
-				LOG_ERROR(MSGID_ACTIVITY_NAME_REG_FAIL, 3, PMLOGKFV("Activity","%llu",act->GetId()),
+				LOG_AM_ERROR(MSGID_ACTIVITY_NAME_REG_FAIL, 3, PMLOGKFV("Activity","%llu",act->GetId()),
 					  PMLOGKS("Creator_name",act->GetCreator().GetString().c_str()),
 					  PMLOGKS("Register_name",act->GetName().c_str()), "");
 
@@ -244,7 +244,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 						PersistToken>(old->GetPersistToken());
 
 				if (pt->GetRev() > oldPt->GetRev()) {
-					LOG_WARNING(MSGID_ACTIVITY_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
+					LOG_AM_WARNING(MSGID_ACTIVITY_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
 						    PMLOGKFV("revision","%llu",(unsigned long long)pt->GetRev()),
 						    PMLOGKFV("old_Activity","%llu",old->GetId()),
 						    PMLOGKFV("old_revision","%llu",(unsigned long long)oldPt->GetRev()), "");
@@ -255,7 +255,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 
 					m_am->RegisterActivityName(act);
 				} else {
-					LOG_WARNING(MSGID_ACTIVITY_NOT_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
+					LOG_AM_WARNING(MSGID_ACTIVITY_NOT_REPLACED, 4, PMLOGKFV("Activity","%llu",act->GetId()),
 						    PMLOGKFV("revision","%llu",(unsigned long long)pt->GetRev()),
 						    PMLOGKFV("old_Activity","%llu",old->GetId()),
 						    PMLOGKFV("old_revision","%llu",(unsigned long long)oldPt->GetRev()), "");
@@ -266,7 +266,7 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 				}
 			}
 
-			LOG_DEBUG("[Activity %llu] (\"%s\"): _id %s, rev %llu loaded",
+			LOG_AM_DEBUG("[Activity %llu] (\"%s\"): _id %s, rev %llu loaded",
 				act->GetId(), act->GetName().c_str(), id.data(),
 				(unsigned long long)rev);
 
@@ -280,12 +280,12 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 	MojString page;
 	err2 = response.get(_T("page"), page, found);
 	if (err2) {
-		LOG_ERROR(MSGID_GET_PAGE_FAIL, 0, "Error getting page parameter in MojoDB query response");
+		LOG_AM_ERROR(MSGID_GET_PAGE_FAIL, 0, "Error getting page parameter in MojoDB query response");
 		return;
 	}
 
 	if (found) {
-		LOG_DEBUG("Preparing to request next page (\"%s\") of Activities",
+		LOG_AM_DEBUG("Preparing to request next page (\"%s\") of Activities",
 			page.data());
 
 		MojObject query;
@@ -304,10 +304,10 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 
 		m_call->Call();
 	} else {
-		LOG_DEBUG("All Activities successfully loaded from MojoDB");
+		LOG_AM_DEBUG("All Activities successfully loaded from MojoDB");
 
 		if (!m_oldTokens.empty()) {
-			LOG_DEBUG("Beginning purge of old Activities from database");
+			LOG_AM_DEBUG("Beginning purge of old Activities from database");
 			PreparePurgeCall();
 			m_call->Call();
 		} else {
@@ -327,17 +327,17 @@ void MojoDBProxy::ActivityLoadResults(MojServiceMessage *msg,
 void MojoDBProxy::ActivityPurgeComplete(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Purge of batch of old Activities complete");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Purge of batch of old Activities complete");
 
 	/* If there was a transient error, re-call */
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_ERROR(MSGID_ACTIVITIES_PURGE_FAILED, 0, "Purge of batch of old Activities failed: %s",
+			LOG_AM_ERROR(MSGID_ACTIVITIES_PURGE_FAILED, 0, "Purge of batch of old Activities failed: %s",
 				  MojoObjectJson(response).c_str());
 			m_call.reset();
 		} else {
-			LOG_WARNING(MSGID_RETRY_ACTIVITY_PURGE, 0, "Purge of batch of old Activities failed, retrying: %s",
+			LOG_AM_WARNING(MSGID_RETRY_ACTIVITY_PURGE, 0, "Purge of batch of old Activities failed, retrying: %s",
 				    MojoObjectJson(response).c_str());
 			m_call->Call();
 		}
@@ -348,7 +348,7 @@ void MojoDBProxy::ActivityPurgeComplete(MojServiceMessage *msg,
 		PreparePurgeCall();
 		m_call->Call();
 	} else {
-		LOG_DEBUG("Done purging old Activities");
+		LOG_AM_DEBUG("Done purging old Activities");
 #ifdef ACTIVITYMANAGER_CALL_CONFIGURATOR
 		PrepareConfiguratorCall();
 		m_call->Call();
@@ -362,11 +362,11 @@ void MojoDBProxy::ActivityPurgeComplete(MojServiceMessage *msg,
 void MojoDBProxy::ActivityConfiguratorComplete(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Load of static Activity configuration complete");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Load of static Activity configuration complete");
 
 	if (err != MojErrNone) {
-		LOG_WARNING(MSGID_ACTIVITY_CONFIG_LOAD_FAIL, 0, "Failed to load static Activity configuration: %s",
+		LOG_AM_WARNING(MSGID_ACTIVITY_CONFIG_LOAD_FAIL, 0, "Failed to load static Activity configuration: %s",
 			    MojoObjectJson(response).c_str());
 	}
 
@@ -376,8 +376,8 @@ void MojoDBProxy::ActivityConfiguratorComplete(MojServiceMessage *msg,
 
 void MojoDBProxy::PreparePurgeCall()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Preparing to purge batch of old Activities");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Preparing to purge batch of old Activities");
 
 	MojObject ids(MojObject::TypeArray);
 	PopulatePurgeIds(ids);
@@ -394,8 +394,8 @@ void MojoDBProxy::PreparePurgeCall()
 
 void MojoDBProxy::PrepareConfiguratorCall()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Prepared to update Activity configuration from static store");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Prepared to update Activity configuration from static store");
 
 	MojObject types(MojObject::TypeArray);
 

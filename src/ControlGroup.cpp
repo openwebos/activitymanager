@@ -41,8 +41,8 @@ ControlGroup::~ControlGroup()
 // It is still useful for logging and may be used in the future.
 void ControlGroup::Init()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Initializing control group [Container %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Initializing control group [Container %s]",
 		m_name.c_str());
 }
 
@@ -51,7 +51,7 @@ void ControlGroup::UpdatePriority()
 	// UNCOMMENT TO ENABLE CGROUPS HANDLING FROM ACTIVITYMANAGER
 
 	/*
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	ActivityPriority_t priority = GetPriority();
 	bool focused = IsFocused();
@@ -71,7 +71,7 @@ void ControlGroup::MapProcess(pid_t pid)
 {
 	// UNCOMMENT TO ENABLE CGROUPS HANDLING FROM ACTIVITYMANAGER
 	/*
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 	MojLogDebug(s_log, _T("Mapping [pid %d] into [Container %s]"),
 		(int)pid, m_name.c_str());
 	
@@ -85,13 +85,13 @@ void ControlGroup::MapProcess(pid_t pid)
 
 void ControlGroup::Enable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 	UpdatePriority();
 }
 
 void ControlGroup::Disable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 	UpdatePriority();
 }
 
@@ -114,8 +114,8 @@ void ControlGroup::SetPriority(ActivityPriority_t priority, bool focused)
 	size_t length;
 	std::list<int>::iterator pid, nextPid;
 
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Setting priority of [Container %s] to [%s,%s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Setting priority of [Container %s] to [%s,%s]",
 		m_name.c_str(), ActivityPriorityNames[priority],
 		focused ? "focused" : "unfocused");
 
@@ -157,7 +157,7 @@ void ControlGroup::SetPriority(ActivityPriority_t priority, bool focused)
 		m_currentPriority = priority;
 		m_focused = focused;
 	} else {
-		LOG_WARNING(MSGID_CONTAINER_PRIORITY_CHANGE_FAIL, 3, PMLOGKS("container",m_name.c_str()),
+		LOG_AM_WARNING(MSGID_CONTAINER_PRIORITY_CHANGE_FAIL, 3, PMLOGKS("container",m_name.c_str()),
 			  PMLOGKS("Priority",ActivityPriorityNames[priority]),
 			  PMLOGKS("focus",focused ? "focused" : "unfocused"), "");
 	}
@@ -174,7 +174,7 @@ bool ControlGroup::WriteControlFile(const std::string& controlFile,
 {
 	int fd = open(controlFile.c_str(), O_WRONLY);
 	if (fd < 0) {
-		LOG_ERROR(MSGID_CONTROL_FILE_OPEN_FAIL, 2, PMLOGKS("control_file",controlFile.c_str()),
+		LOG_AM_ERROR(MSGID_CONTROL_FILE_OPEN_FAIL, 2, PMLOGKS("control_file",controlFile.c_str()),
 			  PMLOGKS("Reason",strerror(errno)), "");
 		return false;
 	}
@@ -184,18 +184,18 @@ bool ControlGroup::WriteControlFile(const std::string& controlFile,
 
 		// If the process does not exist, cgroups will return ESRCH (no such process)
 		if(errno == ESRCH){
-			LOG_WARNING(MSGID_INEXISTENT_PROCESS_WRITTEN, 2, PMLOGKS("Process",buf),
+			LOG_AM_WARNING(MSGID_INEXISTENT_PROCESS_WRITTEN, 2, PMLOGKS("Process",buf),
 				    PMLOGKS("control_file",controlFile.c_str()), "Process to be written to file doesn't exist");
 			close(fd);
 			m_processIds.erase(current);
 			return true;
 		}
-		LOG_ERROR(MSGID_WRITE_TO_CONTROL_FILE_FAIL, 2, PMLOGKS("control_file",controlFile.c_str()),
+		LOG_AM_ERROR(MSGID_WRITE_TO_CONTROL_FILE_FAIL, 2, PMLOGKS("control_file",controlFile.c_str()),
 			  PMLOGKS("Reason",strerror(errno)), "");
 		close(fd);
 		return false;
 	} else if ((size_t)ret != count) {
-		LOG_ERROR(MSGID_SHORT_WRITE_UPDATE, 1, PMLOGKS("control_file",controlFile.c_str()), "");
+		LOG_AM_ERROR(MSGID_SHORT_WRITE_UPDATE, 1, PMLOGKS("control_file",controlFile.c_str()), "");
 		close(fd);
 		return false;
 	}

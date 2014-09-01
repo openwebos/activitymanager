@@ -79,8 +79,8 @@ boost::shared_ptr<Requirement> ConnectionManagerProxy::InstantiateRequirement(
 	boost::shared_ptr<Activity> activity, const std::string& name,
 	const MojObject& value)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
 		name.c_str(), activity->GetId());
 
 	if (name == "internet") {
@@ -130,7 +130,7 @@ boost::shared_ptr<Requirement> ConnectionManagerProxy::InstantiateRequirement(
 		return InstantiateConfidenceRequirement(activity, m_wifiConfidenceCores,
 			m_wifiConfidenceRequirements, value);
 	} else {
-		LOG_ERROR(MSGID_REQUIREMENT_INSTANTIATE_FAIL , 3, PMLOGKS("Manager",GetName().c_str()),
+		LOG_AM_ERROR(MSGID_REQUIREMENT_INSTANTIATE_FAIL , 3, PMLOGKS("Manager",GetName().c_str()),
 			  PMLOGKFV("Activity","%llu",activity->GetId()), PMLOGKS("Requirement",name.c_str()), "");
 		throw std::runtime_error("Attempt to instantiate unknown requirement");
 	}
@@ -139,8 +139,8 @@ boost::shared_ptr<Requirement> ConnectionManagerProxy::InstantiateRequirement(
 void ConnectionManagerProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Registering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Registering requirements");
 
 	master->RegisterRequirement("internet", shared_from_this());
 	master->RegisterRequirement("wifi", shared_from_this());
@@ -153,8 +153,8 @@ void ConnectionManagerProxy::RegisterRequirements(
 void ConnectionManagerProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Unregistering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Unregistering requirements");
 
 	master->UnregisterRequirement("internet", shared_from_this());
 	master->UnregisterRequirement("wifi", shared_from_this());
@@ -166,8 +166,8 @@ void ConnectionManagerProxy::UnregisterRequirements(
 
 void ConnectionManagerProxy::Enable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Enabling Connection Manager Proxy");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Enabling Connection Manager Proxy");
 
 	MojObject params;
 	params.putBool(_T("subscribe"), true);
@@ -183,8 +183,8 @@ void ConnectionManagerProxy::Enable()
 
 void ConnectionManagerProxy::Disable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Disabling Connection Manager Proxy");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Disabling Connection Manager Proxy");
 
 	m_call.reset();
 }
@@ -213,23 +213,23 @@ void ConnectionManagerProxy::Disable()
 void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_WARNING(MSGID_UNSOLVABLE_CONN_MGR_SUBSCR_ERR, 0,
+			LOG_AM_WARNING(MSGID_UNSOLVABLE_CONN_MGR_SUBSCR_ERR, 0,
 				  "Subscription to Connection Manager experienced an uncorrectable failure: %s",
 				  MojoObjectJson(response).c_str());
 			m_call.reset();
 		} else {
-			LOG_WARNING(MSGID_CONN_MGR_SUBSCR_ERR, 0,
+			LOG_AM_WARNING(MSGID_CONN_MGR_SUBSCR_ERR, 0,
 				    "Subscription to Connection Manager failed, resubscribing: %s",MojoObjectJson(response).c_str());
 			m_call->Call();
 		}
 		return;
 	}
 
-	LOG_DEBUG("Update from Connection Manager: %s",
+	LOG_AM_DEBUG("Update from Connection Manager: %s",
 		MojoObjectJson(response).c_str());
 
 	bool isInternetConnectionAvailable = false;
@@ -240,7 +240,7 @@ void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 
 	if (isInternetConnectionAvailable) {
 		if (!m_internetRequirementCore->IsMet()) {
-			LOG_DEBUG("Internet connection is now available");
+			LOG_AM_DEBUG("Internet connection is now available");
 			m_internetRequirementCore->Met();
 			std::for_each(m_internetRequirements.begin(),
 				m_internetRequirements.end(),
@@ -252,7 +252,7 @@ void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 		}
 	} else {
 		if (m_internetRequirementCore->IsMet()) {
-			LOG_DEBUG("Internet connection is no longer available");
+			LOG_AM_DEBUG("Internet connection is no longer available");
 			m_internetRequirementCore->Unmet();
 			std::for_each(m_internetRequirements.begin(),
 				m_internetRequirements.end(),
@@ -267,7 +267,7 @@ void ConnectionManagerProxy::ConnectionManagerUpdate(MojServiceMessage *msg,
 		m_wifiConfidence : m_wanConfidence;
 	if (m_internetConfidence != maxConfidence) {
 		m_internetConfidence = maxConfidence;
-		LOG_DEBUG("Internet confidence level changed to %d",
+		LOG_AM_DEBUG("Internet confidence level changed to %d",
 			m_internetConfidence);
 		UpdateConfidenceRequirements(m_internetConfidenceCores,
 			m_internetConfidenceRequirements, m_internetConfidence);
@@ -292,7 +292,7 @@ MojErr ConnectionManagerProxy::UpdateWifiStatus(const MojObject& response)
 		MojErrCheck(err);
 
 		if (!found) {
-			LOG_WARNING(MSGID_WIFI_CONN_STATUS_UNKNOWN, 0, "Wifi connection status not returned by Connection Manager");
+			LOG_AM_WARNING(MSGID_WIFI_CONN_STATUS_UNKNOWN, 0, "Wifi connection status not returned by Connection Manager");
 		} else if (wifiConnected == "connected") {
 			MojString onInternet;
 			err = wifi.get(_T("onInternet"), onInternet, found);
@@ -304,12 +304,12 @@ MojErr ConnectionManagerProxy::UpdateWifiStatus(const MojObject& response)
 			}
 		}
 	} else {
-		LOG_WARNING(MSGID_WIFI_STATUS_UNKNOWN, 0, "Wifi status not returned by Connection Manager");
+		LOG_AM_WARNING(MSGID_WIFI_STATUS_UNKNOWN, 0, "Wifi status not returned by Connection Manager");
 	}
 
 	if (wifiAvailable) {
 		if (!m_wifiRequirementCore->IsMet()) {
-			LOG_DEBUG("Wifi connection is now available");
+			LOG_AM_DEBUG("Wifi connection is now available");
 			m_wifiRequirementCore->Met();
 			std::for_each(m_wifiRequirements.begin(), m_wifiRequirements.end(),
 				boost::mem_fn(&Requirement::Met));
@@ -319,7 +319,7 @@ MojErr ConnectionManagerProxy::UpdateWifiStatus(const MojObject& response)
 		}
 	} else {
 		if (m_wifiRequirementCore->IsMet()) {
-			LOG_DEBUG("Wifi connection is no longer available");
+			LOG_AM_DEBUG("Wifi connection is no longer available");
 			m_wifiRequirementCore->Unmet();
 			std::for_each(m_wifiRequirements.begin(), m_wifiRequirements.end(),
 				boost::mem_fn(&Requirement::Unmet));
@@ -328,7 +328,7 @@ MojErr ConnectionManagerProxy::UpdateWifiStatus(const MojObject& response)
 
 	if (m_wifiConfidence != (int)confidence) {
 		m_wifiConfidence = (int)confidence;
-		LOG_DEBUG("Wifi confidence level changed to %d",
+		LOG_AM_DEBUG("Wifi confidence level changed to %d",
 			m_wifiConfidence);
 		UpdateConfidenceRequirements(m_wifiConfidenceCores,
 			m_wifiConfidenceRequirements, m_wifiConfidence);
@@ -355,7 +355,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 		MojErrCheck(err);
 
 		if (!found) {
-			LOG_WARNING(MSGID_WAN_CONN_STATUS_UNKNOWN, 0, "WAN connection status not returned by Connection Manager");
+			LOG_AM_WARNING(MSGID_WAN_CONN_STATUS_UNKNOWN, 0, "WAN connection status not returned by Connection Manager");
 		} else if (wanConnected == "connected") {
 			MojString wanNetwork;
 			found = false;
@@ -363,7 +363,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 			MojErrCheck(err);
 
 			if (!found) {
-				LOG_WARNING(MSGID_WAN_NW_MODE_UNKNOWN, 0, "WAN network mode not returned by Connection Manager");
+				LOG_AM_WARNING(MSGID_WAN_NW_MODE_UNKNOWN, 0, "WAN network mode not returned by Connection Manager");
 			} else if (wanNetwork != "unusable") {
 				MojString onInternet;
 				err = wan.get(_T("onInternet"), onInternet, found);
@@ -379,7 +379,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 
 	if (wanAvailable) {
 		if (!m_wanRequirementCore->IsMet()) {
-			LOG_DEBUG("WAN connection is now available");
+			LOG_AM_DEBUG("WAN connection is now available");
 			m_wanRequirementCore->Met();
 			std::for_each(m_wanRequirements.begin(), m_wanRequirements.end(),
 				boost::mem_fn(&Requirement::Met));
@@ -389,7 +389,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 		}
 	} else {
 		if (m_wanRequirementCore->IsMet()) {
-			LOG_DEBUG("WAN connection is no longer available");
+			LOG_AM_DEBUG("WAN connection is no longer available");
 			m_wanRequirementCore->Unmet();
 			std::for_each(m_wanRequirements.begin(), m_wanRequirements.end(),
 				boost::mem_fn(&Requirement::Unmet));
@@ -398,7 +398,7 @@ MojErr ConnectionManagerProxy::UpdateWANStatus(const MojObject& response)
 
 	if (m_wanConfidence != (int)confidence) {
 		m_wanConfidence = (int)confidence;
-		LOG_DEBUG("WAN confidence level changed to %d",
+		LOG_AM_DEBUG("WAN confidence level changed to %d",
 			m_wanConfidence);
 		UpdateConfidenceRequirements(m_wanConfidenceCores,
 			m_wanConfidenceRequirements, m_wanConfidence);
@@ -414,7 +414,7 @@ int ConnectionManagerProxy::GetConfidence(const MojObject& spec) const
 	bool found = spec.get(_T("networkConfidenceLevel"),
 		confidenceObj);
 	if (!found) {
-		LOG_WARNING(MSGID_GET_NW_CONFIDENCE_FAIL, 0,
+		LOG_AM_WARNING(MSGID_GET_NW_CONFIDENCE_FAIL, 0,
 			    "Failed to retreive network confidence from network description %s", MojoObjectJson(spec).c_str());
 	} else {
 		return ConfidenceToInt(confidenceObj);
@@ -427,14 +427,14 @@ int ConnectionManagerProxy::GetConfidence(const MojObject& spec) const
 int ConnectionManagerProxy::ConfidenceToInt(const MojObject& confidenceObj) const
 {
 	if (confidenceObj.type() != MojObject::TypeString) {
-		LOG_WARNING(MSGID_NON_STRING_TYPE_NW_CONFIDENCE, 0, "Network confidence must be specified as a string");
+		LOG_AM_WARNING(MSGID_NON_STRING_TYPE_NW_CONFIDENCE, 0, "Network confidence must be specified as a string");
 		return ConnectionConfidenceUnknown;
 	}
 
 	MojString confidenceStr;
 	MojErr err = confidenceObj.stringValue(confidenceStr);
 	if (err != MojErrNone) {
-		LOG_WARNING(MSGID_GET_NW_CONFIDENCE_LEVEL_FAIL, 0, "Failed to retreive network confidence level as string");
+		LOG_AM_WARNING(MSGID_GET_NW_CONFIDENCE_LEVEL_FAIL, 0, "Failed to retreive network confidence level as string");
 		return ConnectionConfidenceUnknown;
 	}
 
@@ -444,7 +444,7 @@ int ConnectionManagerProxy::ConfidenceToInt(const MojObject& confidenceObj) cons
 		}
 	}
 
-	LOG_DEBUG("Unknown connection confidence string: \"%s\"", confidenceStr.data() );
+	LOG_AM_DEBUG("Unknown connection confidence string: \"%s\"", confidenceStr.data() );
 
 	return ConnectionConfidenceUnknown;
 }
@@ -480,7 +480,7 @@ void ConnectionManagerProxy::UpdateConfidenceRequirements(
 {
 	if (((confidence < 0) || (confidence >= ConnectionConfidenceMax)) &&
 		(confidence != ConnectionConfidenceUnknown)) {
-		LOG_WARNING(MSGID_UNKNOWN_CONN_CONFIDENCE_LEVEL, 1, PMLOGKFV("conn_confidence_level","%d",confidence),
+		LOG_AM_WARNING(MSGID_UNKNOWN_CONN_CONFIDENCE_LEVEL, 1, PMLOGKFV("conn_confidence_level","%d",confidence),
 			    "Unknown connection confidence level seen attempting to update confidence requirements");
 		return;
 	}

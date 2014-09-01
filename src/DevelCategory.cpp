@@ -135,8 +135,8 @@ DevelCategoryHandler::Evict(MojServiceMessage *msg, MojObject &payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Evict: %s", MojoObjectJson(payload).c_str());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Evict: %s", MojoObjectJson(payload).c_str());
 
 	MojErr err = MojErrNone;
 
@@ -145,7 +145,7 @@ DevelCategoryHandler::Evict(MojServiceMessage *msg, MojObject &payload)
 	payload.get(_T("evictAll"), evictAll);
 
 	if (evictAll) {
-		LOG_DEBUG("EVICTING ALL ACTIVITIES FROM BACKGROUND QUEUE");
+		LOG_AM_DEBUG("EVICTING ALL ACTIVITIES FROM BACKGROUND QUEUE");
 		m_am->EvictAllBackgroundActivities();
 	} else {
 		boost::shared_ptr<Activity> act;
@@ -153,7 +153,7 @@ DevelCategoryHandler::Evict(MojServiceMessage *msg, MojObject &payload)
 		err = LookupActivity(msg, payload, act);
 		MojErrCheck(err);
 
-		LOG_DEBUG(" EVICTING [Activity %llu] FROM BACKGROUND QUEUE",act->GetId());
+		LOG_AM_DEBUG(" EVICTING [Activity %llu] FROM BACKGROUND QUEUE",act->GetId());
 
 		m_am->EvictBackgroundActivity(act);
 	}
@@ -230,8 +230,8 @@ DevelCategoryHandler::Run(MojServiceMessage *msg, MojObject &payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Run: %s", MojoObjectJson(payload).c_str());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Run: %s", MojoObjectJson(payload).c_str());
 
 	MojErr err = MojErrNone;
 
@@ -240,7 +240,7 @@ DevelCategoryHandler::Run(MojServiceMessage *msg, MojObject &payload)
 	payload.get(_T("runAll"), runAll);
 
 	if (runAll) {
-		LOG_DEBUG(" EVICTING ALL ACTIVITIES FROM BACKGROUND QUEUE");
+		LOG_AM_DEBUG(" EVICTING ALL ACTIVITIES FROM BACKGROUND QUEUE");
 
 		m_am->RunAllReadyActivities();
 	} else {
@@ -249,7 +249,7 @@ DevelCategoryHandler::Run(MojServiceMessage *msg, MojObject &payload)
 		err = LookupActivity(msg, payload, act);
 		MojErrCheck(err);
 
-		LOG_DEBUG("EVICTING [Activity %llu] FROM BACKGROUND QUEUE", act->GetId());
+		LOG_AM_DEBUG("EVICTING [Activity %llu] FROM BACKGROUND QUEUE", act->GetId());
 
 		m_am->RunReadyBackgroundActivity(act);
 	}
@@ -327,8 +327,8 @@ DevelCategoryHandler::SetConcurrency(MojServiceMessage *msg, MojObject &payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("SetConcurrency: %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("SetConcurrency: %s",
 		MojoObjectJson(payload).c_str());
 
 	bool unlimited = false;
@@ -348,7 +348,7 @@ DevelCategoryHandler::SetConcurrency(MojServiceMessage *msg, MojObject &payload)
 		err = msg->replySuccess();
 		MojErrCheck(err);
 	} else {
-		LOG_DEBUG("Attempt to set background concurrency did not specify \"unlimited\":true or a \"level\"");
+		LOG_AM_DEBUG("Attempt to set background concurrency did not specify \"unlimited\":true or a \"level\"");
 		err = msg->replyError(MojErrInvalidArg, "Either \"unlimited\":true, "
 			"or \"level\":<number concurrent Activities> must be specified");
 		MojErrCheck(err);
@@ -419,8 +419,8 @@ DevelCategoryHandler::PriorityControl(MojServiceMessage *msg, MojObject& payload
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("PriorityControl: %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("PriorityControl: %s",
 		MojoObjectJson(payload).c_str());
 
 	MojErr err;

@@ -46,8 +46,8 @@ boost::shared_ptr<Requirement> TelephonyProxy::InstantiateRequirement(
 	boost::shared_ptr<Activity> activity, const std::string& name,
 	const MojObject& value)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
 		name.c_str(), activity->GetId());
 
 	if (name == "telephony") {
@@ -63,7 +63,7 @@ boost::shared_ptr<Requirement> TelephonyProxy::InstantiateRequirement(
 				"specified, the only legal value is 'true'");
 		}
 	} else {
-		LOG_ERROR(MSGID_TIL_UNKNOWN_REQ, 3, PMLOGKS("MANAGER", GetName().c_str()),
+		LOG_AM_ERROR(MSGID_TIL_UNKNOWN_REQ, 3, PMLOGKS("MANAGER", GetName().c_str()),
 			PMLOGKS("REQ",name.c_str()),
 			PMLOGKFV("ACTIVITY_ID","%llu",activity->GetId()),
 			"does not know how to instantiate Requirement" );
@@ -74,8 +74,8 @@ boost::shared_ptr<Requirement> TelephonyProxy::InstantiateRequirement(
 void TelephonyProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Registering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Registering requirements");
 
 	master->RegisterRequirement("telephony", shared_from_this());
 }
@@ -83,16 +83,16 @@ void TelephonyProxy::RegisterRequirements(
 void TelephonyProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Unregistering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Unregistering requirements");
 
 	master->UnregisterRequirement("telephony", shared_from_this());
 }
 
 void TelephonyProxy::Enable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Enabling TIL Proxy");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Enabling TIL Proxy");
 
 	MojObject params;
 	params.putBool(_T("subscribe"), true);
@@ -109,8 +109,8 @@ void TelephonyProxy::Enable()
 
 void TelephonyProxy::Disable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Disabling TIL Proxy");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Disabling TIL Proxy");
 
 	m_networkStatusQuery.reset();
 	m_platformQuery.reset();
@@ -131,17 +131,17 @@ void TelephonyProxy::Disable()
 void TelephonyProxy::NetworkStatusUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Network status update message: %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Network status update message: %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_WARNING(MSGID_TIL_NWSTATUS_QUERY_ERR,0,
+			LOG_AM_WARNING(MSGID_TIL_NWSTATUS_QUERY_ERR,0,
 				"TIL experienced an uncorrectable failure : %s", MojoObjectJson(response).c_str());
 			m_networkStatusQuery.reset();
 		} else {
-			LOG_WARNING(MSGID_TIL_NWSTATUS_QUERY_RETRY, 0,
+			LOG_AM_WARNING(MSGID_TIL_NWSTATUS_QUERY_RETRY, 0,
 				"Subscription to TIL failed, retrying - %s", MojoObjectJson(response).c_str() );
 			m_networkStatusQuery->Call();
 		}
@@ -165,7 +165,7 @@ void TelephonyProxy::NetworkStatusUpdate(MojServiceMessage *msg,
 
 		err2 = extended.get(_T("state"), status, found);
 		if (err2) {
-			LOG_WARNING(MSGID_TIL_NWSTATE_ERR, 1 ,
+			LOG_AM_WARNING(MSGID_TIL_NWSTATE_ERR, 1 ,
 				PMLOGKFV("NWSTATE","%d",err2),
 				"Error attempting to retrieve network state");
 		} else if (found) {
@@ -176,7 +176,7 @@ void TelephonyProxy::NetworkStatusUpdate(MojServiceMessage *msg,
 			}
 			UpdateTelephonyState();
 		} else {
-			LOG_WARNING(MSGID_TIL_NO_NWSTATE, 0 ,
+			LOG_AM_WARNING(MSGID_TIL_NO_NWSTATE, 0 ,
 				"Network status update message did not include network state: %s", MojoObjectJson(response).c_str());
 		}
 	}
@@ -197,17 +197,17 @@ void TelephonyProxy::NetworkStatusUpdate(MojServiceMessage *msg,
 void TelephonyProxy::PlatformQueryUpdate(MojServiceMessage *msg,
     const MojObject& response, MojErr err)
 {
-    LOG_TRACE("Entering function %s", __FUNCTION__);
-    LOG_DEBUG("Platform query update message: %s",
+    LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+    LOG_AM_DEBUG("Platform query update message: %s",
         MojoObjectJson(response).c_str());
 
     if (err != MojErrNone) {
         if (MojoCall::IsPermanentFailure(msg, response, err)) {
-            LOG_WARNING(MSGID_TIL_QUERYUPDATE_ERR,0,
+            LOG_AM_WARNING(MSGID_TIL_QUERYUPDATE_ERR,0,
 				"experienced an uncorrectable failure: %s", MojoObjectJson(response).c_str());
             m_platformQuery.reset();
         } else {
-            LOG_WARNING(MSGID_TIL_QUERYUPDATE_RETRY, 0,
+            LOG_AM_WARNING(MSGID_TIL_QUERYUPDATE_RETRY, 0,
 				"Platform query subscription to TIL failed, retrying: %s",
                 MojoObjectJson(response).c_str());
             m_platformQuery->Call();
@@ -220,7 +220,7 @@ void TelephonyProxy::PlatformQueryUpdate(MojServiceMessage *msg,
 
     found = response.get(_T("extended"), extended);
     if (!found) {
-        LOG_WARNING(MSGID_TIL_NO_EXTENDED, 0, "Platform query update did not contain extended");
+        LOG_AM_WARNING(MSGID_TIL_NO_EXTENDED, 0, "Platform query update did not contain extended");
         return;
     }
 
@@ -228,7 +228,7 @@ void TelephonyProxy::PlatformQueryUpdate(MojServiceMessage *msg,
 
     found = extended.get(_T("capabilities"), capabilities);
     if (!found) {
-        LOG_WARNING(MSGID_TIL_NO_CAPABILITIES, 0, "Platform query update did not contain capabilities");
+        LOG_AM_WARNING(MSGID_TIL_NO_CAPABILITIES, 0, "Platform query update did not contain capabilities");
         return;
     }
 
@@ -244,7 +244,7 @@ void TelephonyProxy::PlatformQueryUpdate(MojServiceMessage *msg,
         }
         UpdateTelephonyState();
     } else {
-        LOG_WARNING(MSGID_TIL_NO_MAPCE_ENABLE, 0,
+        LOG_AM_WARNING(MSGID_TIL_NO_MAPCE_ENABLE, 0,
             "message did not include mapcenable: %s", MojoObjectJson(response).c_str());
 
         // Disable platformQuery and fall back to networkStatusQuery
@@ -267,7 +267,7 @@ void TelephonyProxy::UpdateTelephonyState()
 {
     if (m_haveTelephonyService) {
 		if (!m_telephonyRequirementCore->IsMet()) {
-			LOG_DEBUG("Telephony service available");
+			LOG_AM_DEBUG("Telephony service available");
 			m_telephonyRequirementCore->Met();
 			std::for_each(m_telephonyRequirements.begin(),
 				m_telephonyRequirements.end(),
@@ -275,7 +275,7 @@ void TelephonyProxy::UpdateTelephonyState()
 		}
     } else {
 		if (m_telephonyRequirementCore->IsMet()) {
-			LOG_DEBUG("Telephony service unavailable");
+			LOG_AM_DEBUG("Telephony service unavailable");
 			m_telephonyRequirementCore->Unmet();
 			std::for_each(m_telephonyRequirements.begin(),
 				m_telephonyRequirements.end(),

@@ -65,7 +65,7 @@ Activity::Activity(activityId_t id, boost::weak_ptr<ActivityManager> am)
 
 Activity::~Activity()
 {
-	LOG_DEBUG("[Activity %llu] Cleaning up", m_id);
+	LOG_AM_DEBUG("[Activity %llu] Cleaning up", m_id);
 }
 
 activityId_t Activity::GetId() const
@@ -75,7 +75,7 @@ activityId_t Activity::GetId() const
 
 void Activity::SetName(const std::string& name)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	m_name = name;
 }
@@ -132,8 +132,8 @@ std::string Activity::GetStateString() const
 
 void Activity::SendCommand(ActivityCommand_t command, bool internal)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] \"%s\" command received %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] \"%s\" command received %s",
 		m_id, ActivityCommandNames[command],
 		internal ? " (internally generated)" : "");
 
@@ -192,8 +192,8 @@ void Activity::SendCommand(ActivityCommand_t command, bool internal)
 
 MojErr Activity::AddSubscription(boost::shared_ptr<Subscription> sub)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] %s subscribed",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] %s subscribed",
 		m_id, sub->GetSubscriber().GetString().c_str());
 
 	m_subscriptions.insert(*sub);
@@ -219,8 +219,8 @@ MojErr Activity::AddSubscription(boost::shared_ptr<Subscription> sub)
 
 MojErr Activity::RemoveSubscription(boost::shared_ptr<Subscription> sub)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] %s unsubscribed",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] %s unsubscribed",
 		m_id, sub->GetSubscriber().GetString().c_str());
 
 	SubscriptionSet::iterator subscription = m_subscriptions.begin();
@@ -233,7 +233,7 @@ MojErr Activity::RemoveSubscription(boost::shared_ptr<Subscription> sub)
 	if (subscription != m_subscriptions.end()) {
 		m_subscriptions.erase(subscription);
 	} else {
-		LOG_WARNING(MSGID_SUBSCRIBER_NOT_FOUND, 2, PMLOGKFV("activity","%llu",m_id),
+		LOG_AM_WARNING(MSGID_SUBSCRIBER_NOT_FOUND, 2, PMLOGKFV("activity","%llu",m_id),
 			    PMLOGKS("subscriber",sub->GetSubscriber().GetString().c_str()),
 			    "activity unable to find subscriber on the subscriptions list");
 		return MojErrInvalidArg;
@@ -250,7 +250,7 @@ MojErr Activity::RemoveSubscription(boost::shared_ptr<Subscription> sub)
 	if (subscriber != m_subscribers.end()) {
 		m_subscribers.erase(subscriber);
 	} else {
-		LOG_DEBUG("[Activity %llu] Unable to find %s's subscriber entry on the subscribers list",
+		LOG_AM_DEBUG("[Activity %llu] Unable to find %s's subscriber entry on the subscribers list",
 			m_id,actor.GetString().c_str());
 	}
 
@@ -321,8 +321,8 @@ Activity::SubscriberIdVec Activity::GetUniqueSubscribers() const
 
 MojErr Activity::BroadcastEvent(ActivityEvent_t event)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Broadcasting \"%s\" event", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Broadcasting \"%s\" event", m_id,
 		ActivityEventNames[event]);
 
 	MojErr err = MojErrNone;
@@ -336,13 +336,16 @@ MojErr Activity::BroadcastEvent(ActivityEvent_t event)
 			err = sendErr;
 	}
 
+        if (err != MojErrNone)
+            LOG_AM_DEBUG("[Activity %llu] catch the last error %d", err);
+
 	return MojErrNone;
 }
 
 void Activity::PlugAllSubscriptions()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Plugging all subscriptions", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Plugging all subscriptions", m_id);
 
 	for (SubscriptionSet::iterator iter = m_subscriptions.begin();
 		iter != m_subscriptions.end(); ++iter) {
@@ -352,8 +355,8 @@ void Activity::PlugAllSubscriptions()
 
 void Activity::UnplugAllSubscriptions()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Unplugging all subscriptions", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Unplugging all subscriptions", m_id);
 
 	for (SubscriptionSet::iterator iter = m_subscriptions.begin();
 		iter != m_subscriptions.end(); ++iter) {
@@ -383,8 +386,8 @@ bool Activity::HasTrigger() const
 
 void Activity::Triggered(boost::shared_ptr<Trigger> trigger)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Triggered", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Triggered", m_id);
 
 	if (m_trigger == trigger) {
 		if (!m_running && !m_ready && IsRunnable()) {
@@ -420,14 +423,14 @@ bool Activity::HasCallback() const
 void Activity::CallbackFailed(boost::shared_ptr<Callback> callback,
 	Callback::FailureType failure)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (failure == Callback::TransientFailure) {
-		LOG_DEBUG("[Activity %llu] Callback experienced transient protocol failure... requeuing Activity",
+		LOG_AM_DEBUG("[Activity %llu] Callback experienced transient protocol failure... requeuing Activity",
 			m_id);
 		RequestRequeueActivity();
 	} else {
-		LOG_DEBUG("[Activity %llu] Callback experienced permanent failure... cancelling Activity",
+		LOG_AM_DEBUG("[Activity %llu] Callback experienced permanent failure... cancelling Activity",
 			m_id);
 		SetTerminateFlag(true);
 		SendCommand(ActivityCancelCommand, true);
@@ -437,8 +440,8 @@ void Activity::CallbackFailed(boost::shared_ptr<Callback> callback,
 
 void Activity::CallbackSucceeded(boost::shared_ptr<Callback> callback)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Callback succeeded", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Callback succeeded", m_id);
 
 	/* Nothing special to do here unless the Activity itself implements a
 	 * callback timeout. */
@@ -456,8 +459,8 @@ void Activity::ClearSchedule()
 
 void Activity::Scheduled()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Scheduled", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Scheduled", m_id);
 
 	if (!m_running && !m_ready && IsRunnable()) {
 		RequestRunActivity();
@@ -475,12 +478,12 @@ bool Activity::IsScheduled() const
 
 void Activity::AddRequirement(boost::shared_ptr<Requirement> requirement)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] setting [Requirement %s]", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] setting [Requirement %s]", m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
-		LOG_ERROR(MSGID_ADD_REQ_OWNER_MISMATCH, 3,
+		LOG_AM_ERROR(MSGID_ADD_REQ_OWNER_MISMATCH, 3,
 			  PMLOGKS("Requirement",requirement->GetActivity()->GetName().c_str()),
 			  PMLOGKFV("from_activity","%llu",requirement->GetActivity()->GetId()),
 			  PMLOGKFV("to_activity","%llu",m_id), "");
@@ -490,7 +493,7 @@ void Activity::AddRequirement(boost::shared_ptr<Requirement> requirement)
 	m_requirements[requirement->GetName()] = requirement;
 
 	if (requirement->m_activityListItem.is_linked()) {
-		LOG_DEBUG("Found linked requirement adding [Requirement %s] to [Activity %llu]",
+		LOG_AM_DEBUG("Found linked requirement adding [Requirement %s] to [Activity %llu]",
 			requirement->GetName().c_str(), m_id);
 		requirement->m_activityListItem.unlink();
 	}
@@ -509,19 +512,19 @@ void Activity::AddRequirement(boost::shared_ptr<Requirement> requirement)
 
 void Activity::RemoveRequirement(boost::shared_ptr<Requirement> requirement)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] removing [Requirement %s]", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] removing [Requirement %s]", m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
-		LOG_ERROR(MSGID_REMOVE_REQ_OWNER_MISMATCH, 3, PMLOGKFV("Requirement_owner","%llu",requirement->GetActivity()->GetId()),
+		LOG_AM_ERROR(MSGID_REMOVE_REQ_OWNER_MISMATCH, 3, PMLOGKFV("Requirement_owner","%llu",requirement->GetActivity()->GetId()),
 			  PMLOGKS("Requirement",requirement->GetName().c_str()),
 			  PMLOGKFV("Activity","%llu",m_id), "");
 		throw std::runtime_error("Requirement owner mismatch");
 	}
 
 	if (!requirement->m_activityListItem.is_linked()) {
-		LOG_DEBUG("Found unlinked requirement removing [Requirement %s] from [Activity %llu]",
+		LOG_AM_DEBUG("Found unlinked requirement removing [Requirement %s] from [Activity %llu]",
 			requirement->GetName().c_str(), m_id);
 	} else {
 		requirement->m_activityListItem.unlink();
@@ -534,13 +537,13 @@ void Activity::RemoveRequirement(boost::shared_ptr<Requirement> requirement)
 
 void Activity::RemoveRequirement(const std::string& name)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] removing [Requirement %s] by name",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] removing [Requirement %s] by name",
 		m_id, name.c_str());
 
 	RequirementMap::iterator found = m_requirements.find(name);
 	if (found == m_requirements.end()) {
-		LOG_WARNING(MSGID_RM_REQ_NOT_FOUND , 2,
+		LOG_AM_WARNING(MSGID_RM_REQ_NOT_FOUND , 2,
 			PMLOGKFV("Activity","%llu",m_id),
 			PMLOGKS("Requirement",name.c_str()),
 			"not found while trying to remove by name");
@@ -550,7 +553,7 @@ void Activity::RemoveRequirement(const std::string& name)
 	if (found->second->m_activityListItem.is_linked()) {
 		found->second->m_activityListItem.unlink();
 	} else {
-		LOG_DEBUG("Found unlinked requirement removing [Requirement %s] from [Activity %llu] by name",
+		LOG_AM_DEBUG("Found unlinked requirement removing [Requirement %s] from [Activity %llu] by name",
 			found->second->GetName().c_str(), m_id);
 	}
 
@@ -574,12 +577,12 @@ bool Activity::HasRequirements() const
 
 void Activity::RequirementMet(boost::shared_ptr<Requirement> requirement)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] [Requirement %s] met", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] [Requirement %s] met", m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
-		LOG_ERROR(MSGID_REQ_MET_OWNER_MISMATCH,3,
+		LOG_AM_ERROR(MSGID_REQ_MET_OWNER_MISMATCH,3,
 			PMLOGKS("Requirement",requirement->GetName().c_str()),
             PMLOGKFV("OwnedActivity","%llu",requirement->GetActivity()->GetId()),
 			PMLOGKFV("CurrentActivity","%llu",m_id),
@@ -590,7 +593,7 @@ void Activity::RequirementMet(boost::shared_ptr<Requirement> requirement)
 	if (requirement->m_activityListItem.is_linked()) {
 		requirement->m_activityListItem.unlink();
 	} else {
-		LOG_DEBUG("Found unlinked requirement marking [Requirement %s] as met for [Activity %llu]",
+		LOG_AM_DEBUG("Found unlinked requirement marking [Requirement %s] as met for [Activity %llu]",
 			requirement->GetName().c_str(), m_id);
 	}
 
@@ -602,7 +605,7 @@ void Activity::RequirementMet(boost::shared_ptr<Requirement> requirement)
 	BroadcastEvent(ActivityUpdateEvent);
 
 	if (m_unmetRequirements.empty()) {
-		LOG_DEBUG("[Activity %llu] All requirements met", m_id);
+		LOG_AM_DEBUG("[Activity %llu] All requirements met", m_id);
 
 		if (!m_running && !m_ready && IsRunnable()) {
 			RequestRunActivity();
@@ -612,12 +615,12 @@ void Activity::RequirementMet(boost::shared_ptr<Requirement> requirement)
 
 void Activity::RequirementUnmet(boost::shared_ptr<Requirement> requirement)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] [Requirement %s] unmet", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] [Requirement %s] unmet", m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
-		LOG_ERROR(MSGID_REQ_UNMET_OWNER_MISMATCH,3,
+		LOG_AM_ERROR(MSGID_REQ_UNMET_OWNER_MISMATCH,3,
 			PMLOGKS("REQUIREMENT",requirement->GetName().c_str()),
             PMLOGKFV("Owned Activity","%llu",requirement->GetActivity()->GetId()),
 			PMLOGKFV("Current Activity","%llu",m_id),
@@ -628,7 +631,7 @@ void Activity::RequirementUnmet(boost::shared_ptr<Requirement> requirement)
 	if (requirement->m_activityListItem.is_linked()) {
 		requirement->m_activityListItem.unlink();
 	} else {
-		LOG_DEBUG("Found unlinked requirement marking [Requirement %s] as unmet for [Activity %llu]",
+		LOG_AM_DEBUG("Found unlinked requirement marking [Requirement %s] as unmet for [Activity %llu]",
 			requirement->GetName().c_str(), m_id);
 	}
 
@@ -644,12 +647,12 @@ void Activity::RequirementUnmet(boost::shared_ptr<Requirement> requirement)
 
 void Activity::RequirementUpdated(boost::shared_ptr<Requirement> requirement)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] [Requirement %s] updated", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] [Requirement %s] updated", m_id,
 		requirement->GetName().c_str());
 
 	if (requirement->GetActivity() != shared_from_this()) {
-		LOG_ERROR(MSGID_UNOWNED_UPDATED_REQUIREMENT, 2, PMLOGKFV("Activity","%llu",m_id),
+		LOG_AM_ERROR(MSGID_UNOWNED_UPDATED_REQUIREMENT, 2, PMLOGKFV("Activity","%llu",m_id),
 			  PMLOGKS("Requirement",requirement->GetName().c_str()), "Updated requirement is not owned by activity");
 		throw std::runtime_error("Requirement owner mismatch");
 	}
@@ -659,8 +662,8 @@ void Activity::RequirementUpdated(boost::shared_ptr<Requirement> requirement)
 
 void Activity::SetParent(boost::shared_ptr<Subscription> sub)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Attempting to set %s as parent",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Attempting to set %s as parent",
 		m_id, sub->GetSubscriber().GetString().c_str());
 
 	if (!m_parent.expired())
@@ -669,14 +672,14 @@ void Activity::SetParent(boost::shared_ptr<Subscription> sub)
 	m_parent = sub;
 	m_released = false;
 
-	LOG_DEBUG("[Activity %llu] %s assigned as parent", m_id,
+	LOG_AM_DEBUG("[Activity %llu] %s assigned as parent", m_id,
 		sub->GetSubscriber().GetString().c_str());
 }
 
 MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *adopted)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] %s attempting to adopt %s", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] %s attempting to adopt %s", m_id,
 		sub->GetSubscriber().GetString().c_str(),
 		wait ? "and willing to wait" : "");
 
@@ -687,7 +690,7 @@ MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *ado
 			*adopted = false;
 
 		if (!wait) {
-			LOG_DEBUG("[Activity %llu] already has a parent (%s), and %s does not want to wait",
+			LOG_AM_DEBUG("[Activity %llu] already has a parent (%s), and %s does not want to wait",
 				m_id,
 				m_parent.lock()->GetSubscriber().GetString().c_str(),
 				sub->GetSubscriber().GetString().c_str());
@@ -695,7 +698,7 @@ MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *ado
 			return MojErrWouldBlock;
 		}
 
-		LOG_DEBUG("[Activity %llu] %s added to adopter list",
+		LOG_AM_DEBUG("[Activity %llu] %s added to adopter list",
 			m_id, sub->GetSubscriber().GetString().c_str());
 	} else {
 		if (adopted)
@@ -709,19 +712,19 @@ MojErr Activity::Adopt(boost::shared_ptr<Subscription> sub, bool wait, bool *ado
 
 MojErr Activity::Release(const BusId& caller)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] %s attempting to release", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] %s attempting to release", m_id,
 		caller.GetString().c_str());
 
 	/* Can't release if it's already been released. */
 	if (m_released) {
-		LOG_DEBUG("[Activity %llu] Has already been released",
+		LOG_AM_DEBUG("[Activity %llu] Has already been released",
 			m_id);
 		return MojErrInvalidArg;
 	}
 
 	if (m_parent.lock()->GetSubscriber() != caller) {
-		LOG_DEBUG("[Activity %llu] %s failed to release, as %s is currently the parent",
+		LOG_AM_DEBUG("[Activity %llu] %s failed to release, as %s is currently the parent",
 			m_id, caller.GetString().c_str(),
 			m_parent.lock()->GetSubscriber().GetString().c_str());
 		return MojErrAccessDenied;
@@ -731,7 +734,7 @@ MojErr Activity::Release(const BusId& caller)
 	m_parent.reset();
 	m_released = true;
 
-	LOG_DEBUG("[Activity %llu] Released by %s", m_id,
+	LOG_AM_DEBUG("[Activity %llu] Released by %s", m_id,
 		caller.GetString().c_str());
 
 	if (!m_adopters.empty()) {
@@ -748,8 +751,8 @@ bool Activity::IsReleased() const
 
 MojErr Activity::Complete(const BusId& caller, bool force)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] %s attempting to complete", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] %s attempting to complete", m_id,
 		caller.GetString().c_str());
 
 	if (!force && (m_released || m_parent.expired() ||
@@ -761,7 +764,7 @@ MojErr Activity::Complete(const BusId& caller, bool force)
 	 * as a signal to other participating processes may be useful */
 	SendCommand(ActivityCompleteCommand);
 
-	LOG_DEBUG("[Activity %llu] Completed by %s", m_id,
+	LOG_AM_DEBUG("[Activity %llu] Completed by %s", m_id,
 		caller.GetString().c_str());
 
 	return MojErrNone;
@@ -802,12 +805,12 @@ bool Activity::IsPersistTokenSet() const
 
 void Activity::HookPersistCommand(boost::shared_ptr<PersistCommand> cmd)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Hooking [PersistCommand %s]", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Hooking [PersistCommand %s]", m_id,
 		cmd->GetString().c_str());
 
 	if (cmd->GetActivity()->GetId() != m_id) {
-		LOG_ERROR(MSGID_HOOK_PERSIST_CMD_ERR,3,
+		LOG_AM_ERROR(MSGID_HOOK_PERSIST_CMD_ERR,3,
 			PMLOGKS("persist_command",cmd->GetString().c_str()),
             PMLOGKFV("Assigned_activity","%llu",cmd->GetActivity()->GetId()),
             PMLOGKFV(" Current activity","%llu",m_id),
@@ -821,12 +824,12 @@ void Activity::HookPersistCommand(boost::shared_ptr<PersistCommand> cmd)
 
 void Activity::UnhookPersistCommand(boost::shared_ptr<PersistCommand> cmd)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Unhooking [PersistCommand %s]", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Unhooking [PersistCommand %s]", m_id,
 		cmd->GetString().c_str());
 
 	if (cmd->GetActivity()->GetId() != m_id) {
-		LOG_ERROR(MSGID_UNHOOK_CMD_ACTVTY_ERR, 3, PMLOGKFV("activity","%llu",m_id),
+		LOG_AM_ERROR(MSGID_UNHOOK_CMD_ACTVTY_ERR, 3, PMLOGKFV("activity","%llu",m_id),
 			  PMLOGKS("persist_command",cmd->GetString().c_str()),
 			  PMLOGKFV("Assigned_activity","%llu",cmd->GetActivity()->GetId()),
 			  "Attempt to unhook PersistCommand assigned to different activity");
@@ -838,12 +841,12 @@ void Activity::UnhookPersistCommand(boost::shared_ptr<PersistCommand> cmd)
 		CommandQueue::iterator found = std::find(m_persistCommands.begin(),
 			m_persistCommands.end(), cmd);
 		if (found != m_persistCommands.end()) {
-			LOG_WARNING(MSGID_UNHOOK_CMD_QUEUE_ORDERING_ERR, 2, PMLOGKFV("Activity","%llu",m_id),
+			LOG_AM_WARNING(MSGID_UNHOOK_CMD_QUEUE_ORDERING_ERR, 2, PMLOGKFV("Activity","%llu",m_id),
 				  PMLOGKS("PersistCommand",cmd->GetString().c_str()),
 				  "Request to unhook persistCommand which is not the first persist command in the queue");
 			m_persistCommands.erase(found);
 		} else {
-			LOG_WARNING(MSGID_UNHOOK_CMD_NOT_IN_QUEUE, 2,
+			LOG_AM_WARNING(MSGID_UNHOOK_CMD_NOT_IN_QUEUE, 2,
 				PMLOGKFV("Activity","%llu",m_id),
 				PMLOGKS("PersistCommand",cmd->GetString().c_str()),
 				  "PersistCommand Not in the queue");
@@ -870,7 +873,7 @@ bool Activity::IsPersistCommandHooked() const
 boost::shared_ptr<PersistCommand> Activity::GetHookedPersistCommand()
 {
 	if (m_persistCommands.empty()) {
-		LOG_ERROR(MSGID_HOOKED_PERSIST_CMD_NOT_FOUND, 1, PMLOGKFV("activity","%llu",m_id),
+		LOG_AM_ERROR(MSGID_HOOKED_PERSIST_CMD_NOT_FOUND, 1, PMLOGKFV("activity","%llu",m_id),
 			  "Attempt to retreive the current hooked persist command, but none is present");
 		throw std::runtime_error("Attempt to retreive hooked persist command, "
 			"but none is present");
@@ -985,8 +988,8 @@ bool Activity::IsPowerActivity() const
 
 void Activity::PowerLockedNotification()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Received notification that power has been successfully locked on",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Received notification that power has been successfully locked on",
 		m_id);
 
 	m_powerActivity->GetManager()->ConfirmPowerActivityBegin(
@@ -999,8 +1002,8 @@ void Activity::PowerLockedNotification()
 
 void Activity::PowerUnlockedNotification()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Received notification that power has been successfully unlocked",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Received notification that power has been successfully unlocked",
 		m_id);
 
 	m_powerActivity->GetManager()->ConfirmPowerActivityEnd(
@@ -1035,8 +1038,8 @@ void Activity::ClearMetadata()
 void Activity::AddEntityAssociation(
 	boost::shared_ptr<ActivitySetAutoAssociation> association)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] adding association with [Entity %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] adding association with [Entity %s]",
 		m_id, association->GetTargetName().c_str());
 
 	m_associations.insert(association);
@@ -1045,13 +1048,13 @@ void Activity::AddEntityAssociation(
 void Activity::RemoveEntityAssociation(
 	boost::shared_ptr<ActivitySetAutoAssociation> association)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] removing association with [Entity %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] removing association with [Entity %s]",
 		m_id, association->GetTargetName().c_str());
 
 	EntityAssociationSet::iterator found = m_associations.find(association);
 	if (found == m_associations.end()) {
-		LOG_WARNING(MSGID_RM_ASSOCIATION_NOT_FOUND,2,
+		LOG_AM_WARNING(MSGID_RM_ASSOCIATION_NOT_FOUND,2,
 			PMLOGKFV("Activity","%llu",m_id),
 			PMLOGKS("Entity",association->GetTargetName().c_str()),
 			"can't remove association with Entity");
@@ -1096,8 +1099,8 @@ ActivityCommand_t Activity::ComputeNextExternalCommand() const
 
 void Activity::BroadcastCommand(ActivityCommand_t command)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Broadcasting \"%s\" command", m_id,
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Broadcasting \"%s\" command", m_id,
 		ActivityCommandNames[command]);
 
 	if (command == ActivityStartCommand)
@@ -1118,8 +1121,8 @@ void Activity::BroadcastCommand(ActivityCommand_t command)
 
 void Activity::RestartActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Restarting", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Restarting", m_id);
 
 	m_initialized = false;
 	m_scheduled = false;
@@ -1133,7 +1136,7 @@ void Activity::RestartActivity()
 	/* If there are any associations, drop them. */
 	/* XXX Consider whether to share this code with the Requeue logic */
 	if (!m_associations.empty()) {
-		LOG_DEBUG("[Activity %llu] still has associations when restarting... clearing",
+		LOG_AM_DEBUG("[Activity %llu] still has associations when restarting... clearing",
 			m_id);
 		m_associations.clear();
 	}
@@ -1143,12 +1146,12 @@ void Activity::RestartActivity()
 		if (m_focusedListItem.is_linked()) {
 			m_focusedListItem.unlink();
 		} else {
-			LOG_DEBUG("[Activity %llu] was focused but not on the focused Activities list", m_id);
+			LOG_AM_DEBUG("[Activity %llu] was focused but not on the focused Activities list", m_id);
 		}
 	} else {
 		if (m_focusedListItem.is_linked()) {
 			m_focusedListItem.unlink();
-			LOG_DEBUG("[Activity %llu] was unfocused but not on the focused Activities list", m_id);
+			LOG_AM_DEBUG("[Activity %llu] was unfocused but not on the focused Activities list", m_id);
 		}
 	}
 
@@ -1162,8 +1165,8 @@ void Activity::RestartActivity()
 
 void Activity::RequestScheduleActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Requesting permission to schedule from Activity Manager",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Requesting permission to schedule from Activity Manager",
 		m_id);
 
 	m_initialized = true;
@@ -1172,8 +1175,8 @@ void Activity::RequestScheduleActivity()
 
 void Activity::ScheduleActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Received permission to schedule",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Received permission to schedule",
 		m_id);
 
 	if (m_trigger) {
@@ -1193,8 +1196,8 @@ void Activity::ScheduleActivity()
 
 void Activity::RequestRunActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Requesting permission to run from Activity Manager",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Requesting permission to run from Activity Manager",
 		m_id);
 
 	m_ready = true;
@@ -1203,14 +1206,14 @@ void Activity::RequestRunActivity()
 
 void Activity::RunActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Received permission to run", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Received permission to run", m_id);
 
 	m_running = true;
 
 	if (m_powerActivity && (m_powerActivity->GetPowerState() !=
 		PowerActivity::PowerLocked)) {
-		LOG_DEBUG("[Activity %llu] Requesting power be locked on",
+		LOG_AM_DEBUG("[Activity %llu] Requesting power be locked on",
 			m_id);
 
 		/* Request power be locked on, wait to actually start Activity until
@@ -1224,8 +1227,8 @@ void Activity::RunActivity()
 
 void Activity::RequestRequeueActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Preparing to requeue", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Preparing to requeue", m_id);
 
 	m_requeue = true;
 
@@ -1236,8 +1239,8 @@ void Activity::RequestRequeueActivity()
 
 void Activity::RequeueActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Requeuing", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Requeuing", m_id);
 
 	m_running = false;
 	m_ending = false;
@@ -1256,10 +1259,10 @@ void Activity::RequeueActivity()
 
 void Activity::YieldActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (!m_yielding) {
-		LOG_DEBUG("[Activity %llu] Yielding", m_id);
+		LOG_AM_DEBUG("[Activity %llu] Yielding", m_id);
 
 		m_yielding = true;
 		m_requeue = true;
@@ -1267,7 +1270,7 @@ void Activity::YieldActivity()
 		BroadcastEvent(ActivityYieldEvent);
 		EndActivity();
 	} else {
-		LOG_DEBUG("[Activity %llu] Already yielding",m_id);
+		LOG_AM_DEBUG("[Activity %llu] Already yielding",m_id);
 	}
 }
 
@@ -1276,8 +1279,8 @@ void Activity::YieldActivity()
  */
 void Activity::EndActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Ending", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Ending", m_id);
 
 	if (!m_ending) {
 		m_ending = true;
@@ -1406,8 +1409,8 @@ bool Activity::ShouldRequeue() const
 
 void Activity::Orphaned()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Orphaned", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Orphaned", m_id);
 
 	if (m_ending) {
 		/* No particular action... waiting for all subscriptions to cancel */
@@ -1431,16 +1434,16 @@ void Activity::Orphaned()
 
 void Activity::Abandoned()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Abandoned (no subscribers remaining)", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Abandoned (no subscribers remaining)", m_id);
 
 	EndActivity();
 }
 
 void Activity::DoAdopt()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Attempting to find new parent",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Attempting to find new parent",
 		m_id);
 
 	if (m_adopters.empty())
@@ -1460,18 +1463,18 @@ void Activity::DoAdopt()
 
 	m_released = false;
 	if(m_ending) {
-		LOG_DEBUG("[Activity %llu] Removing ending flag since found new parent",m_id);
+		LOG_AM_DEBUG("[Activity %llu] Removing ending flag since found new parent",m_id);
 	}
 	m_ending = false;
 
-	LOG_DEBUG("[Activity %llu] Adopted by %s", m_id,
+	LOG_AM_DEBUG("[Activity %llu] Adopted by %s", m_id,
 		m_parent.lock()->GetSubscriber().GetString().c_str());
 }
 
 void Activity::DoRunActivity()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Running", m_id);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Running", m_id);
 
 	/* Power is now on, if Applicable.  Tell the Activity Manager we're
 	 * ready to go! */
@@ -1486,8 +1489,8 @@ void Activity::DoRunActivity()
 
 void Activity::DoCallback()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[Activity %llu] Attempting to generate callback",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[Activity %llu] Attempting to generate callback",
 		m_id);
 
 	if (!m_callback)
@@ -1496,7 +1499,7 @@ void Activity::DoCallback()
 	MojErr err = m_callback->Call();
 
 	if (err) {
-		LOG_ERROR(MSGID_ACTIVITY_CB_FAIL,1,
+		LOG_AM_ERROR(MSGID_ACTIVITY_CB_FAIL,1,
 			PMLOGKFV("Activity","%llu",m_id),
 			"Attempt to call callback failed");
 		throw std::runtime_error("Failed to call Activity Callback");
@@ -1819,7 +1822,7 @@ MojErr Activity::TypeToJson(MojObject& rep, unsigned flags) const
 			err = rep.putBool(_T("background"), true);
 			MojErrCheck(err);
 		} else {
-			LOG_DEBUG(_T("[Activity %llu] Simple Activity type "
+			LOG_AM_DEBUG(_T("[Activity %llu] Simple Activity type "
 			    "specified, but immediate and priority were individually set, "
                 "and will be individually output"), m_id);
 			useSimpleType = false;

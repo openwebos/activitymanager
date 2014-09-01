@@ -106,8 +106,8 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 {
 	ACTIVITY_SERVICEMETHOD_BEGIN();
 
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Leak: %s", MojoObjectJson(payload).c_str());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Leak: %s", MojoObjectJson(payload).c_str());
 
 	MojErr err = MojErrNone;
 
@@ -116,12 +116,12 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 	payload.get(_T("freeAll"), freeAll);
 
 	if (freeAll) {
-		LOG_DEBUG("RELEASING REFERENCES TO ALL INTENTIONALLY LEAKED ACTIVITIES");
+		LOG_AM_DEBUG("RELEASING REFERENCES TO ALL INTENTIONALLY LEAKED ACTIVITIES");
 		while (!m_leakedActivities.empty()) {
 			boost::shared_ptr<Activity> act = m_leakedActivities.front();
 			m_leakedActivities.pop_front();
 
-			LOG_DEBUG("RELEASING REFERENCE TO [Activity %llu]", act->GetId());
+			LOG_AM_DEBUG("RELEASING REFERENCE TO [Activity %llu]", act->GetId());
 		}
 	} else {
 		boost::shared_ptr<Activity> act;
@@ -129,7 +129,7 @@ TestCategoryHandler::Leak(MojServiceMessage *msg, MojObject &payload)
 		err = LookupActivity(msg, payload, act);
 		MojErrCheck(err);
 
-        LOG_DEBUG("INTENTIONALLY LEAKING [Activity %llu]",act->GetId());
+        LOG_AM_DEBUG("INTENTIONALLY LEAKING [Activity %llu]",act->GetId());
 
 		m_leakedActivities.push_back(act);
 	}

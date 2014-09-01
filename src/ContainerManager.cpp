@@ -38,15 +38,15 @@ ContainerManager::~ContainerManager()
 boost::shared_ptr<ResourceContainer> ContainerManager::GetContainer(
 	const std::string& name)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Looking up [Container %s]", name.c_str());
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Looking up [Container %s]", name.c_str());
 
 	ContainerMap::iterator found = m_containers.find(name);
 	if (found != m_containers.end()) {
 		return found->second;
 	}
 
-	LOG_DEBUG("Allocating new container for [Container %s]",
+	LOG_AM_DEBUG("Allocating new container for [Container %s]",
 		name.c_str());
 
 	boost::shared_ptr<ResourceContainer> container = CreateContainer(name);
@@ -65,8 +65,8 @@ boost::shared_ptr<ResourceContainer> ContainerManager::GetContainer(
 void ContainerManager::MapContainer(
 	const std::string& name, const BusIdVec& ids, pid_t pid)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Mapping pid %d into [Container %s]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Mapping pid %d into [Container %s]",
 		(int)pid, name.c_str());
 
 	/* Do not invalidate old Entities.  Just leave them in whatever container
@@ -112,17 +112,17 @@ void ContainerManager::MapContainer(
 
 void ContainerManager::InformEntityUpdated(boost::shared_ptr<BusEntity> entity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("[BusId %s] has been updated",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("[BusId %s] has been updated",
 		entity->GetName().c_str());
 
 	EntityContainerMap::iterator citer = m_entityContainers.find(entity);
 	if (citer == m_entityContainers.end()) {
-		LOG_DEBUG("No container currently mapped for [BusId %s]",
+		LOG_AM_DEBUG("No container currently mapped for [BusId %s]",
 			entity->GetName().c_str());
 	} else {
 		citer->second->UpdatePriority();
-		LOG_DEBUG("[BusId %s] priority is now \"%s\"",
+		LOG_AM_DEBUG("[BusId %s] priority is now \"%s\"",
 			entity->GetName().c_str(),
 			ActivityPriorityNames[citer->second->GetPriority()]);
 	}
@@ -130,13 +130,13 @@ void ContainerManager::InformEntityUpdated(boost::shared_ptr<BusEntity> entity)
 
 void ContainerManager::Enable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (m_enabled) {
-		LOG_DEBUG("Container Manager already enabled");
+		LOG_AM_DEBUG("Container Manager already enabled");
 	}
 
-	LOG_DEBUG("Enabling Container Manager");
+	LOG_AM_DEBUG("Enabling Container Manager");
 
 	m_enabled = true;
 
@@ -147,13 +147,13 @@ void ContainerManager::Enable()
 
 void ContainerManager::Disable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (!m_enabled) {
-		LOG_DEBUG("Container Manager already disabled");
+		LOG_AM_DEBUG("Container Manager already disabled");
 	}
 
-	LOG_DEBUG("Disabling Container Manager");
+	LOG_AM_DEBUG("Disabling Container Manager");
 
 	m_enabled = false;
 

@@ -35,8 +35,8 @@ PowerManager::~PowerManager()
 void PowerManager::RequestBeginPowerActivity(
 	boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Activity %lu requesting to begin power activity",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Activity %lu requesting to begin power activity",
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -53,16 +53,16 @@ void PowerManager::RequestBeginPowerActivity(
 void PowerManager::ConfirmPowerActivityBegin(
 	boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Activity %lu confirmed power activity running",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Activity %lu confirmed power activity running",
 		(unsigned long)activity->GetId());
 }
 
 void PowerManager::RequestEndPowerActivity(
 	boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Activity %lu request to end power activity",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Activity %lu request to end power activity",
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -78,8 +78,8 @@ void PowerManager::RequestEndPowerActivity(
 void PowerManager::ConfirmPowerActivityEnd(
 	boost::shared_ptr<Activity> activity)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Activity %lu confirmed power activity ended",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Activity %lu confirmed power activity ended",
 		(unsigned long)activity->GetId());
 
 	boost::shared_ptr<PowerActivity> powerActivity =
@@ -92,7 +92,7 @@ void PowerManager::ConfirmPowerActivityEnd(
 
 MojErr PowerManager::InfoToJson(MojObject& rep) const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	MojErr err;
 

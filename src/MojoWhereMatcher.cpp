@@ -33,15 +33,15 @@ MojoNewWhereMatcher::~MojoNewWhereMatcher()
 
 bool MojoNewWhereMatcher::Match(const MojObject& response)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	MatchResult result = CheckClause(m_where, response, AndMode);
 	if (result == Matched) {
-		LOG_DEBUG("Where Matcher: Response %s matches",
+		LOG_AM_DEBUG("Where Matcher: Response %s matches",
 			MojoObjectJson(response).c_str());
 		return true;
 	} else {
-		LOG_DEBUG("Where Matcher: Response %s does not match",
+		LOG_AM_DEBUG("Where Matcher: Response %s does not match",
 			MojoObjectJson(response).c_str());
 		return false;
 	}
@@ -104,8 +104,8 @@ void MojoNewWhereMatcher::ValidateOp(const MojObject& op,
 
 void MojoNewWhereMatcher::ValidateClause(const MojObject& clause) const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Validating where clause \"%s\"",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Validating where clause \"%s\"",
 		MojoObjectJson(clause).c_str());
 
 	bool found = false;
@@ -169,8 +169,8 @@ void MojoNewWhereMatcher::ValidateClause(const MojObject& clause) const
 
 void MojoNewWhereMatcher::ValidateClauses(const MojObject& where) const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Validating trigger clauses");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Validating trigger clauses");
 
 	if (where.type() == MojObject::TypeObject) {
 		ValidateClause(where);
@@ -194,7 +194,7 @@ void MojoNewWhereMatcher::ValidateClauses(const MojObject& where) const
 MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClauses(
 	const MojObject& clauses, const MojObject& response, MatchMode mode) const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (clauses.type() == MojObject::TypeObject) {
 		return CheckClause(clauses, response, mode);
@@ -203,7 +203,7 @@ MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClauses(
 			"array of clauses");
 	}
 
-	LOG_DEBUG("Checking clauses '%s' against response '%s' (%s)",
+	LOG_AM_DEBUG("Checking clauses '%s' against response '%s' (%s)",
 		MojoObjectJson(clauses).c_str(), MojoObjectJson(response).c_str(),
 		(mode == AndMode) ? "and" : "or");
 
@@ -232,7 +232,7 @@ MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClauses(
 MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClause(
 	const MojObject& clause, const MojObject& response, MatchMode mode) const
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
 
 	if (clause.type() == MojObject::TypeArray) {
 		return CheckClauses(clause, response, mode);
@@ -241,7 +241,7 @@ MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClause(
 			"of objects");
 	}
 
-	LOG_DEBUG("Checking clause '%s' against response '%s' (%s)",
+	LOG_AM_DEBUG("Checking clause '%s' against response '%s' (%s)",
 		MojoObjectJson(clause).c_str(), MojoObjectJson(response).c_str(),
 		(mode == AndMode) ? "and" : "or");
 
@@ -280,7 +280,7 @@ MojoNewWhereMatcher::MatchResult MojoNewWhereMatcher::CheckClause(
 
 	MatchResult result = CheckProperty(prop, response, op, val, mode);
 
-	LOG_DEBUG("Where Trigger: Clause %s %s",
+	LOG_AM_DEBUG("Where Trigger: Clause %s %s",
 		MojoObjectJson(clause).c_str(), (result == Matched) ? "matched" :
 	    "did not match");
 

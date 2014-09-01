@@ -50,8 +50,8 @@ boost::shared_ptr<Requirement> SystemManagerProxy::InstantiateRequirement(
 	boost::shared_ptr<Activity> activity, const std::string& name,
 	const MojObject& value)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Instantiating [Requirement %s] for [Activity %llu]",
 		name.c_str(), activity->GetId());
 
 	if (name == "bootup") {
@@ -66,7 +66,7 @@ boost::shared_ptr<Requirement> SystemManagerProxy::InstantiateRequirement(
 				"the only legal value is 'true'");
 		}
 	} else {
-		LOG_ERROR(MSGID_SM_UNKNOWN_REQ, 3, PMLOGKS("MANAGER", GetName().c_str()),
+		LOG_AM_ERROR(MSGID_SM_UNKNOWN_REQ, 3, PMLOGKS("MANAGER", GetName().c_str()),
 			PMLOGKS("REQ",name.c_str()),
 			PMLOGKFV("ACTIVITY_ID","%llu",activity->GetId()),
 			"does not know how to instantiate Requirement" );
@@ -77,8 +77,8 @@ boost::shared_ptr<Requirement> SystemManagerProxy::InstantiateRequirement(
 void SystemManagerProxy::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Registering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Registering requirements");
 
 	master->RegisterRequirement("bootup", shared_from_this());
 }
@@ -86,16 +86,16 @@ void SystemManagerProxy::RegisterRequirements(
 void SystemManagerProxy::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Unregistering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Unregistering requirements");
 
 	master->UnregisterRequirement("bootup", shared_from_this());
 }
 
 void SystemManagerProxy::Enable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Enabling System Manager Proxy");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Enabling System Manager Proxy");
 
 	MojObject params;
 	params.putBool(_T("subscribe"), true);
@@ -111,8 +111,8 @@ void SystemManagerProxy::Enable()
 
 void SystemManagerProxy::Disable()
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Disabling System Manager Proxy");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Disabling System Manager Proxy");
 
 	m_bootstatus.reset();
 }
@@ -128,13 +128,13 @@ void SystemManagerProxy::Disable()
 void SystemManagerProxy::BootStatusUpdate(MojServiceMessage *msg,
 	const MojObject& response, MojErr err)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Boot status update message: %s",
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Boot status update message: %s",
 		MojoObjectJson(response).c_str());
 
 	if (err != MojErrNone) {
 		if (MojoCall::IsPermanentFailure(msg, response, err)) {
-			LOG_WARNING(MSGID_SM_BOOTSTS_UPDATE_FAIL,0,
+			LOG_AM_WARNING(MSGID_SM_BOOTSTS_UPDATE_FAIL,0,
 				"Subscription to System Manager experienced an uncorrectable failure: %s",
 				MojoObjectJson(response).c_str());
 			m_bootstatus.reset();
@@ -142,7 +142,7 @@ void SystemManagerProxy::BootStatusUpdate(MojServiceMessage *msg,
 			 * fail-secure? (Might want to fail that way for OTA
 			 * data migration) */
 		} else {
-			LOG_WARNING(MSGID_SM_BOOTSTS_UPDATE_RETRY,0,
+			LOG_AM_WARNING(MSGID_SM_BOOTSTS_UPDATE_RETRY,0,
 				"Subscription to System Manager failed retrying: %s", MojoObjectJson(response).c_str());
 			static struct timespec sleep = { 0, 250000000};
 			nanosleep(&sleep, NULL);
@@ -156,7 +156,7 @@ void SystemManagerProxy::BootStatusUpdate(MojServiceMessage *msg,
 
 	found = response.get(_T("finished"), finished);
 	if (!found) {
-		LOG_WARNING(MSGID_SM_BOOTSTS_NOTRETURNED,0,
+		LOG_AM_WARNING(MSGID_SM_BOOTSTS_NOTRETURNED,0,
 			"Bootup status not returned by System Manager: %s", MojoObjectJson(response).c_str());
 	} else {
 		if (finished) {

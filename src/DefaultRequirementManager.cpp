@@ -58,7 +58,7 @@ DefaultRequirementManager::InstantiateRequirement(
 				"specified, the only legal value is 'true'");
 		}
 	} else {
-		LOG_ERROR(MSGID_REQUIREMENT_INSTANTIATE_FAIL, 3, PMLOGKS("Manager",GetName().c_str()),
+		LOG_AM_ERROR(MSGID_REQUIREMENT_INSTANTIATE_FAIL, 3, PMLOGKS("Manager",GetName().c_str()),
 			  PMLOGKFV("Activity","%llu",activity->GetId()), PMLOGKS("Requirement",name.c_str()), "");
 		throw std::runtime_error("Attempt to instantiate unknown requirement");
 	}
@@ -67,8 +67,8 @@ DefaultRequirementManager::InstantiateRequirement(
 void DefaultRequirementManager::RegisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Registering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Registering requirements");
 
 	master->RegisterRequirement("never", shared_from_this());
 }
@@ -76,8 +76,8 @@ void DefaultRequirementManager::RegisterRequirements(
 void DefaultRequirementManager::UnregisterRequirements(
 	boost::shared_ptr<MasterRequirementManager> master)
 {
-	LOG_TRACE("Entering function %s", __FUNCTION__);
-	LOG_DEBUG("Unregistering requirements");
+	LOG_AM_TRACE("Entering function %s", __FUNCTION__);
+	LOG_AM_DEBUG("Unregistering requirements");
 
 	master->UnregisterRequirement("never", shared_from_this());
 }
